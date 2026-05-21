@@ -133,8 +133,8 @@ async function startServer() {
       return res.json({
         scan_time: new Date().toLocaleString("zh-TW", { timeZone: "Asia/Taipei" }),
         date: new Date().toISOString().split('T')[0],
-        tsmc_price: 958.0,
-        tsmc_ma20: 935.0,
+        tsmc_price: 2230.0,
+        tsmc_ma20: 2180.0,
         tsmc_status: "綠燈 - 開放雙倍投資",
         signals: localCachedSignals
       });
@@ -151,8 +151,8 @@ async function startServer() {
         return res.json({
           scan_time: simulated[0].timestamp,
           date: simulated[0].date,
-          tsmc_price: 955.0,
-          tsmc_ma20: 935.0,
+          tsmc_price: 2230.0,
+          tsmc_ma20: 2180.0,
           tsmc_status: "綠燈 - 開放雙倍投資",
           signals: simulated
         });
@@ -163,7 +163,7 @@ async function startServer() {
       const scanBatch = await coll.find({ timestamp: latestScanTime }).toArray();
 
       // Find TSMC to decide the macro market status
-      const tsmc = scanBatch.find(s => s.stock_id === "2330") || { close_price: 955, ma20: 935 };
+      const tsmc = scanBatch.find(s => s.stock_id === "2330") || { close_price: 2230, ma20: 2180 };
       const isBullish = tsmc.close_price >= tsmc.ma20;
       
       // Update memory cache

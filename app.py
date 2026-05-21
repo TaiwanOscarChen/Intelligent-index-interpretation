@@ -625,18 +625,54 @@ else:
             except Exception as e:
                 st.sidebar.error(f"讀取資料庫失誤: {e}")
                 
+        # 決定是否重用資料庫快取或是自動執行新洗價掃描
+        should_reuse = False
         if loaded_list and len(loaded_list) >= 40:
+            last_record_date_str = loaded_list[0].get("date", "")
+            try:
+                now_taipei = datetime.now(TW_TZ)
+                date_str = now_taipei.strftime("%Y-%m-%d")
+                
+                last_date = datetime.strptime(last_record_date_str, "%Y-%m-%d").date()
+                today_date = now_taipei.date()
+                delta_days = (today_date - last_date).days
+                
+                if delta_days == 0:
+                    # 同一天，直接重用
+                    should_reuse = True
+                elif now_taipei.weekday() >= 5: # 週末 (週六或週日)
+                    # 週末期間若有最近三天內 (即週五) 的資料，直接重用
+                    if delta_days <= 3:
+                        should_reuse = True
+                elif now_taipei.weekday() == 0 and now_taipei.hour < 9: # 週一開盤前
+                    # 週一早上九點前，重用週五的資料
+                    if delta_days <= 3:
+                        should_reuse = True
+                elif now_taipei.hour < 9: # 平日開盤前 (週二至週五早上 9 點前)
+                    # 平日早上開盤前，重用昨天的資料
+                    if delta_days <= 1:
+                        should_reuse = True
+            except Exception:
+                pass
+
+        if should_reuse:
+            # 從載入的信號中動態提取真實的台積電收盤價與 20MA，避免寫死 955.0/935.0
+            tsmc_doc = next((s for s in loaded_list if s["stock_id"] == "2330"), None)
+            tsmc_price = tsmc_doc.get("close_price", 2230.0) if tsmc_doc else 2230.0
+            tsmc_ma20 = tsmc_doc.get("ma20", 2180.0) if tsmc_doc else 2180.0
+            tsmc_status = "綠燈 - 開放雙倍投資" if tsmc_price >= tsmc_ma20 else "紅燈 - 物理隔離停買"
+            
             st.session_state["lion_scan_result"] = {
                 "scan_time": loaded_list[0].get("timestamp", "未知"),
                 "date": loaded_list[0].get("date", "未知"),
-                "tsmc_price": 955.0,
-                "tsmc_ma20": 935.0,
-                "tsmc_status": "綠燈 - 開放雙倍投資",
+                "tsmc_price": tsmc_price,
+                "tsmc_ma20": tsmc_ma20,
+                "tsmc_status": tsmc_status,
                 "signals": loaded_list
             }
             st.sidebar.info("📂 自 MongoDB Atlas 讀取最近一次訊號結果。")
         else:
-            # 初次啟動時，直接現場觸發
+            # 資料庫為空、過少或資料已過期，自動觸發並行洗價掃描
             st.session_state["lion_scan_result"] = run_v106_full_sweep(tsmc_override=tsmc_override_val)
 
 scan_data = st.session_state["lion_scan_result"]
