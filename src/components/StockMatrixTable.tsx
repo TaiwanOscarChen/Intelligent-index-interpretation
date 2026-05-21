@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, SlidersHorizontal, Edit3, ArrowUpDown, TrendingUp, TrendingDown, RefreshCw } from 'lucide-react';
+import { Search, SlidersHorizontal, Edit3, ArrowUpDown, TrendingUp, TrendingDown, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
 import { StockSignal } from '../types';
 
 interface Props {
@@ -14,6 +14,7 @@ export const StockMatrixTable: React.FC<Props> = ({ signals, onEditNotes }) => {
   const [activeFilter, setActiveFilter] = useState<'ALL' | '多' | '空' | '持倉' | '隔離'>('ALL');
   const [sortKey, setSortKey] = useState<SortKey>('change');
   const [sortDesc, setSortDesc] = useState(true);
+  const [expandedStockId, setExpandedStockId] = useState<string | null>(null);
 
   // 1. 處理搜尋與過濾
   const filteredSignals = signals.filter(s => {
@@ -236,82 +237,108 @@ export const StockMatrixTable: React.FC<Props> = ({ signals, onEditNotes }) => {
         `}} />
 
         <div className="mobile-cards-grid">
-          {sortedSignals.map(s => {
-            const isUp = s.change_pct >= 0;
-            const isBull = s.signal === '多';
-            return (
-              <div 
-                key={s.stock_id} 
-                className={`cyber-panel fade-in ${isBull ? 'bullish-hover' : ''}`}
-                style={{ 
-                  padding: '10px 12px', 
-                  borderLeft: isBull ? '4px solid var(--color-bullish)' : (s.signal === '空' ? '4px solid var(--color-bearish)' : '')
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span className="ticker-badge" style={{ padding: '2px 4px', fontSize: '0.75rem' }}>{s.stock_id}</span>
-                    <span style={{ fontWeight: 'bold', fontSize: '0.95rem' }}>{s.stock_name}</span>
-                  </div>
-                  {getSignalBadge(s.signal)}
-                </div>
+          <div className="mobile-row-accordion">
+            {sortedSignals.map(s => {
+              const isUp = s.change_pct >= 0;
+              const isExpanded = expandedStockId === s.stock_id;
+              
+              // Get border-left indicator class
+              let borderClass = 'border-neutral';
+              if (s.signal === '多') borderClass = 'border-bullish';
+              else if (s.signal === '空') borderClass = 'border-bearish';
+              else if (s.signal === '隔離') borderClass = 'border-quarantine';
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 8px', marginBottom: '8px', fontSize: '0.8rem' }}>
-                  <div>
-                    <span style={{ color: 'var(--text-secondary)' }}>現價：</span>
-                    <span style={{ fontWeight: 600 }}>{s.close_price.toFixed(1)}</span>
-                  </div>
-                  <div>
-                    <span style={{ color: 'var(--text-secondary)' }}>漲跌：</span>
-                    <span style={{ 
-                      fontWeight: 'bold', 
-                      color: isUp ? 'var(--color-bullish)' : 'var(--color-bearish)'
-                    }}>
-                      {isUp ? '+' : ''}{s.change_pct.toFixed(2)}%
-                    </span>
-                  </div>
-                  <div>
-                    <span style={{ color: 'var(--text-secondary)' }}>爆量：</span>
-                    <span style={{ fontWeight: 500 }}>{s.volume_multiplier.toFixed(2)}x</span>
-                  </div>
-                  <div>
-                    <span style={{ color: 'var(--text-secondary)' }}>停損：</span>
-                    <span style={{ color: 'var(--color-bearish)', fontWeight: 500 }}>{s.atr_stop.toFixed(1)}</span>
-                  </div>
-                  <div style={{ gridColumn: 'span 2' }}>
-                    <span style={{ color: 'var(--text-secondary)' }}>2W配比：</span>
-                    <span style={{ color: 'var(--color-gold)', fontWeight: 700 }}>{s.suggested_shares} 股</span>
-                  </div>
-                </div>
+              const getSignalBadgeSlim = (sig: '多' | '空' | '持倉' | '隔離') => {
+                switch (sig) {
+                  case '多':
+                    return <span className="signal-badge-slim bullish">🟢 多頭</span>;
+                  case '空':
+                    return <span className="signal-badge-slim bearish">🔴 空頭</span>;
+                  case '隔離':
+                    return <span className="signal-badge-slim quarantine">⚠️ 隔離</span>;
+                  default:
+                    return <span className="signal-badge-slim neutral">⚪ 持倉</span>;
+                }
+              };
 
-                <div style={{ 
-                  backgroundColor: 'rgba(10, 13, 20, 0.5)', 
-                  border: '1px solid rgba(42, 49, 66, 0.3)',
-                  padding: '6px 8px',
-                  borderRadius: '6px',
-                  fontSize: '0.75rem',
-                  color: 'var(--text-secondary)',
-                  marginBottom: '8px',
-                  lineHeight: '1.3'
-                }}>
-                  <strong>戰術：</strong>{s.action_advice}
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '60%' }} title={s.master_notes}>
-                    備註：{s.master_notes || '無'}
-                  </span>
-                  <button 
-                    className="cyber-btn"
-                    style={{ padding: '4px 8px', fontSize: '0.75rem' }}
-                    onClick={() => onEditNotes(s)}
+              return (
+                <div 
+                  key={s.stock_id} 
+                  className={`mobile-row-item fade-in ${borderClass} ${isExpanded ? 'expanded' : ''}`}
+                >
+                  {/* Collapsed Header (Always Visible) */}
+                  <div 
+                    className="mobile-row-header"
+                    onClick={() => setExpandedStockId(isExpanded ? null : s.stock_id)}
                   >
-                    <Edit3 size={11} /> 筆記
-                  </button>
+                    <div className="mobile-row-left">
+                      <span className="mobile-row-ticker">{s.stock_id}</span>
+                      <span className="mobile-row-name">{s.stock_name}</span>
+                    </div>
+
+                    <div className="mobile-row-mid">
+                      <span className="mobile-row-price">{s.close_price.toFixed(1)}</span>
+                      <span className="mobile-row-change" style={{ color: isUp ? 'var(--color-bullish)' : 'var(--color-bearish)' }}>
+                        {isUp ? <TrendingUp size={11} style={{ marginRight: '1px' }} /> : <TrendingDown size={11} style={{ marginRight: '1px' }} />}
+                        {isUp ? '+' : ''}{s.change_pct.toFixed(2)}%
+                      </span>
+                    </div>
+
+                    <div className="mobile-row-right">
+                      {getSignalBadgeSlim(s.signal)}
+                      {isExpanded ? <ChevronUp size={14} style={{ color: 'var(--text-secondary)' }} /> : <ChevronDown size={14} style={{ color: 'var(--text-secondary)' }} />}
+                    </div>
+                  </div>
+
+                  {/* Expanded Content Details */}
+                  {isExpanded && (
+                    <div className="mobile-row-details">
+                      <div className="mobile-details-grid">
+                        <div className="mobile-detail-item">
+                          <span className="mobile-detail-label">爆量比率</span>
+                          <span className="mobile-detail-value" style={{ color: s.volume_multiplier >= 1.5 ? 'var(--color-bullish)' : 'var(--text-primary)' }}>
+                            {s.volume_multiplier.toFixed(2)}x
+                          </span>
+                        </div>
+                        <div className="mobile-detail-item">
+                          <span className="mobile-detail-label">動態停損</span>
+                          <span className="mobile-detail-value" style={{ color: 'var(--color-bearish)' }}>
+                            {s.atr_stop.toFixed(1)}
+                          </span>
+                        </div>
+                        <div className="mobile-detail-item" style={{ gridColumn: 'span 2' }}>
+                          <span className="mobile-detail-label">2W 零股配比</span>
+                          <span className="mobile-detail-value" style={{ color: 'var(--color-gold)' }}>
+                            {s.suggested_shares} 股
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="mobile-tactics-box">
+                        <strong>戰術要旨：</strong>{s.action_advice}
+                      </div>
+
+                      <div className="mobile-notes-row">
+                        <span className="mobile-notes-text" title={s.master_notes}>
+                          <strong>備註：</strong>{s.master_notes || '無評註'}
+                        </span>
+                        <button 
+                          className="cyber-btn"
+                          style={{ padding: '3px 6px', fontSize: '0.7rem', borderRadius: '4px' }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onEditNotes(s);
+                          }}
+                        >
+                          <Edit3 size={10} /> 筆記
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
 
         {sortedSignals.length === 0 && (

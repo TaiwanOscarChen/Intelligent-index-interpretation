@@ -31,75 +31,69 @@ export const OverviewDashboard: React.FC<Props> = ({ data }) => {
       {/* 🟢 四格宏觀儀表板 */}
       <div className="macro-grid">
         {/* TSMC 裁判價 */}
-        <div className="cyber-panel" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '96px' }}>
+        <div className="cyber-panel macro-card">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600 }}>2330 台積電裁判收盤價</span>
+            <span className="macro-card-title">2330 台積電裁判收盤價</span>
             <Shield size={16} style={{ color: isMarketBullish ? 'var(--color-bullish)' : 'var(--color-bearish)' }} />
           </div>
           <div style={{ margin: '4px 0' }}>
-            <span style={{ 
-              fontSize: '1.8rem', 
-              fontWeight: 900, 
+            <span className="macro-card-value" style={{ 
               color: isMarketBullish ? 'var(--color-bullish)' : 'var(--color-bearish)',
-              fontFamily: "'JetBrains Mono', monospace",
               textShadow: isMarketBullish ? '0 0 12px rgba(0, 255, 102, 0.25)' : '0 0 12px rgba(255, 51, 102, 0.25)'
             }}>
               {data.tsmc_price}
             </span>
             <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginLeft: '4px' }}>元</span>
           </div>
-          <span style={{ color: 'var(--text-secondary)', fontSize: '0.7rem' }}>
+          <span className="macro-card-desc">
             生命水位 20MA 日線：{data.tsmc_ma20} 元
           </span>
         </div>
 
         {/* 紅綠燈狀態 */}
-        <div className="cyber-panel" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '96px' }}>
+        <div className="cyber-panel macro-card">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600 }}>大盤生命線紅綠燈</span>
+            <span className="macro-card-title">大盤生命線紅綠燈</span>
             <span className={`glow-dot ${isMarketBullish ? 'bullish' : 'bearish'}`}></span>
           </div>
-          <div style={{ margin: '4px 0', fontSize: '1.15rem', fontWeight: 800, color: isMarketBullish ? 'var(--color-bullish)' : 'var(--color-bearish)' }}>
+          <div style={{ margin: '4px 0', fontWeight: 800, color: isMarketBullish ? 'var(--color-bullish)' : 'var(--color-bearish)' }} className="macro-card-value-text">
             {data.tsmc_status}
           </div>
-          <span style={{ color: 'var(--text-secondary)', fontSize: '0.7rem' }}>
+          <span className="macro-card-desc">
             判定機制：收盤價 &gt; 20MA 即翻綠開倉
           </span>
         </div>
 
         {/* 獵殺名單數 */}
-        <div className="cyber-panel" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '96px' }}>
+        <div className="cyber-panel macro-card">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600 }}>精英獵殺突破標的</span>
+            <span className="macro-card-title">精英獵殺突破標的</span>
             <Flame size={16} style={{ color: 'var(--color-bullish)' }} />
           </div>
           <div style={{ margin: '4px 0' }}>
-            <span style={{ 
-              fontSize: '1.8rem', 
-              fontWeight: 900, 
+            <span className="macro-card-value" style={{ 
               color: 'var(--color-bullish)',
-              fontFamily: "'JetBrains Mono', monospace",
               textShadow: '0 0 12px rgba(0, 255, 102, 0.2)'
             }}>
               {longSignals}
             </span>
             <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginLeft: '4px' }}>/ {totalStocks} 檔</span>
           </div>
-          <span style={{ color: 'var(--text-secondary)', fontSize: '0.7rem' }}>
+          <span className="macro-card-desc">
             符合 V106 多頭多維度共振突破
           </span>
         </div>
 
         {/* 同步時間 */}
-        <div className="cyber-panel" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '96px' }}>
+        <div className="cyber-panel macro-card">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600 }}>資料同步與洗價時間</span>
+            <span className="macro-card-title">資料同步與洗價時間</span>
             <Clock size={16} style={{ color: 'var(--color-gold)' }} />
           </div>
-          <div style={{ margin: '4px 0', fontSize: '1.15rem', fontWeight: 700, color: 'var(--color-gold)', fontFamily: "'JetBrains Mono', monospace" }}>
+          <div style={{ margin: '4px 0', fontWeight: 700, color: 'var(--color-gold)', fontFamily: "'JetBrains Mono', monospace" }} className="macro-card-value-text">
             {data.scan_time.includes(' ') ? data.scan_time.split(' ')[1] : data.scan_time}
           </div>
-          <span style={{ color: 'var(--text-secondary)', fontSize: '0.7rem' }}>
+          <span className="macro-card-desc">
             同步協議：雲端 Atlas 自動 Upsert
           </span>
         </div>

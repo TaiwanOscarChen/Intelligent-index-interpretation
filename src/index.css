@@ -416,6 +416,28 @@ body {
   display: inline-block;
 }
 
+/* 宏觀儀表板自適應字型與高度 */
+.macro-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 96px;
+}
+.macro-card-title {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.macro-card-value {
+  font-size: 1.8rem;
+  font-weight: 900;
+  font-family: 'JetBrains Mono', monospace;
+}
+.macro-card-desc {
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+}
+
 /* ==============================================================================
    📱 手機端極致高密度版面優化 (Ultra-dense Mobile Spacing & Layout)
    ============================================================================== */
@@ -428,8 +450,22 @@ body {
     border-radius: 8px !important;
   }
   .macro-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
     gap: 6px !important;
     margin-bottom: 10px !important;
+  }
+  .macro-card {
+    min-height: 76px !important;
+    padding: 6px 8px !important;
+  }
+  .macro-card-title {
+    font-size: 0.68rem !important;
+  }
+  .macro-card-value {
+    font-size: 1.35rem !important;
+  }
+  .macro-card-desc {
+    font-size: 0.6rem !important;
   }
   .split-grid {
     gap: 8px !important;
@@ -452,5 +488,204 @@ body {
   }
   .mobile-cards-grid {
     gap: 8px !important;
+  }
+
+  /* ==============================================================================
+     📱 手機端摺疊手風琴列 (High-density Expandable Mobile Rows)
+     ============================================================================== */
+  .mobile-row-accordion {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 100%;
+  }
+
+  .mobile-row-item {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    overflow: hidden;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .mobile-row-item.expanded {
+    border-color: rgba(255, 187, 0, 0.4);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    background: rgba(18, 22, 32, 0.95);
+  }
+
+  /* 邊框指示線 */
+  .mobile-row-item.border-bullish {
+    border-left: 3px solid var(--color-bullish);
+  }
+  .mobile-row-item.border-bearish {
+    border-left: 3px solid var(--color-bearish);
+  }
+  .mobile-row-item.border-neutral {
+    border-left: 3px solid var(--color-neutral);
+  }
+  .mobile-row-item.border-quarantine {
+    border-left: 3px solid var(--color-quarantine);
+  }
+
+  .mobile-row-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 8px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .mobile-row-header:active {
+    background-color: rgba(28, 35, 51, 0.4);
+  }
+
+  .mobile-row-left {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex: 0 0 auto;
+  }
+
+  .mobile-row-ticker {
+    background-color: rgba(28, 35, 51, 0.9);
+    color: var(--color-gold);
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: bold;
+    padding: 1px 3px;
+    border-radius: 3px;
+    font-size: 0.68rem;
+    border: 1px solid rgba(255, 187, 0, 0.2);
+  }
+
+  .mobile-row-name {
+    font-weight: bold;
+    font-size: 0.8rem;
+    color: var(--text-primary);
+  }
+
+  .mobile-row-mid {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 0 0 auto;
+  }
+
+  .mobile-row-price {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: var(--text-primary);
+  }
+
+  .mobile-row-change {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: bold;
+    font-size: 0.72rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 1px;
+  }
+
+  .mobile-row-right {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 6px;
+    flex: 0 0 auto;
+  }
+
+  /* 緊湊型訊號標籤 */
+  .signal-badge-slim {
+    font-size: 0.65rem;
+    font-weight: bold;
+    padding: 1px 4px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+  }
+  .signal-badge-slim.bullish {
+    background-color: rgba(0, 255, 102, 0.12);
+    color: var(--color-bullish);
+    border: 1px solid rgba(0, 255, 102, 0.25);
+  }
+  .signal-badge-slim.bearish {
+    background-color: rgba(255, 51, 102, 0.12);
+    color: var(--color-bearish);
+    border: 1px solid rgba(255, 51, 102, 0.25);
+  }
+  .signal-badge-slim.neutral {
+    background-color: rgba(138, 150, 168, 0.12);
+    color: var(--color-neutral);
+    border: 1px solid rgba(138, 150, 168, 0.25);
+  }
+  .signal-badge-slim.quarantine {
+    background-color: rgba(255, 85, 0, 0.12);
+    color: var(--color-quarantine);
+    border: 1px solid rgba(255, 85, 0, 0.25);
+  }
+
+  .mobile-row-details {
+    padding: 8px 10px;
+    background-color: rgba(10, 13, 20, 0.6);
+    border-top: 1px solid rgba(42, 49, 66, 0.3);
+    font-size: 0.78rem;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    animation: fadeInUp 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .mobile-details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px 8px;
+  }
+
+  .mobile-detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.72rem;
+    border-bottom: 1px dashed rgba(42, 49, 66, 0.15);
+    padding-bottom: 2px;
+  }
+
+  .mobile-detail-label {
+    color: var(--text-secondary);
+  }
+
+  .mobile-detail-value {
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .mobile-tactics-box {
+    background-color: rgba(10, 13, 20, 0.5);
+    border: 1px solid rgba(42, 49, 66, 0.3);
+    padding: 5px 7px;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    line-height: 1.3;
+  }
+
+  .mobile-notes-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.7rem;
+    margin-top: 2px;
+  }
+
+  .mobile-notes-text {
+    color: var(--text-secondary);
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 72%;
   }
 }
