@@ -154,6 +154,23 @@ def download_stocks_data_directly(stock_list):
                     opens = quote.get("open", [])
                     volumes = quote.get("volume", [])
                     
+                    # Fill last None element using metadata to ensure latest real-time closing price is correctly mapped
+                    meta = res_data.get("meta", {})
+                    reg_price = meta.get("regularMarketPrice")
+                    reg_volume = meta.get("regularMarketVolume")
+                    reg_high = meta.get("regularMarketDayHigh")
+                    reg_low = meta.get("regularMarketDayLow")
+                    if len(closes) > 0 and closes[-1] is None and reg_price is not None:
+                        closes[-1] = reg_price
+                        if len(highs) > 0 and highs[-1] is None and reg_high is not None:
+                            highs[-1] = reg_high
+                        if len(lows) > 0 and lows[-1] is None and reg_low is not None:
+                            lows[-1] = reg_low
+                        if len(opens) > 0 and opens[-1] is None:
+                            opens[-1] = reg_price
+                        if len(volumes) > 0 and volumes[-1] is None and reg_volume is not None:
+                            volumes[-1] = reg_volume
+                    
                     df_data = []
                     for i in range(len(timestamps)):
                         if i < len(closes) and closes[i] is not None:
@@ -200,7 +217,20 @@ def fetch_twse_openapi_prices():
                 code = item.get("Code", "")
                 if code:
                     try:
+                        # 解析民國日期轉換為西元日期，格式如 "1150520"
+                        date_val = item.get("Date", "")
+                        ce_date = ""
+                        if len(date_val) >= 7:
+                            try:
+                                year_roc = int(date_val[:-4])
+                                month = date_val[-4:-2]
+                                day = date_val[-2:]
+                                ce_date = f"{year_roc + 1911}-{month}-{day}"
+                            except Exception:
+                                pass
+
                         prices[code] = {
+                            "Date": ce_date,
                             "Close": float(item.get("ClosingPrice", 0.0)) if item.get("ClosingPrice") else 0.0,
                             "Open": float(item.get("OpeningPrice", 0.0)) if item.get("OpeningPrice") else 0.0,
                             "High": float(item.get("HighestPrice", 0.0)) if item.get("HighestPrice") else 0.0,
@@ -351,10 +381,10 @@ def run_v106_full_sweep(tsmc_override=None, is_background=False):
     # 提取台積電 K 線並計算
     tsmc_df = downloaded_results.get(tsmc_ticker)
     
-    # 若當日證交所有最新價格且 K 線中尚未包含今日，則補齊
+    # 若當日證交所有最新價格且日期相符，且 K 線中尚未包含今日，則補齊
     if tsmc_df is not None and "2330" in twse_today:
         today_twse = twse_today["2330"]
-        if today_twse["Close"] > 0 and (tsmc_df.empty or tsmc_df["Date"].iloc[-1] != date_str):
+        if today_twse["Close"] > 0 and today_twse.get("Date") == date_str and (tsmc_df.empty or tsmc_df["Date"].iloc[-1] != date_str):
             new_row = pd.DataFrame([{
                 "Date": date_str,
                 "Close": today_twse["Close"],
@@ -415,10 +445,10 @@ def run_v106_full_sweep(tsmc_override=None, is_background=False):
         has_real_data = False
         df_single = downloaded_results.get(ticker_tw)
 
-        # 若當日證交所有最新價格且 K 線中尚未包含今日，則補齊
+        # 若當日證交所有最新價格且日期相符，且 K 線中尚未包含今日，則補齊
         if df_single is not None and stock_id in twse_today:
             today_twse = twse_today[stock_id]
-            if today_twse["Close"] > 0 and (df_single.empty or df_single["Date"].iloc[-1] != date_str):
+            if today_twse["Close"] > 0 and today_twse.get("Date") == date_str and (df_single.empty or df_single["Date"].iloc[-1] != date_str):
                 new_row = pd.DataFrame([{
                     "Date": date_str,
                     "Close": today_twse["Close"],
