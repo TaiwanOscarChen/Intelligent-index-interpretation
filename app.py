@@ -33,249 +33,357 @@ TW_TZ = pytz.timezone("Asia/Taipei")
 
 # 50 檔晶片、晶圓代工、低碳綠能、海運及金融權值精英標的預載靜態資訊
 INITIAL_STOCKS = [
-    {"id": "2330", "name": "台積電", "base_price": 940.0, "industry": "半導體", "notes": "全球晶圓代工龍頭，先進製程與CoWoS封裝需求極度暢旺，為長線生命線大盤指標。"},
-    {"id": "2454", "name": "聯發科", "base_price": 1220.0, "industry": "晶片設計", "notes": "AI手機晶片天璣系列打入高端市場，邊緣運算晶片與ASIC佈局完整。"},
-    {"id": "2317", "name": "鴻海", "base_price": 185.0, "industry": "電子代工", "notes": "輝達GB200主力代工廠，組裝份額極高，電動車與液冷散熱長線發酵。"},
-    {"id": "2308", "name": "台達電", "base_price": 340.0, "industry": "電源散熱", "notes": "伺服器高階電源與散熱模組領導廠商，綠能充電樁市佔穩步上揚。"},
-    {"id": "2382", "name": "廣達", "base_price": 260.0, "industry": "伺服器", "notes": "AI伺服器出貨放量，訂單能見度直達2027年，AI車用電腦同步增溫。"},
-    {"id": "3231", "name": "緯創", "base_price": 115.0, "industry": "伺服器", "notes": "輝達AI晶片基板主力供應商，伴隨AI伺服器量產呈現爆發式成长。"},
-    {"id": "2357", "name": "華碩", "base_price": 470.0, "industry": "電腦硬體", "notes": "Copilot+ PC首發主戰部隊，高毛利AI PC帶動硬體換機潮。"},
-    {"id": "2395", "name": "研華", "base_price": 380.0, "industry": "工業電腦", "notes": "全球工業電腦龍頭，邊緣AI與智慧工廠雙軸轉型帶動獲利穩健提升。"},
-    {"id": "3711", "name": "日月光投控", "base_price": 155.0, "industry": "封裝測試", "notes": "全球半導體後段封測一哥，先進封裝與矽光子核心供應鏈技術領先。"},
-    {"id": "2408", "name": "南亞科", "base_price": 58.0, "industry": "記憶體", "notes": "DDR5與高頻寬記憶體需求外溢，利基型記憶體合約價緩步回升。"},
-    {"id": "2379", "name": "瑞昱", "base_price": 510.0, "industry": "通訊晶片", "notes": "網路通訊蟹級晶片需求回暖，車用乙太網路與Wi-Fi 7出貨力道轉強。"},
-    {"id": "3034", "name": "聯詠", "base_price": 540.0, "industry": "驅動晶片", "notes": "OLED驅動IC出貨強勁，車用顯示介面晶片在大陸車廠滲透率拉高。"},
-    {"id": "3037", "name": "欣興", "base_price": 160.0, "industry": "載板", "notes": "ABF高階載板需求因AI晶片大增而止跌回溫，高密度連接板獲利優渥。"},
-    {"id": "3189", "name": "景碩", "base_price": 105.0, "industry": "載板", "notes": "高階封裝載板佔比提升，受惠美系AI大廠晶圓載板追單。"},
-    {"id": "8046", "name": "南電", "base_price": 195.0, "industry": "載板", "notes": "晶片大廠ABF高階載板產能釋出，營運觸底反彈格局確立。"},
-    {"id": "2301", "name": "光寶科", "base_price": 105.0, "industry": "電源供應", "notes": "高階伺服器電源、液冷散熱及車用電子出貨激增，高毛利比重提高。"},
-    {"id": "2324", "name": "仁寶", "base_price": 35.0, "industry": "電子代工", "notes": "伺服器產品線往利基型產品切入，智慧醫療及物聯網產品線利潤提升。"},
-    {"id": "2353", "name": "宏碁", "base_price": 42.0, "industry": "電腦硬體", "notes": "推廣自主研發之AI PC，在印度及多個東南亞新興市場微幅成長。"},
-    {"id": "2603", "name": "長榮", "base_price": 190.0, "industry": "航運", "notes": "紅海避航因素造成運價指數暴漲，高股息配息率強，長線金流充沛。"},
-    {"id": "2609", "name": "陽明", "base_price": 70.0, "industry": "航運", "notes": "受惠美東談判不確定性及運能吃緊，第二、三季旺季回報翻倍。"},
-    {"id": "2615", "name": "萬海", "base_price": 85.0, "industry": "航運", "notes": "亞洲區間近洋航線運費漲幅顯著，多艘新造高效率節能船陸續交船。"},
-    {"id": "2610", "name": "華航", "base_price": 22.0, "industry": "航空", "notes": "暑假出國需求突破新高，AI供應鏈空運急單拉動航空貨運高盤價。"},
-    {"id": "2618", "name": "長榮航", "base_price": 36.0, "industry": "航空", "notes": "高階商務艙及北美航線載客率持續逼近滿載，燃油成本避險得宜。"},
-    {"id": "2881", "name": "富邦金", "base_price": 85.0, "industry": "金融保險", "notes": "金控獲利之王，壽險大筆投資股債收益回升，配息穩定度高。"},
-    {"id": "2882", "name": "國泰金", "base_price": 62.0, "industry": "金融保險", "notes": "核心國泰人壽利差改善，金控本業獲利穩步翻倍，海外資產評價揚升。"},
-    {"id": "2886", "name": "兆豐金", "base_price": 40.0, "industry": "金融保險", "notes": "公股金控龍頭，高結算外匯優勢，長期獲利能力在升息環境下受惠。"},
-    {"id": "2891", "name": "中信金", "base_price": 36.0, "industry": "金融保險", "notes": "核心中國信託銀行淨利差居國籍銀行之首，海外分行獲利能力強健。"},
-    {"id": "2884", "name": "玉山金", "base_price": 28.0, "industry": "金融保險", "notes": "財富管理業務與信用卡簽帳金額市佔率前段班，積極數位金融化轉型。"},
-    {"id": "1301", "name": "台塑", "base_price": 65.0, "industry": "塑膠石化", "notes": "利基型特用化學品轉型中，受惠德州廠產能擴展與乙烯利差改善。"},
-    {"id": "1303", "name": "南亞", "base_price": 54.0, "industry": "石化電子材料", "notes": "電子環氧樹脂及玻纖布因伺服器板升級，需求觸底重回擴張區。"},
-    {"id": "1326", "name": "台化", "base_price": 45.0, "industry": "化纖石化", "notes": "芳香烴與酚鏈條毛利隨供需關係改善回暖，推進高值化新材料。"},
-    {"id": "6505", "name": "台塑化", "base_price": 72.0, "industry": "煉油石化", "notes": "全球原油需求回穩，成品油裂解差價維持高檔，庫存回升利益增加。"},
-    {"id": "2002", "name": "中鋼", "base_price": 22.0, "industry": "鋼鐵冶金", "notes": "中國粗鋼減產與碳中和高階鋼材溢價拉大，迎來基建重建復甦潮。"},
-    {"id": "1101", "name": "台泥", "base_price": 33.0, "industry": "水泥與儲能", "notes": "轉型歐洲低碳綠色水泥，並在土耳其與非洲大舉建設儲能與鋰電池廠。"},
-    {"id": "1402", "name": "遠東新", "base_price": 34.0, "industry": "紡織控股", "notes": "紅色聚酯(rPET)獲國際一級運動服飾品牌包下產能，供不應求。"},
-    {"id": "2105", "name": "正新", "base_price": 46.0, "industry": "輪胎製造", "notes": "大卡客車大胎回升及雙輪高毛利產品市佔率在東南亞與印度持續跑贏。"},
-    {"id": "9904", "name": "寶成", "base_price": 38.0, "industry": "製鞋鞋材", "notes": "全球運動品牌去庫存進入尾聲，新季度製鞋代工出貨排程重回爆滿現狀。"},
-    {"id": "5871", "name": "中租-KY", "base_price": 175.0, "industry": "租賃金融", "notes": "東協與大陸中小企業融資放款成長強，風險控管機制優秀，殖利率佳。"},
-    {"id": "1216", "name": "統一", "base_price": 82.0, "industry": "食品百貨", "notes": "國內超商霸主與生鮮自營通路金雞母，轉投資家樂福整併效應擴大。"},
-    {"id": "2912", "name": "統一超", "base_price": 275.0, "industry": "零售通路", "notes": "實體店突破7000家大關，數位APP及多元店型拉升客單價，營收創高。"},
-    {"id": "5876", "name": "上海商銀", "base_price": 46.0, "industry": "商業銀行", "notes": "企業與海外外幣聯貸專精，利差與授信獲利在同業中維持前段優勢。"},
-    {"id": "2354", "name": "鴻準", "base_price": 65.0, "industry": "金屬機殼", "notes": "散熱模組與鈦合金機殼工藝領先，主力供應高階遊戲機與伺服器機殼。"},
-    {"id": "2347", "name": "聯強", "base_price": 74.0, "industry": "通路分銷", "notes": "亞太最大高科技分銷巨擘，商用伺服器零件及電競設備分銷利潤高企。"},
-    {"id": "2449", "name": "京元電子", "base_price": 110.0, "industry": "封裝測試", "notes": "AI 晶片測試大廠，測試時間加倍，受惠爆發式測試產能利用率走高。"},
-    {"id": "3045", "name": "台灣大", "base_price": 115.0, "industry": "電信網路", "notes": "合併台灣之星後用戶規模擴大，5G加值服務及momo電商雙引擎穩定成長。"},
-    {"id": "4904", "name": "遠傳", "base_price": 92.0, "industry": "電信網路", "notes": "新遠傳佈局成功，企業雲端與AI物聯網客製方案成為新興金牛產品。"},
-    {"id": "8454", "name": "富邦媒", "base_price": 420.0, "industry": "電子商務", "notes": "自主車隊與衛星倉儲優勢領航電商，AI智慧揀貨系統大幅縮減物流成本。"},
-    {"id": "9910", "name": "豐泰", "base_price": 145.0, "industry": "鞋業製造", "notes": "美系運動品牌大本營，主力研發中心與高毛利訂單合約掌握在手。"},
-    {"id": "9921", "name": "巨大", "base_price": 185.0, "industry": "自行車", "notes": "高階E-bike歐美庫存重整完畢，高附加價值車種銷售轉正，重拾增勢。"},
-    {"id": "1590", "name": "亞德客-KY", "base_price": 940.0, "industry": "氣動元件", "notes": "工廠自動化需求強勁復甦，電池、新能源氣動模組拉貨重現上升波段。"}
-]
-
-# ==============================================================================
-# 🗄️ 2. MONGODB ATLAS 整合中樞配置 (優先自 Streamlit Secrets 載入)
-# ==============================================================================
-try:
-    # 支援 Streamlit Cloud Secrets 與標準環境變數 (雙模兼收)
-    MONGO_URI = st.secrets.get("MONGO_URI", "")
-except Exception:
-    MONGO_URI = ""
-
-if not MONGO_URI:
-    MONGO_URI = os.getenv(
-        "MONGO_URI",
-        "mongodb+srv://<username>:<password>@cluster0.xxxx.mongodb.net/?retryWrites=true&w=majority"
-    )
-
-@st.cache_resource
-def get_mongo_collection():
-    if not MONGO_URI or "cluster0.xxxx" in MONGO_URI or "<password>" in MONGO_URI:
-        return None
-    try:
-        # 連線逾時設定 5000ms 避免渲染阻塞
-        client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
-        db = client["LionKing_DB"]
-        collection = db["lion_signals"]
-        # Ping 測試
-        client.admin.command('ping')
-        return collection
-    except Exception as e:
-        st.sidebar.error(f"🔴 MongoDB 連線中斷: {e}")
-        return None
-
-# ==============================================================================
-# 📈 3. YFINANCE 即時爬取 + V106 核心指標演算模組
-# ==============================================================================
-def download_stocks_data_directly(stock_list):
-    """
-    使用 Yahoo Finance Chart API 直接並行下載 90 天日 K 線資料，繞過 yfinance 的阻擋與速率限制。
-    """
-    results = {}
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-        "Accept": "*/*",
-        "Accept-Language": "zh-TW,zh;q=0.9,en-US;q=0.8,en;q=0.7"
-    }
-
-    def fetch_one(stock_id):
-        ticker = f"{stock_id}.TW"
-        url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?range=90d&interval=1d"
-        try:
-            r = requests.get(url, headers=headers, timeout=8)
-            if r.status_code == 200:
-                json_data = r.json()
-                res_list = json_data.get("chart", {}).get("result", [])
-                if res_list:
-                    res_data = res_list[0]
-                    timestamps = res_data.get("timestamp", [])
-                    quote = res_data.get("indicators", {}).get("quote", [{}])[0]
-                    adjclose = res_data.get("indicators", {}).get("adjclose", [{}])[0].get("adjclose", [])
-                    
-                    closes = adjclose if adjclose else quote.get("close", [])
-                    highs = quote.get("high", [])
-                    lows = quote.get("low", [])
-                    opens = quote.get("open", [])
-                    volumes = quote.get("volume", [])
-                    
-                    df_data = []
-                    for i in range(len(timestamps)):
-                        if i < len(closes) and closes[i] is not None:
-                            df_data.append({
-                                "Date": datetime.fromtimestamp(timestamps[i], pytz.timezone("Asia/Taipei")).strftime("%Y-%m-%d"),
-                                "Close": float(closes[i]),
-                                "High": float(highs[i]) if i < len(highs) and highs[i] is not None else float(closes[i]),
-                                "Low": float(lows[i]) if i < len(lows) and lows[i] is not None else float(closes[i]),
-                                "Open": float(opens[i]) if i < len(opens) and opens[i] is not None else float(closes[i]),
-                                "Volume": float(volumes[i]) if i < len(volumes) and volumes[i] is not None else 0.0
-                            })
-                    if df_data:
-                        df = pd.DataFrame(df_data)
-                        return ticker, df
-        except Exception:
-            pass
-        return ticker, None
-
-    # 用 20 個執行緒並行下載以大幅提高效能並維持連線穩定度
-    with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
-        future_to_stock = {executor.submit(fetch_one, s["id"]): s for s in stock_list}
-        for future in concurrent.futures.as_completed(future_to_stock):
-            ticker, df = future.result()
-            if df is not None:
-                results[ticker] = df
-                
-    return results
-
-
-def fetch_twse_openapi_prices():
-    """
-    從臺灣證券交易所官方 OpenAPI 取得今日上市個股的最新收盤行情資料，確保實時價格 100% 精準。
-    """
-    prices = {}
-    url = "https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL"
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-    }
-    try:
-        r = requests.get(url, headers=headers, timeout=8)
-        if r.status_code == 200:
-            data = r.json()
-            for item in data:
-                code = item.get("Code", "")
-                if code:
-                    try:
-                        prices[code] = {
-                            "Close": float(item.get("ClosingPrice", 0.0)) if item.get("ClosingPrice") else 0.0,
-                            "Open": float(item.get("OpeningPrice", 0.0)) if item.get("OpeningPrice") else 0.0,
-                            "High": float(item.get("HighestPrice", 0.0)) if item.get("HighestPrice") else 0.0,
-                            "Low": float(item.get("LowestPrice", 0.0)) if item.get("LowestPrice") else 0.0,
-                            "Volume": float(item.get("TradeVolume", 0.0)) if item.get("TradeVolume") else 0.0,
-                            "Change": float(item.get("Change", 0.0)) if item.get("Change") else 0.0
-                        }
-                    except (ValueError, TypeError):
-                        pass
-    except Exception:
-        pass
-    return prices
-
-
-def get_latest_stored_prices():
-    """
-    從 MongoDB Atlas 取得 50 檔個股最後一次記錄的歷史數據，做為最精準的資料庫級備援防線。
-    """
-    fallback_data = {}
-    collection = get_mongo_collection()
-    if collection is not None:
-        try:
-            # 依據 timestamp 降序排序，分組取得每一檔股票的最新一筆紀錄
-            pipeline = [
-                {"$sort": {"timestamp": -1}},
-                {"$group": {
-                    "_id": "$stock_id",
-                    "doc": {"$first": "$$ROOT"}
-                }}
-            ]
-            results = list(collection.aggregate(pipeline))
-            for res in results:
-                stock_id = res["_id"]
-                doc = res["doc"]
-                fallback_data[stock_id] = doc
-        except Exception:
-            pass
-    return fallback_data
-
-
-def run_v106_full_sweep(tsmc_override=None):
-    """
-    100% 機構無損演算：並行爬取 Yahoo Finance 90天 K線 與 證交所官方 OpenAPI，
-    結合 MongoDB 多重資料備援防禦線，徹底消滅隨機仿真價格，確保 100% 真實與精準！
-    """
-    now_taipei = datetime.now(TW_TZ)
-    date_str = now_taipei.strftime("%Y-%m-%d")
-    timestamp_str = now_taipei.strftime("%Y-%m-%d %H:%M:%S")
-
-    # 1. 取得 MongoDB 歷史最優備援
-    fallback_data = get_latest_stored_prices()
-
-    # 2. 並行下載 Yahoo Finance 90 天日 K 線歷史
-    downloaded_results = download_stocks_data_directly(INITIAL_STOCKS)
-
-    # 3. 下載證交所官方今日最新行情
-    twse_today = fetch_twse_openapi_prices()
-
-    # --- 判定台積電 (2330.TW) 最新生命水位 ---
-    tsmc_ticker = "2330.TW"
-    tsmc_price = 940.0
-    tsmc_ma20_val = 935.0
-    tsmc_is_above_ma20 = True
-
-    # 提取台積電 K 線並計算
-    tsmc_df = downloaded_results.get(tsmc_ticker)
-    
-    # 若當日證交所有最新價格且 K 線中尚未包含今日，則補齊
-    if tsmc_df is not None and "2330" in twse_today:
-        today_twse = twse_today["2330"]
-        if today_twse["Close"] > 0 and (tsmc_df.empty or tsmc_df["Date"].iloc[-1] != date_str):
-            new_row = pd.DataFrame([{
-                "Date": date_str,
-                "Close": today_twse["Close"],
-                "High": today_twse["High"],
-                "Low": today_twse["Low"],
-                "Open": today_twse["Open"],
-                "Volume": today_twse["Volume"]
-            }])
+        {
+            "id": "2330",
+            "name": "台積電",
+            "base_price": 2230.0,
+            "industry": "半導體",
+            "notes": "全球晶圓代工龍頭，先進製程與CoWoS封裝需求極度暢旺，為長線生命線大盤指標。"
+        },
+        {
+            "id": "2454",
+            "name": "聯發科",
+            "base_price": 3550.0,
+            "industry": "晶片設計",
+            "notes": "AI手機晶片天璣系列打入高端市場，邊緣運算晶片與ASIC佈局完整。"
+        },
+        {
+            "id": "2317",
+            "name": "鴻海",
+            "base_price": 247.5,
+            "industry": "電子代工",
+            "notes": "輝達GB200主力代工廠，組裝份額極高，電動車與液冷散熱長線發酵。"
+        },
+        {
+            "id": "2308",
+            "name": "台達電",
+            "base_price": 2030.0,
+            "industry": "電源散熱",
+            "notes": "伺服器高階電源與散熱模組領導廠商，綠能充電樁市佔穩步上揚。"
+        },
+        {
+            "id": "2382",
+            "name": "廣達",
+            "base_price": 308.0,
+            "industry": "伺服器",
+            "notes": "AI伺服器出貨放量，訂單能見度直達2027年，AI車用電腦同步增溫。"
+        },
+        {
+            "id": "3231",
+            "name": "緯創",
+            "base_price": 140.0,
+            "industry": "伺服器",
+            "notes": "輝達AI晶片基板主力供應商，伴隨AI伺服器量產呈現爆發式成長。"
+        },
+        {
+            "id": "2357",
+            "name": "華碩",
+            "base_price": 656.0,
+            "industry": "電腦硬體",
+            "notes": "Copilot+ PC首發主戰部隊，高毛利AI PC帶動硬體換機潮。"
+        },
+        {
+            "id": "2395",
+            "name": "研華",
+            "base_price": 463.5,
+            "industry": "工業電腦",
+            "notes": "全球工業電腦龍頭，邊緣AI與智慧工廠雙軸轉型帶動獲利穩健提升。"
+        },
+        {
+            "id": "3711",
+            "name": "日月光投控",
+            "base_price": 510.0,
+            "industry": "封裝測試",
+            "notes": "全球半導體後段封測一哥，先進封裝與矽光子核心供應鏈技術領先。"
+        },
+        {
+            "id": "2408",
+            "name": "南亞科",
+            "base_price": 293.0,
+            "industry": "記憶體",
+            "notes": "DDR5與高頻寬記憶體需求外溢，利基型記憶體合約價緩步回升。"
+        },
+        {
+            "id": "2379",
+            "name": "瑞昱",
+            "base_price": 575.0,
+            "industry": "通訊晶片",
+            "notes": "網路通訊蟹級晶片需求回暖，車用乙太網路與Wi-Fi 7出貨力道轉強。"
+        },
+        {
+            "id": "3034",
+            "name": "聯詠",
+            "base_price": 484.5,
+            "industry": "驅動晶片",
+            "notes": "OLED驅動IC出貨強勁，車用顯示介面晶片在大陸車廠滲透率拉高。"
+        },
+        {
+            "id": "3037",
+            "name": "欣興",
+            "base_price": 905.0,
+            "industry": "載板",
+            "notes": "ABF高階載板需求因AI晶片大增而止跌回溫，高密度連接板獲利優渥。"
+        },
+        {
+            "id": "3189",
+            "name": "景碩",
+            "base_price": 554.0,
+            "industry": "載板",
+            "notes": "高階封裝載板佔比提升，受惠美系AI大廠晶圓載板追單。"
+        },
+        {
+            "id": "8046",
+            "name": "南電",
+            "base_price": 872.0,
+            "industry": "載板",
+            "notes": "晶片大廠ABF高階載板產能釋出，營運觸底反彈格局確立。"
+        },
+        {
+            "id": "2301",
+            "name": "光寶科",
+            "base_price": 204.5,
+            "industry": "電源供應",
+            "notes": "高階伺服器電源、液冷散熱及車用電子出貨激增，高毛利比重提高。"
+        },
+        {
+            "id": "2324",
+            "name": "仁寶",
+            "base_price": 30.4,
+            "industry": "電子代工",
+            "notes": "伺服器產品線往利基型產品切入，智慧醫療及物聯網產品線利潤提升。"
+        },
+        {
+            "id": "2353",
+            "name": "宏碁",
+            "base_price": 28.4,
+            "industry": "電腦硬體",
+            "notes": "推廣自主研發之AI PC，在印度及多個東南亞新興市場微幅成長。"
+        },
+        {
+            "id": "2603",
+            "name": "長榮",
+            "base_price": 212.0,
+            "industry": "航運",
+            "notes": "紅海避航因素造成運價指數爆漲，高股息配息率強，長線金流充沛。"
+        },
+        {
+            "id": "2609",
+            "name": "陽明",
+            "base_price": 51.1,
+            "industry": "航運",
+            "notes": "受惠美東談判不確定性及運能吃緊，第二、三季旺季回報翻倍。"
+        },
+        {
+            "id": "2615",
+            "name": "萬海",
+            "base_price": 81.2,
+            "industry": "航運",
+            "notes": "亞洲區間近洋航線運費漲幅顯著，多艘新造高效率節能船陸續交船。"
+        },
+        {
+            "id": "2610",
+            "name": "華航",
+            "base_price": 18.7,
+            "industry": "航空",
+            "notes": "暑假出國需求突破新高，AI供應鏈空運急單拉動航空貨運高盤價。"
+        },
+        {
+            "id": "2618",
+            "name": "長榮航",
+            "base_price": 35.3,
+            "industry": "航空",
+            "notes": "高階商務艙及北美航線載客率持續逼近滿載，燃油成本避險得宜。"
+        },
+        {
+            "id": "2881",
+            "name": "富邦金",
+            "base_price": 96.1,
+            "industry": "金融保險",
+            "notes": "金控獲利之王，壽險大筆投資股債收益回升，配息穩定度高。"
+        },
+        {
+            "id": "2882",
+            "name": "國泰金",
+            "base_price": 78.7,
+            "industry": "金融保險",
+            "notes": "核心國泰人壽利差改善，金控本業獲利穩步翻倍，海外資產評價揚升。"
+        },
+        {
+            "id": "2886",
+            "name": "兆豐金",
+            "base_price": 40.2,
+            "industry": "金融保險",
+            "notes": "公股金控龍頭，高結算外匯優勢，長期獲利能力在升息環境下受惠。"
+        },
+        {
+            "id": "2891",
+            "name": "中信金",
+            "base_price": 57.5,
+            "industry": "金融保險",
+            "notes": "核心中國信託銀行淨利差居國籍銀行之首，海外分行獲利能力強健。"
+        },
+        {
+            "id": "2884",
+            "name": "玉山金",
+            "base_price": 31.5,
+            "industry": "金融保險",
+            "notes": "財富管理業務與信用卡簽帳金額市佔率前段班，積極數位金融化轉型。"
+        },
+        {
+            "id": "1301",
+            "name": "台塑",
+            "base_price": 45.8,
+            "industry": "塑膠石化",
+            "notes": "利基型特用化學品轉型中，受惠德州廠產能擴展與乙烯利差改善。"
+        },
+        {
+            "id": "1303",
+            "name": "南亞",
+            "base_price": 87.3,
+            "industry": "石化電子材料",
+            "notes": "電子環氧樹脂及玻纖布因伺服器板升級，需求觸底重回擴張區。"
+        },
+        {
+            "id": "1326",
+            "name": "台化",
+            "base_price": 45.5,
+            "industry": "化纖石化",
+            "notes": "芳香烴與酚鏈條毛利隨供需關係改善回暖，推進高值化新材料。"
+        },
+        {
+            "id": "6505",
+            "name": "台塑化",
+            "base_price": 51.3,
+            "industry": "煉油石化",
+            "notes": "全球原油需求回穩，成品油裂解差價維持高檔，庫存回升利益增加。"
+        },
+        {
+            "id": "2002",
+            "name": "中鋼",
+            "base_price": 18.2,
+            "industry": "鋼鐵冶金",
+            "notes": "中國粗鋼減產與碳中和高階鋼材溢價拉大，迎來基建重建復甦潮。"
+        },
+        {
+            "id": "1101",
+            "name": "台泥",
+            "base_price": 24.2,
+            "industry": "水泥與儲能",
+            "notes": "轉型歐洲低碳綠色水泥，並在土耳其與非洲大舉建設儲能與鋰電池廠。"
+        },
+        {
+            "id": "1402",
+            "name": "遠東新",
+            "base_price": 27.2,
+            "industry": "紡織控股",
+            "notes": "紅色聚酯(rPET)獲國際一級運動服飾品牌包下產能，供不應求。"
+        },
+        {
+            "id": "2105",
+            "name": "正新",
+            "base_price": 32.5,
+            "industry": "輪胎製造",
+            "notes": "大卡客車大胎回升及雙輪高毛利產品市佔率在東南亞與印度持續跑贏。"
+        },
+        {
+            "id": "9904",
+            "name": "寶成",
+            "base_price": 25.8,
+            "industry": "製鞋鞋材",
+            "notes": "全球運動品牌去庫存進入尾聲，新季度製鞋代工出貨排程重回爆滿現狀。"
+        },
+        {
+            "id": "5871",
+            "name": "中租-KY",
+            "base_price": 112.0,
+            "industry": "租賃金融",
+            "notes": "東協與大陸中小企業融資放款成長強，風險控管機制優秀，殖利率佳。"
+        },
+        {
+            "id": "1216",
+            "name": "統一",
+            "base_price": 73.1,
+            "industry": "食品百貨",
+            "notes": "國內超商霸主與生鮮自營通路金雞母，轉投資家樂福整併效應擴大。"
+        },
+        {
+            "id": "2912",
+            "name": "統一超",
+            "base_price": 221.0,
+            "industry": "零售通路",
+            "notes": "實體店突破7000家大關，數位APP及多元店型拉升客單價，營收創高。"
+        },
+        {
+            "id": "5876",
+            "name": "上海商銀",
+            "base_price": 40.2,
+            "industry": "商業銀行",
+            "notes": "企業與海外外幣聯貸專精，利差與授信獲利在同業中維持前段優勢。"
+        },
+        {
+            "id": "2354",
+            "name": "鴻準",
+            "base_price": 58.9,
+            "industry": "金屬機殼",
+            "notes": "散熱模組與鈦合金機殼工藝領先，主力供應高階遊戲機與伺服器機殼。"
+        },
+        {
+            "id": "2347",
+            "name": "聯強",
+            "base_price": 84.4,
+            "industry": "通路分銷",
+            "notes": "亞太最大高科技分銷巨擘，商用伺服器零件及電競設備分銷利潤高企。"
+        },
+        {
+            "id": "2449",
+            "name": "京元電子",
+            "base_price": 286.0,
+            "industry": "封裝測試",
+            "notes": "AI 晶片測試大廠，測試時間加倍，受惠爆發式測試產能利用率走高。"
+        },
+        {
+            "id": "3045",
+            "name": "台灣大",
+            "base_price": 113.5,
+            "industry": "電信網路",
+            "notes": "合併台灣之星後用戶規模擴大，5G加值服務及momo電商雙引擎穩定成長。"
+        },
+        {
+            "id": "4904",
+            "name": "遠傳",
+            "base_price": 95.7,
+            "industry": "電信網路",
+            "notes": "新遠傳佈局成功，企業雲端與AI物聯網客製方案成為新興金牛產品。"
+        },
+        {
+            "id": "8454",
+            "name": "富邦媒",
+            "base_price": 191.0,
+            "industry": "電子商務",
+            "notes": "自主車隊與衛星倉儲優勢領航電商，AI智慧揀貨系統大幅縮減物流成本。"
+        },
+        {
+            "id": "9910",
+            "name": "豐泰",
+            "base_price": 69.2,
+            "industry": "鞋業製造",
+            "notes": "美系運動品牌大本營，主力研發中心與高毛利訂單合約掌握在手。"
+        },
+        {
+            "id": "9921",
+            "name": "巨大",
+            "base_price": 70.8,
+            "industry": "自行車",
+            "notes": "高階E-bike歐美庫存重整完畢，高附加價值車種銷售轉正，重拾增勢。"
+        },
+        {
+            "id": "1590",
+            "name": "亞德客-KY",
+            "base_price": 1420.0,
+            "industry": "氣動元件",
+            "notes": "工廠自動化需求強勁復甦，電池、新能源氣動模組拉貨重現上升波段。"
+        }
+    ])
             tsmc_df = pd.concat([tsmc_df, new_row], ignore_index=True)
             downloaded_results[tsmc_ticker] = tsmc_df
 
