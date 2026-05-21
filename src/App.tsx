@@ -89,9 +89,9 @@ const App: React.FC = () => {
         justifyContent: 'space-between', 
         alignItems: 'center', 
         flexWrap: 'wrap',
-        gap: '16px',
-        marginBottom: '28px',
-        paddingBottom: '20px',
+        gap: '12px',
+        marginBottom: '16px',
+        paddingBottom: '12px',
         borderBottom: '1px solid rgba(42, 49, 66, 0.4)'
       }} className="fade-in">
         
@@ -123,7 +123,7 @@ const App: React.FC = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
           
           {/* 台北時間 */}
-          <div className="cyber-panel" style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(255, 187, 0, 0.25)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div className="cyber-panel" style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid rgba(255, 187, 0, 0.25)', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span className="glow-dot" style={{ backgroundColor: 'var(--color-gold)', animation: 'pulseGlow 2s infinite' }}></span>
             <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>TAIPEI：</span>
             <span style={{ fontSize: '0.9rem', fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, color: 'var(--color-gold)' }}>
@@ -132,7 +132,7 @@ const App: React.FC = () => {
           </div>
 
           {/* MongoDB 連線指示點 */}
-          <div className="cyber-panel" style={{ padding: '8px 16px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div className="cyber-panel" style={{ padding: '6px 12px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Database size={14} style={{ color: data ? 'var(--color-bullish)' : 'var(--text-secondary)' }} />
             <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>MONGO-DB：</span>
             <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: data ? 'var(--color-bullish)' : 'var(--color-bearish)' }}>
@@ -182,10 +182,10 @@ const App: React.FC = () => {
           <OverviewDashboard data={data} />
 
           {/* 📊 50檔全矩陣雷達表 */}
-          <div style={{ marginTop: '28px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }} className="fade-in">
-              <h2 style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Compass size={20} style={{ color: 'var(--color-gold)' }} />
+          <div style={{ marginTop: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }} className="fade-in">
+              <h2 style={{ fontSize: '1.15rem', fontWeight: 800, letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Compass size={18} style={{ color: 'var(--color-gold)' }} />
                 核心宇宙全矩陣雷達監控 (Full Market Matrix)
               </h2>
               <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>

@@ -31,14 +31,14 @@ export const OverviewDashboard: React.FC<Props> = ({ data }) => {
       {/* 🟢 四格宏觀儀表板 */}
       <div className="macro-grid">
         {/* TSMC 裁判價 */}
-        <div className="cyber-panel" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '120px' }}>
+        <div className="cyber-panel" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '96px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: 600 }}>2330 台積電裁判收盤價</span>
-            <Shield size={18} style={{ color: isMarketBullish ? 'var(--color-bullish)' : 'var(--color-bearish)' }} />
+            <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600 }}>2330 台積電裁判收盤價</span>
+            <Shield size={16} style={{ color: isMarketBullish ? 'var(--color-bullish)' : 'var(--color-bearish)' }} />
           </div>
-          <div style={{ margin: '12px 0' }}>
+          <div style={{ margin: '4px 0' }}>
             <span style={{ 
-              fontSize: '2.2rem', 
+              fontSize: '1.8rem', 
               fontWeight: 900, 
               color: isMarketBullish ? 'var(--color-bullish)' : 'var(--color-bearish)',
               fontFamily: "'JetBrains Mono', monospace",
@@ -46,36 +46,36 @@ export const OverviewDashboard: React.FC<Props> = ({ data }) => {
             }}>
               {data.tsmc_price}
             </span>
-            <span style={{ color: 'var(--text-secondary)', fontSize: '1rem', marginLeft: '6px' }}>元</span>
+            <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginLeft: '4px' }}>元</span>
           </div>
-          <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>
+          <span style={{ color: 'var(--text-secondary)', fontSize: '0.7rem' }}>
             生命水位 20MA 日線：{data.tsmc_ma20} 元
           </span>
         </div>
 
         {/* 紅綠燈狀態 */}
-        <div className="cyber-panel" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '120px' }}>
+        <div className="cyber-panel" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '96px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: 600 }}>大盤生命線紅綠燈</span>
+            <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600 }}>大盤生命線紅綠燈</span>
             <span className={`glow-dot ${isMarketBullish ? 'bullish' : 'bearish'}`}></span>
           </div>
-          <div style={{ margin: '14px 0', fontSize: '1.25rem', fontWeight: 800, color: isMarketBullish ? 'var(--color-bullish)' : 'var(--color-bearish)' }}>
+          <div style={{ margin: '4px 0', fontSize: '1.15rem', fontWeight: 800, color: isMarketBullish ? 'var(--color-bullish)' : 'var(--color-bearish)' }}>
             {data.tsmc_status}
           </div>
-          <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>
+          <span style={{ color: 'var(--text-secondary)', fontSize: '0.7rem' }}>
             判定機制：收盤價 &gt; 20MA 即翻綠開倉
           </span>
         </div>
 
         {/* 獵殺名單數 */}
-        <div className="cyber-panel" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '120px' }}>
+        <div className="cyber-panel" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '96px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: 600 }}>精英獵殺突破標的</span>
-            <Flame size={18} style={{ color: 'var(--color-bullish)' }} />
+            <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600 }}>精英獵殺突破標的</span>
+            <Flame size={16} style={{ color: 'var(--color-bullish)' }} />
           </div>
-          <div style={{ margin: '12px 0' }}>
+          <div style={{ margin: '4px 0' }}>
             <span style={{ 
-              fontSize: '2.2rem', 
+              fontSize: '1.8rem', 
               fontWeight: 900, 
               color: 'var(--color-bullish)',
               fontFamily: "'JetBrains Mono', monospace",
@@ -83,23 +83,23 @@ export const OverviewDashboard: React.FC<Props> = ({ data }) => {
             }}>
               {longSignals}
             </span>
-            <span style={{ color: 'var(--text-secondary)', fontSize: '1rem', marginLeft: '6px' }}>/ {totalStocks} 檔</span>
+            <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginLeft: '4px' }}>/ {totalStocks} 檔</span>
           </div>
-          <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>
+          <span style={{ color: 'var(--text-secondary)', fontSize: '0.7rem' }}>
             符合 V106 多頭多維度共振突破
           </span>
         </div>
 
         {/* 同步時間 */}
-        <div className="cyber-panel" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '120px' }}>
+        <div className="cyber-panel" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '96px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: 600 }}>資料同步與洗價時間</span>
-            <Clock size={18} style={{ color: 'var(--color-gold)' }} />
+            <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600 }}>資料同步與洗價時間</span>
+            <Clock size={16} style={{ color: 'var(--color-gold)' }} />
           </div>
-          <div style={{ margin: '16px 0', fontSize: '1.25rem', fontWeight: 700, color: 'var(--color-gold)', fontFamily: "'JetBrains Mono', monospace" }}>
+          <div style={{ margin: '4px 0', fontSize: '1.15rem', fontWeight: 700, color: 'var(--color-gold)', fontFamily: "'JetBrains Mono', monospace" }}>
             {data.scan_time.includes(' ') ? data.scan_time.split(' ')[1] : data.scan_time}
           </div>
-          <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>
+          <span style={{ color: 'var(--text-secondary)', fontSize: '0.7rem' }}>
             同步協議：雲端 Atlas 自動 Upsert
           </span>
         </div>

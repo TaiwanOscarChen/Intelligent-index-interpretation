@@ -76,7 +76,7 @@ export const StockMatrixTable: React.FC<Props> = ({ signals, onEditNotes }) => {
   return (
     <div className="fade-in">
       {/* 🔍 控制面板：搜尋與快速過濾 */}
-      <div className="cyber-panel" style={{ marginBottom: '24px', padding: '16px' }}>
+      <div className="cyber-panel" style={{ marginBottom: '12px', padding: '10px 12px' }}>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'space-between', alignItems: 'center' }}>
           
           {/* 搜尋框 */}
@@ -244,25 +244,25 @@ export const StockMatrixTable: React.FC<Props> = ({ signals, onEditNotes }) => {
                 key={s.stock_id} 
                 className={`cyber-panel fade-in ${isBull ? 'bullish-hover' : ''}`}
                 style={{ 
-                  padding: '16px', 
+                  padding: '10px 12px', 
                   borderLeft: isBull ? '4px solid var(--color-bullish)' : (s.signal === '空' ? '4px solid var(--color-bearish)' : '')
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span className="ticker-badge">{s.stock_id}</span>
-                    <span style={{ fontWeight: 'bold', fontSize: '1.05rem' }}>{s.stock_name}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span className="ticker-badge" style={{ padding: '2px 4px', fontSize: '0.75rem' }}>{s.stock_id}</span>
+                    <span style={{ fontWeight: 'bold', fontSize: '0.95rem' }}>{s.stock_name}</span>
                   </div>
                   {getSignalBadge(s.signal)}
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px 8px', marginBottom: '14px', fontSize: '0.85rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 8px', marginBottom: '8px', fontSize: '0.8rem' }}>
                   <div>
                     <span style={{ color: 'var(--text-secondary)' }}>現價：</span>
-                    <span style={{ fontWeight: 600 }}>{s.close_price.toFixed(1)} 元</span>
+                    <span style={{ fontWeight: 600 }}>{s.close_price.toFixed(1)}</span>
                   </div>
                   <div>
-                    <span style={{ color: 'var(--text-secondary)' }}>今日漲跌：</span>
+                    <span style={{ color: 'var(--text-secondary)' }}>漲跌：</span>
                     <span style={{ 
                       fontWeight: 'bold', 
                       color: isUp ? 'var(--color-bullish)' : 'var(--color-bearish)'
@@ -271,15 +271,15 @@ export const StockMatrixTable: React.FC<Props> = ({ signals, onEditNotes }) => {
                     </span>
                   </div>
                   <div>
-                    <span style={{ color: 'var(--text-secondary)' }}>爆量比率：</span>
-                    <span style={{ fontWeight: 500 }}>{s.volume_multiplier.toFixed(2)} 倍</span>
+                    <span style={{ color: 'var(--text-secondary)' }}>爆量：</span>
+                    <span style={{ fontWeight: 500 }}>{s.volume_multiplier.toFixed(2)}x</span>
                   </div>
                   <div>
-                    <span style={{ color: 'var(--text-secondary)' }}>防禦停損：</span>
-                    <span style={{ color: 'var(--color-bearish)', fontWeight: 500 }}>{s.atr_stop.toFixed(1)} 元</span>
+                    <span style={{ color: 'var(--text-secondary)' }}>停損：</span>
+                    <span style={{ color: 'var(--color-bearish)', fontWeight: 500 }}>{s.atr_stop.toFixed(1)}</span>
                   </div>
                   <div style={{ gridColumn: 'span 2' }}>
-                    <span style={{ color: 'var(--text-secondary)' }}>2W零股配比：</span>
+                    <span style={{ color: 'var(--text-secondary)' }}>2W配比：</span>
                     <span style={{ color: 'var(--color-gold)', fontWeight: 700 }}>{s.suggested_shares} 股</span>
                   </div>
                 </div>
@@ -287,26 +287,26 @@ export const StockMatrixTable: React.FC<Props> = ({ signals, onEditNotes }) => {
                 <div style={{ 
                   backgroundColor: 'rgba(10, 13, 20, 0.5)', 
                   border: '1px solid rgba(42, 49, 66, 0.3)',
-                  padding: '10px',
+                  padding: '6px 8px',
                   borderRadius: '6px',
-                  fontSize: '0.8rem',
+                  fontSize: '0.75rem',
                   color: 'var(--text-secondary)',
-                  marginBottom: '12px',
-                  lineHeight: '1.4'
+                  marginBottom: '8px',
+                  lineHeight: '1.3'
                 }}>
                   <strong>戰術：</strong>{s.action_advice}
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                    備註：{s.master_notes || '暫無評註資料'}
+                  <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '60%' }} title={s.master_notes}>
+                    備註：{s.master_notes || '無'}
                   </span>
                   <button 
                     className="cyber-btn"
-                    style={{ padding: '6px 12px', fontSize: '0.8rem' }}
+                    style={{ padding: '4px 8px', fontSize: '0.75rem' }}
                     onClick={() => onEditNotes(s)}
                   >
-                    <Edit3 size={12} /> 編輯備註
+                    <Edit3 size={11} /> 筆記
                   </button>
                 </div>
               </div>
