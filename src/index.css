@@ -13,8 +13,8 @@
   --text-secondary: #8a96a8;
   
   /* 戰略信號顏色 */
-  --color-bullish: #00ff66;
-  --color-bearish: #ff3366;
+  --color-bullish: #ff3366;
+  --color-bearish: #00ff66;
   --color-gold: #ffbb00;
   --color-quarantine: #ff5500;
   --color-neutral: #8a96a8;
@@ -144,8 +144,8 @@ body {
 
 /* 多頭強勢流光 hover 面板 */
 .cyber-panel.bullish-hover:hover {
-  border-color: rgba(0, 255, 102, 0.3);
-  box-shadow: var(--shadow-neon-green), 0 8px 32px rgba(0, 0, 0, 0.4);
+  border-color: rgba(255, 51, 102, 0.3);
+  box-shadow: var(--shadow-neon-red), 0 8px 32px rgba(0, 0, 0, 0.4);
   transform: translateY(-2px);
 }
 
@@ -286,15 +286,15 @@ body {
 }
 
 .signal-badge.bullish {
-  background-color: rgba(0, 255, 102, 0.1);
+  background-color: rgba(255, 51, 102, 0.1);
   color: var(--color-bullish);
-  border: 1px solid rgba(0, 255, 102, 0.2);
+  border: 1px solid rgba(255, 51, 102, 0.2);
 }
 
 .signal-badge.bearish {
-  background-color: rgba(255, 51, 102, 0.1);
+  background-color: rgba(0, 255, 102, 0.1);
   color: var(--color-bearish);
-  border: 1px solid rgba(255, 51, 102, 0.2);
+  border: 1px solid rgba(0, 255, 102, 0.2);
 }
 
 .signal-badge.neutral {
@@ -319,12 +319,12 @@ body {
 
 .glow-dot.bullish {
   background-color: var(--color-bullish);
-  animation: pulseGlow 1.8s infinite;
+  animation: pulseRedGlow 1.8s infinite;
 }
 
 .glow-dot.bearish {
   background-color: var(--color-bearish);
-  animation: pulseRedGlow 1.8s infinite;
+  animation: pulseGlow 1.8s infinite;
 }
 
 /* 高科技按鍵 */
@@ -350,9 +350,9 @@ body {
 }
 
 .cyber-btn.active {
-  background: linear-gradient(135deg, rgba(0, 255, 102, 0.15) 0%, rgba(17, 24, 39, 0.8) 100%);
+  background: linear-gradient(135deg, rgba(255, 51, 102, 0.15) 0%, rgba(17, 24, 39, 0.8) 100%);
   border-color: var(--color-bullish);
-  box-shadow: var(--shadow-neon-green);
+  box-shadow: var(--shadow-neon-red);
 }
 
 /* 鍵入輸入框 */
@@ -607,14 +607,14 @@ body {
     align-items: center;
   }
   .signal-badge-slim.bullish {
-    background-color: rgba(0, 255, 102, 0.12);
+    background-color: rgba(255, 51, 102, 0.12);
     color: var(--color-bullish);
-    border: 1px solid rgba(0, 255, 102, 0.25);
+    border: 1px solid rgba(255, 51, 102, 0.25);
   }
   .signal-badge-slim.bearish {
-    background-color: rgba(255, 51, 102, 0.12);
+    background-color: rgba(0, 255, 102, 0.12);
     color: var(--color-bearish);
-    border: 1px solid rgba(255, 51, 102, 0.25);
+    border: 1px solid rgba(0, 255, 102, 0.25);
   }
   .signal-badge-slim.neutral {
     background-color: rgba(138, 150, 168, 0.12);

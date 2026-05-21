@@ -15,6 +15,8 @@ export interface StockSignal {
   ma20_status: string;
   master_notes: string;
   action_advice: string;
+  entry_price: number;
+  take_profit: number;
 }
 
 export interface DashboardData {

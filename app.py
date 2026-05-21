@@ -100,7 +100,7 @@ if not MONGO_URI:
         "mongodb+srv://<username>:<password>@cluster0.xxxx.mongodb.net/?retryWrites=true&w=majority"
     )
 
-@st.cache_resource
+@st.cache_resource(show_spinner=False)
 def get_mongo_collection():
     if not MONGO_URI or "cluster0.xxxx" in MONGO_URI or "<password>" in MONGO_URI:
         return None
@@ -113,7 +113,11 @@ def get_mongo_collection():
         client.admin.command('ping')
         return collection
     except Exception as e:
-        st.sidebar.error(f"🔴 MongoDB 連線中斷: {e}")
+        import threading
+        if threading.current_thread() is threading.main_thread():
+            st.sidebar.error(f"🔴 MongoDB 連線中斷: {e}")
+        else:
+            print(f"[MongoDB] Connection error: {e}")
         return None
 
 # ==============================================================================
@@ -237,7 +241,7 @@ def get_latest_stored_prices():
     return fallback_data
 
 
-def run_v106_full_sweep(tsmc_override=None):
+def run_v106_full_sweep(tsmc_override=None, is_background=False):
     """
     100% 機構無損演算：並行爬取 Yahoo Finance 90天 K線 與 證交所官方 OpenAPI，
     結合 MongoDB 多重資料備援防禦線，徹底消滅隨機仿真價格，確保 100% 真實與精準！
@@ -316,6 +320,8 @@ def run_v106_full_sweep(tsmc_override=None):
         macd_h_val = 0.05
         macd_val_val = 0.1
         atr_val = stock["base_price"] * 0.02
+        entry_price = 0.0
+        take_profit = 0.0
 
         has_real_data = False
         df_single = downloaded_results.get(ticker_tw)
@@ -397,6 +403,8 @@ def run_v106_full_sweep(tsmc_override=None):
                 ma20_status = fallback_doc.get("ma20_status", "均線糾結合攏中")
                 action_advice = fallback_doc.get("action_advice", "⚪ 區間不變，維持原有手中部位，空手仍需觀望。")
                 master_notes = fallback_doc.get("master_notes", stock["notes"])
+                entry_price = fallback_doc.get("entry_price", 0.0)
+                take_profit = fallback_doc.get("take_profit", 0.0)
             else:
                 # 僅在初次部署且資料庫為空時使用的靜態基本值，但絕不隨機震盪
                 close_price = stock["base_price"]
@@ -420,6 +428,8 @@ def run_v106_full_sweep(tsmc_override=None):
                 ma20_status = "均線糾結合攏中"
                 action_advice = "⚪ 區間不變，維持原有手中部位，空手仍需觀望。"
                 master_notes = stock["notes"]
+                entry_price = 0.0
+                take_profit = 0.0
         else:
             # 有真實的爬蟲數據，執行指標判定與計算
             macd_good = (macd_h_val > 0) and (macd_val_val > 0) or (macd_h_val > -0.05)
@@ -460,6 +470,23 @@ def run_v106_full_sweep(tsmc_override=None):
             if change_pct >= 18.5:
                 action_advice += " (🎯 獲利逼近20%，已觸發強制鎖利機制，可減碼1/2)"
 
+            # 計算進場價格與停利價格
+            if signal == "多":
+                entry_price = round(close_price, 1)
+            elif signal == "持倉":
+                prev_entry = fallback_data.get(stock_id, {}).get("entry_price", 0.0)
+                if prev_entry > 0.0:
+                    entry_price = prev_entry
+                else:
+                    entry_price = round(close_price, 1)
+            else:
+                entry_price = 0.0
+
+            if entry_price > 0.0:
+                take_profit = round(entry_price * 1.20, 1)
+            else:
+                take_profit = 0.0
+
         scanned_signals.append({
             "timestamp": timestamp_str,
             "date": date_str,
@@ -476,7 +503,9 @@ def run_v106_full_sweep(tsmc_override=None):
             "change_pct": change_pct,
             "ma20_status": ma20_status,
             "master_notes": master_notes,
-            "action_advice": action_advice
+            "action_advice": action_advice,
+            "entry_price": round(entry_price, 1) if entry_price > 0 else 0.0,
+            "take_profit": round(take_profit, 1) if take_profit > 0 else 0.0
         })
 
     result = {
@@ -502,11 +531,68 @@ def run_v106_full_sweep(tsmc_override=None):
         try:
             if operations:
                 collection.bulk_write(operations)
-                st.sidebar.success(f"🎯 50檔精英信號 Upsert 寫入雲端 'lion_signals' (共 {len(operations)} 筆)")
+                import threading
+                if not is_background and threading.current_thread() is threading.main_thread():
+                    st.sidebar.success(f"🎯 50檔精英信號 Upsert 寫入雲端 'lion_signals' (共 {len(operations)} 筆)")
+                else:
+                    print(f"[MongoDB] Upsert complete ({len(operations)} records)")
         except Exception as e:
-            st.sidebar.error(f"❌ MongoDB 大批次 Upsert 寫入異常: {e}")
+            import threading
+            if not is_background and threading.current_thread() is threading.main_thread():
+                st.sidebar.error(f"❌ MongoDB 大批次 Upsert 寫入異常: {e}")
+            else:
+                print(f"[MongoDB] Bulk write error: {e}")
 
     return result
+
+
+@st.cache_resource(show_spinner=False)
+def ensure_auto_sweep_daemon():
+    import threading
+    import time
+    from datetime import datetime
+    
+    def daemon_loop():
+        print("[Auto-Sweep Daemon] Singleton background thread active.")
+        while True:
+            try:
+                now = datetime.now(TW_TZ)
+                # Mon-Fri 09:00 - 13:40
+                is_weekday = now.weekday() < 5
+                is_trading_hours = is_weekday and (
+                    (now.hour == 9 and now.minute >= 0) or
+                    (10 <= now.hour <= 12) or
+                    (now.hour == 13 and now.minute <= 40)
+                )
+                if is_trading_hours:
+                    print(f"[Auto-Sweep Daemon] Starting background sweep at {now.strftime('%Y-%m-%d %H:%M:%S')}")
+                    # Safe thread-safe sweep without Streamlit UI triggers
+                    run_v106_full_sweep(is_background=True)
+                    print("[Auto-Sweep Daemon] Background sweep completed successfully.")
+                    time.sleep(300) # Sweep every 5 minutes
+                else:
+                    time.sleep(300) # Check every 5 minutes
+            except Exception as err:
+                print(f"[Auto-Sweep Daemon] Error: {err}")
+                time.sleep(60)
+                
+    # Avoid starting multiple threads
+    already_running = False
+    for thread in threading.enumerate():
+        if thread.name == "AutoSweepDaemon":
+            already_running = True
+            break
+            
+    if not already_running:
+        t = threading.Thread(target=daemon_loop, name="AutoSweepDaemon", daemon=True)
+        t.start()
+        print("[Auto-Sweep Daemon] Background thread started.")
+    else:
+        print("[Auto-Sweep Daemon] Background thread already running.")
+    return True
+
+# 啟動盤中背景自動更新守護進程
+ensure_auto_sweep_daemon()
 
 # ==============================================================================
 # 🖥️ 4. STREAMLIT 全端視覺呈獻佈局 (Bloomberg 像素級極道黑色風格)
@@ -654,7 +740,7 @@ if not is_market_bullish:
     </div>
     """, unsafe_allow_html=True)
 else:
-    st.success("🟢 【大盤安全多頭】2330 台積電高於 20MA 生命線，允許啟動雙倍投資及進攻型戰略標的。")
+    st.success("🔴 【大盤安全多頭】2330 台積電高於 20MA 生命線，允許啟氣動雙倍投資及進攻型戰略標的。")
 
 col_tsmc, col_status, col_signal_num, col_sync_time = st.columns(4)
 
@@ -662,7 +748,7 @@ with col_tsmc:
     st.markdown(f"""
     <div class="bloomberg-box" style="text-align: center;">
         <div style="font-size: 0.85rem; color: #848e9c; font-weight: bold;">2330 台積電裁判收盤價</div>
-        <div style="font-size: 2rem; margin-top: 10px;" class="{"neon-text-green" if is_market_bullish else "neon-text-red"}">
+        <div style="font-size: 2rem; margin-top: 10px;" class="{"neon-text-red" if is_market_bullish else "neon-text-green"}">
             {scan_data['tsmc_price']} <span style='font-size: 1.1rem; color:#848e9c;'>元</span>
         </div>
         <div style="font-size: 0.75rem; color: #848e9c; margin-top: 5px;">生命水位 20MA (日線): {scan_data['tsmc_ma20']} 元</div>
@@ -673,7 +759,7 @@ with col_status:
     st.markdown(f"""
     <div class="bloomberg-box" style="text-align: center;">
         <div style="font-size: 0.85rem; color: #848e9c; font-weight: bold;">大盤生命線紅綠燈</div>
-        <div style="font-size: 1.5rem; margin-top: 15px;" class="{"neon-text-green" if is_market_bullish else "neon-text-red"}">
+        <div style="font-size: 1.5rem; margin-top: 15px;" class="{"neon-text-red" if is_market_bullish else "neon-text-green"}">
             {scan_data['tsmc_status']}
         </div>
         <div style="font-size: 0.75rem; color: #848e9c; margin-top: 8px;">觸發條件: 現價 &gt; 20MA 則翻綠</div>
@@ -681,6 +767,11 @@ with col_status:
     """, unsafe_allow_html=True)
 
 df_signals = pd.DataFrame(scan_data["signals"])
+if "entry_price" not in df_signals.columns:
+    df_signals["entry_price"] = 0.0
+if "take_profit" not in df_signals.columns:
+    df_signals["take_profit"] = 0.0
+
 long_count = len(df_signals[df_signals["signal"] == "多"])
 short_count = len(df_signals[df_signals["signal"] == "空"])
 hold_count = len(df_signals[df_signals["signal"] == "持倉"])
@@ -690,7 +781,7 @@ with col_signal_num:
     st.markdown(f"""
     <div class="bloomberg-box" style="text-align: center;">
         <div style="font-size: 0.85rem; color: #848e9c; font-weight: bold;">多頭金英獵殺名單</div>
-        <div style="font-size: 2rem; margin-top: 10px;" class="neon-text-green">
+        <div style="font-size: 2rem; margin-top: 10px;" class="neon-text-red">
             {long_count} <span style='font-size:1.1rem; color:#848e9c;'>檔</span>
         </div>
         <div style="font-size: 0.75rem; color: #848e9c; margin-top: 5px;">符合 V106 強勢突破共振</div>
@@ -726,6 +817,8 @@ else:
     hunting_df["黃金股名"] = hunting_df["stock_name"]
     hunting_df["收盤價"] = hunting_df["close_price"]
     hunting_df["今日漲跌(%)"] = hunting_df["change_pct"]
+    hunting_df["進場價格"] = hunting_df["entry_price"]
+    hunting_df["持倉後停利"] = hunting_df["take_profit"]
     hunting_df["建議零股精配股數 (2W預算)"] = hunting_df["suggested_shares"]
     hunting_df["絕對停損防禦線"] = hunting_df["atr_stop"]
     hunting_df["爆量倍比"] = hunting_df["volume_multiplier"]
@@ -734,7 +827,7 @@ else:
     hunting_df["主力操盤精要"] = hunting_df["action_advice"]
 
     display_hunting = hunting_df[[
-        "奇襲代號", "黃金股名", "收盤價", "今日漲跌(%)", "建議零股精配股數 (2W預算)", 
+        "奇襲代號", "黃金股名", "收盤價", "今日漲跌(%)", "進場價格", "持倉後停利", "建議零股精配股數 (2W預算)", 
         "絕對停損防禦線", "爆量倍比", "MACD動能形態", "2MA生命位階碼", "主力操盤精要"
     ]]
 
@@ -744,6 +837,8 @@ else:
         column_config={
             "今日漲跌(%)": st.column_config.NumberColumn(format="%.2f %%"),
             "收盤價": st.column_config.NumberColumn(format="%.1f 元"),
+            "進場價格": st.column_config.NumberColumn(format="%.1f 元"),
+            "持倉後停利": st.column_config.NumberColumn(format="%.1f 元"),
             "絕對停損防禦線": st.column_config.NumberColumn(format="%.1f 元"),
             "爆量倍比": st.column_config.NumberColumn(format="%.2f 倍"),
             "建議零股精配股數 (2W預算)": st.column_config.NumberColumn(format="%d 股"),
@@ -789,16 +884,16 @@ elif sort_key == "爆量倍數":
     radar_df = radar_df.sort_values(by="volume_multiplier", ascending=False)
 
 # 重塑高密度顯示表格
-radar_df["信號標記"] = radar_df["signal"].apply(lambda x: "🟢 多頭進擊" if x == "多" else ("🔴 空頭破位" if x == "空" else ("⚠️ 隔離避險" if x == "隔離" else "⚪ 區間持倉")))
+radar_df["信號標記"] = radar_df["signal"].apply(lambda x: "🔴 多頭進擊" if x == "多" else ("🟢 空頭破位" if x == "空" else ("⚠️ 隔離避險" if x == "隔離" else "⚪ 區間持倉")))
 radar_df["2W預算零股"] = radar_df["suggested_shares"]
 
 display_radar = radar_df[[
-    "stock_id", "stock_name", "close_price", "change_pct", 
+    "stock_id", "stock_name", "close_price", "change_pct", "entry_price", "take_profit",
     "信號標記", "volume_multiplier", "atr_stop", "2W預算零股", "macd_status", "ma20_status", "master_notes"
 ]]
 
 display_radar.columns = [
-    "股票代號", "股票名稱", "最新收盤價", "今日漲跌 (%)", 
+    "股票代號", "股票名稱", "最新收盤價", "今日漲跌 (%)", "進場價格", "持倉後停利",
     "交易訊號", "爆量比率 (倍)", "動態 ATR 停損線", "2W預算精配(股)", "MACD能量形態", "20MA生命水位", "大師實戰評註"
 ]
 
@@ -808,9 +903,11 @@ st.dataframe(
     column_config={
         "今日漲跌 (%)": st.column_config.NumberColumn(format="%.2f %%"),
         "最新收盤價": st.column_config.NumberColumn(format="%.1f 元"),
+        "進場價格": st.column_config.NumberColumn(format="%.1f 元"),
+        "持倉後停利": st.column_config.NumberColumn(format="%.1f 元"),
         "爆量比率 (倍)": st.column_config.NumberColumn(format="%.2f 倍"),
         "動態 ATR 停損線": st.column_config.NumberColumn(format="%.1f 元"),
-        "2912精準零股(股)": st.column_config.NumberColumn(format="%d 股")
+        "2W預算精配(股)": st.column_config.NumberColumn(format="%d 股")
     }
 )
 

@@ -64,9 +64,9 @@ export const StockMatrixTable: React.FC<Props> = ({ signals, onEditNotes }) => {
   const getSignalBadge = (sig: '多' | '空' | '持倉' | '隔離') => {
     switch (sig) {
       case '多':
-        return <span className="signal-badge bullish">🟢 多頭突破</span>;
+        return <span className="signal-badge bullish">🔴 多頭突破</span>;
       case '空':
-        return <span className="signal-badge bearish">🔴 空頭破位</span>;
+        return <span className="signal-badge bearish">🟢 空頭破位</span>;
       case '隔離':
         return <span className="signal-badge quarantine">⚠️ 隔離避險</span>;
       default:
@@ -106,14 +106,14 @@ export const StockMatrixTable: React.FC<Props> = ({ signals, onEditNotes }) => {
               onClick={() => setActiveFilter('多')}
               style={{ borderColor: activeFilter === '多' ? 'var(--color-bullish)' : '' }}
             >
-              🟢 多頭 ({signals.filter(s => s.signal === '多').length})
+              🔴 多頭 ({signals.filter(s => s.signal === '多').length})
             </button>
             <button 
               className={`cyber-btn ${activeFilter === '空' ? 'active' : ''}`}
               onClick={() => setActiveFilter('空')}
               style={{ borderColor: activeFilter === '空' ? 'var(--color-bearish)' : '' }}
             >
-              🔴 空頭 ({signals.filter(s => s.signal === '空').length})
+              🟢 空頭 ({signals.filter(s => s.signal === '空').length})
             </button>
             <button 
               className={`cyber-btn ${activeFilter === '持倉' ? 'active' : ''}`}
@@ -151,6 +151,8 @@ export const StockMatrixTable: React.FC<Props> = ({ signals, onEditNotes }) => {
                   <th style={{ cursor: 'pointer', textAlign: 'right' }} onClick={() => toggleSort('change')}>
                     今日漲跌 (%) <ArrowUpDown size={12} style={{ marginLeft: '4px' }} />
                   </th>
+                  <th style={{ textAlign: 'right' }}>進場價格</th>
+                  <th style={{ textAlign: 'right' }}>持倉後停利</th>
                   <th>交易訊號</th>
                   <th style={{ cursor: 'pointer', textAlign: 'right' }} onClick={() => toggleSort('multiplier')}>
                     爆量比率 (倍) <ArrowUpDown size={12} style={{ marginLeft: '4px' }} />
@@ -183,6 +185,12 @@ export const StockMatrixTable: React.FC<Props> = ({ signals, onEditNotes }) => {
                           {isUp ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
                           {isUp ? '+' : ''}{s.change_pct.toFixed(2)}%
                         </div>
+                      </td>
+                      <td style={{ textAlign: 'right', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace", color: 'var(--color-gold)' }}>
+                        {s.entry_price > 0 ? s.entry_price.toFixed(1) : '-'}
+                      </td>
+                      <td style={{ textAlign: 'right', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace", color: 'var(--color-bullish)' }}>
+                        {s.take_profit > 0 ? s.take_profit.toFixed(1) : '-'}
                       </td>
                       <td>{getSignalBadge(s.signal)}</td>
                       <td style={{ 
@@ -251,9 +259,9 @@ export const StockMatrixTable: React.FC<Props> = ({ signals, onEditNotes }) => {
               const getSignalBadgeSlim = (sig: '多' | '空' | '持倉' | '隔離') => {
                 switch (sig) {
                   case '多':
-                    return <span className="signal-badge-slim bullish">🟢 多頭</span>;
+                    return <span className="signal-badge-slim bullish">🔴 多頭</span>;
                   case '空':
-                    return <span className="signal-badge-slim bearish">🔴 空頭</span>;
+                    return <span className="signal-badge-slim bearish">🟢 空頭</span>;
                   case '隔離':
                     return <span className="signal-badge-slim quarantine">⚠️ 隔離</span>;
                   default:
@@ -294,6 +302,18 @@ export const StockMatrixTable: React.FC<Props> = ({ signals, onEditNotes }) => {
                   {isExpanded && (
                     <div className="mobile-row-details">
                       <div className="mobile-details-grid">
+                        <div className="mobile-detail-item">
+                          <span className="mobile-detail-label">進場價格</span>
+                          <span className="mobile-detail-value" style={{ color: 'var(--color-gold)' }}>
+                            {s.entry_price > 0 ? s.entry_price.toFixed(1) : '-'}
+                          </span>
+                        </div>
+                        <div className="mobile-detail-item">
+                          <span className="mobile-detail-label">持倉後停利</span>
+                          <span className="mobile-detail-value" style={{ color: 'var(--color-bullish)' }}>
+                            {s.take_profit > 0 ? s.take_profit.toFixed(1) : '-'}
+                          </span>
+                        </div>
                         <div className="mobile-detail-item">
                           <span className="mobile-detail-label">爆量比率</span>
                           <span className="mobile-detail-value" style={{ color: s.volume_multiplier >= 1.5 ? 'var(--color-bullish)' : 'var(--text-primary)' }}>

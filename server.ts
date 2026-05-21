@@ -24,6 +24,8 @@ interface StockSignal {
   ma20_status: string;
   master_notes: string;
   action_advice: string;
+  entry_price: number;
+  take_profit: number;
 }
 
 // Fallback high-fidelity simulation if MongoDB Atlas is not yet populated
@@ -405,6 +407,14 @@ function generateSimulatedSignals(isBullish: boolean = true): StockSignal[] {
       advice = '📉 空頭趨勢確立，請無條件避開此標的！';
     }
 
+    let entryPrice = 0.0;
+    if (signal === '多') {
+      entryPrice = currentPrice;
+    } else if (signal === '持倉') {
+      entryPrice = Math.round(s.base_price * 0.96 * 10) / 10;
+    }
+    const takeProfit = entryPrice > 0 ? Math.round(entryPrice * 1.20 * 10) / 10 : 0.0;
+
     return {
       timestamp: timestampStr,
       date: dateStr,
@@ -421,7 +431,9 @@ function generateSimulatedSignals(isBullish: boolean = true): StockSignal[] {
       change_pct: Math.round(change * 100) / 100,
       ma20_status: isAboveMA ? `高於生命線 20MA` : `低於生命線 20MA`,
       master_notes: s.notes,
-      action_advice: advice
+      action_advice: advice,
+      entry_price: entryPrice,
+      take_profit: takeProfit
     };
   });
 }
