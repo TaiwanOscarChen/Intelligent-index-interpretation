@@ -110,7 +110,7 @@ const App: React.FC = () => {
             </div>
             <div>
               <h1 style={{ fontSize: '1.65rem', fontWeight: 900, letterSpacing: '1px', background: 'linear-gradient(to right, #ffffff, #8a96a8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                獅王戰神 V106 觀盤決策儀表板
+                智能判斷指數
               </h1>
               <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'block', marginTop: '2px' }}>
                 🕵️ 華爾街自營部對沖量化決策看板 | yFinance 即時洗價、MongoDB 雙向持久化、台北標準時間盤中濾網
@@ -212,7 +212,7 @@ const App: React.FC = () => {
         <p style={{ marginBottom: '6px' }}>
           ⚠️ 警告與聲明：本系統所有量化數據、均線判定、ATR與MACD指標皆為演算法模擬推算，非投資邀約。股市投資具備極高風險，請自主調控部位，嚴格執行防守停損。
         </p>
-        <p>© 2026 獅王戰神 V106 全端量化操盤終端. Powered by React + Vite + MongoDB Atlas.</p>
+        <p>© 2026 智能判斷指數 全端量化操盤終端. Powered by React + Vite + MongoDB Atlas.</p>
       </footer>
 
       {/* CSS 旋轉與打轉動畫 */}
