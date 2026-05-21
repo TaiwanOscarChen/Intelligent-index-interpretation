@@ -17,6 +17,8 @@ export interface StockSignal {
   action_advice: string;
   entry_price: number;
   take_profit: number;
+  rsi_val?: number;
+  entry_support?: number;
 }
 
 export interface DashboardData {

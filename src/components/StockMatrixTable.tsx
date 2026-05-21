@@ -153,6 +153,8 @@ export const StockMatrixTable: React.FC<Props> = ({ signals, onEditNotes }) => {
                   </th>
                   <th style={{ textAlign: 'right' }}>進場價格</th>
                   <th style={{ textAlign: 'right' }}>持倉後停利</th>
+                  <th style={{ textAlign: 'right' }}>RSI-14</th>
+                  <th style={{ textAlign: 'right' }}>生命支撐</th>
                   <th>交易訊號</th>
                   <th style={{ cursor: 'pointer', textAlign: 'right' }} onClick={() => toggleSort('multiplier')}>
                     爆量比率 (倍) <ArrowUpDown size={12} style={{ marginLeft: '4px' }} />
@@ -191,6 +193,12 @@ export const StockMatrixTable: React.FC<Props> = ({ signals, onEditNotes }) => {
                       </td>
                       <td style={{ textAlign: 'right', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace", color: 'var(--color-bullish)' }}>
                         {s.take_profit > 0 ? s.take_profit.toFixed(1) : '-'}
+                      </td>
+                      <td style={{ textAlign: 'right', fontFamily: "'JetBrains Mono', monospace", color: 'var(--text-secondary)' }}>
+                        {s.rsi_val !== undefined ? s.rsi_val.toFixed(1) : '-'}
+                      </td>
+                      <td style={{ textAlign: 'right', fontFamily: "'JetBrains Mono', monospace", color: 'var(--color-cyan)', fontWeight: 500 }}>
+                        {s.entry_support !== undefined ? s.entry_support.toFixed(1) : '-'}
                       </td>
                       <td>{getSignalBadge(s.signal)}</td>
                       <td style={{ 
@@ -324,6 +332,18 @@ export const StockMatrixTable: React.FC<Props> = ({ signals, onEditNotes }) => {
                           <span className="mobile-detail-label">動態停損</span>
                           <span className="mobile-detail-value" style={{ color: 'var(--color-bearish)' }}>
                             {s.atr_stop.toFixed(1)}
+                          </span>
+                        </div>
+                        <div className="mobile-detail-item">
+                          <span className="mobile-detail-label">RSI-14</span>
+                          <span className="mobile-detail-value" style={{ color: 'var(--text-primary)' }}>
+                            {s.rsi_val !== undefined ? s.rsi_val.toFixed(1) : '-'}
+                          </span>
+                        </div>
+                        <div className="mobile-detail-item">
+                          <span className="mobile-detail-label">生命支撐</span>
+                          <span className="mobile-detail-value" style={{ color: 'var(--color-cyan)' }}>
+                            {s.entry_support !== undefined ? s.entry_support.toFixed(1) : '-'}
                           </span>
                         </div>
                         <div className="mobile-detail-item" style={{ gridColumn: 'span 2' }}>
