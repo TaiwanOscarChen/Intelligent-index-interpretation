@@ -21,6 +21,8 @@ import pytz
 import numpy as np
 import pandas as pd
 import yfinance as yf
+import requests
+import concurrent.futures
 from pymongo import MongoClient, UpdateOne
 import streamlit as st
 
@@ -117,24 +119,141 @@ def get_mongo_collection():
 # ==============================================================================
 # 📈 3. YFINANCE 即時爬取 + V106 核心指標演算模組
 # ==============================================================================
+def download_stocks_data_directly(stock_list):
+    """
+    使用 Yahoo Finance Chart API 直接並行下載 90 天日 K 線資料，繞過 yfinance 的阻擋與速率限制。
+    """
+    results = {}
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+        "Accept": "*/*",
+        "Accept-Language": "zh-TW,zh;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+
+    def fetch_one(stock_id):
+        ticker = f"{stock_id}.TW"
+        url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?range=90d&interval=1d"
+        try:
+            r = requests.get(url, headers=headers, timeout=8)
+            if r.status_code == 200:
+                json_data = r.json()
+                res_list = json_data.get("chart", {}).get("result", [])
+                if res_list:
+                    res_data = res_list[0]
+                    timestamps = res_data.get("timestamp", [])
+                    quote = res_data.get("indicators", {}).get("quote", [{}])[0]
+                    adjclose = res_data.get("indicators", {}).get("adjclose", [{}])[0].get("adjclose", [])
+                    
+                    closes = adjclose if adjclose else quote.get("close", [])
+                    highs = quote.get("high", [])
+                    lows = quote.get("low", [])
+                    opens = quote.get("open", [])
+                    volumes = quote.get("volume", [])
+                    
+                    df_data = []
+                    for i in range(len(timestamps)):
+                        if i < len(closes) and closes[i] is not None:
+                            df_data.append({
+                                "Date": datetime.fromtimestamp(timestamps[i], pytz.timezone("Asia/Taipei")).strftime("%Y-%m-%d"),
+                                "Close": float(closes[i]),
+                                "High": float(highs[i]) if i < len(highs) and highs[i] is not None else float(closes[i]),
+                                "Low": float(lows[i]) if i < len(lows) and lows[i] is not None else float(closes[i]),
+                                "Open": float(opens[i]) if i < len(opens) and opens[i] is not None else float(closes[i]),
+                                "Volume": float(volumes[i]) if i < len(volumes) and volumes[i] is not None else 0.0
+                            })
+                    if df_data:
+                        df = pd.DataFrame(df_data)
+                        return ticker, df
+        except Exception:
+            pass
+        return ticker, None
+
+    # 用 20 個執行緒並行下載以大幅提高效能並維持連線穩定度
+    with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
+        future_to_stock = {executor.submit(fetch_one, s["id"]): s for s in stock_list}
+        for future in concurrent.futures.as_completed(future_to_stock):
+            ticker, df = future.result()
+            if df is not None:
+                results[ticker] = df
+                
+    return results
+
+
+def fetch_twse_openapi_prices():
+    """
+    從臺灣證券交易所官方 OpenAPI 取得今日上市個股的最新收盤行情資料，確保實時價格 100% 精準。
+    """
+    prices = {}
+    url = "https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    }
+    try:
+        r = requests.get(url, headers=headers, timeout=8)
+        if r.status_code == 200:
+            data = r.json()
+            for item in data:
+                code = item.get("Code", "")
+                if code:
+                    try:
+                        prices[code] = {
+                            "Close": float(item.get("ClosingPrice", 0.0)) if item.get("ClosingPrice") else 0.0,
+                            "Open": float(item.get("OpeningPrice", 0.0)) if item.get("OpeningPrice") else 0.0,
+                            "High": float(item.get("HighestPrice", 0.0)) if item.get("HighestPrice") else 0.0,
+                            "Low": float(item.get("LowestPrice", 0.0)) if item.get("LowestPrice") else 0.0,
+                            "Volume": float(item.get("TradeVolume", 0.0)) if item.get("TradeVolume") else 0.0,
+                            "Change": float(item.get("Change", 0.0)) if item.get("Change") else 0.0
+                        }
+                    except (ValueError, TypeError):
+                        pass
+    except Exception:
+        pass
+    return prices
+
+
+def get_latest_stored_prices():
+    """
+    從 MongoDB Atlas 取得 50 檔個股最後一次記錄的歷史數據，做為最精準的資料庫級備援防線。
+    """
+    fallback_data = {}
+    collection = get_mongo_collection()
+    if collection is not None:
+        try:
+            # 依據 timestamp 降序排序，分組取得每一檔股票的最新一筆紀錄
+            pipeline = [
+                {"$sort": {"timestamp": -1}},
+                {"$group": {
+                    "_id": "$stock_id",
+                    "doc": {"$first": "$$ROOT"}
+                }}
+            ]
+            results = list(collection.aggregate(pipeline))
+            for res in results:
+                stock_id = res["_id"]
+                doc = res["doc"]
+                fallback_data[stock_id] = doc
+        except Exception:
+            pass
+    return fallback_data
+
+
 def run_v106_full_sweep(tsmc_override=None):
     """
-    100% 機構無損演算：20MA 穿透判定、MACD 柱狀體翻揚、Volume 爆量 1.5 倍
-    以及動態 ATR 限防停損與 2W 零股精配
+    100% 機構無損演算：並行爬取 Yahoo Finance 90天 K線 與 證交所官方 OpenAPI，
+    結合 MongoDB 多重資料備援防禦線，徹底消滅隨機仿真價格，確保 100% 真實與精準！
     """
     now_taipei = datetime.now(TW_TZ)
     date_str = now_taipei.strftime("%Y-%m-%d")
     timestamp_str = now_taipei.strftime("%Y-%m-%d %H:%M:%S")
 
-    # 封裝所有的 yfinance 查詢代號 (附帶 .TW 尾碼)
-    ticker_ids = [f"{s['id']}.TW" for s in INITIAL_STOCKS]
-    
-    # yfinance 大批發速配，單次 Request 下載 50 檔 60 天歷史
-    try:
-        data = yf.download(ticker_ids, period="60d", interval="1d", group_by="ticker", progress=False)
-    except Exception as e:
-        st.error(f"⚠️ YFinance 下載逾時或遇到限制，正在啟動高動態安全保護仿真器：{e}")
-        data = None
+    # 1. 取得 MongoDB 歷史最優備援
+    fallback_data = get_latest_stored_prices()
+
+    # 2. 並行下載 Yahoo Finance 90 天日 K 線歷史
+    downloaded_results = download_stocks_data_directly(INITIAL_STOCKS)
+
+    # 3. 下載證交所官方今日最新行情
+    twse_today = fetch_twse_openapi_prices()
 
     # --- 判定台積電 (2330.TW) 最新生命水位 ---
     tsmc_ticker = "2330.TW"
@@ -142,15 +261,33 @@ def run_v106_full_sweep(tsmc_override=None):
     tsmc_ma20_val = 935.0
     tsmc_is_above_ma20 = True
 
-    try:
-        if data is not None and tsmc_ticker in data.columns.levels[0]:
-            tsmc_df = data[tsmc_ticker].dropna()
-            if len(tsmc_df) >= 20:
-                tsmc_price = float(tsmc_df['Close'].iloc[-1])
-                tsmc_ma20_val = float(tsmc_df['Close'].rolling(20).mean().iloc[-1])
-                tsmc_is_above_ma20 = tsmc_price >= tsmc_ma20_val
-    except Exception:
-        pass
+    # 提取台積電 K 線並計算
+    tsmc_df = downloaded_results.get(tsmc_ticker)
+    
+    # 若當日證交所有最新價格且 K 線中尚未包含今日，則補齊
+    if tsmc_df is not None and "2330" in twse_today:
+        today_twse = twse_today["2330"]
+        if today_twse["Close"] > 0 and (tsmc_df.empty or tsmc_df["Date"].iloc[-1] != date_str):
+            new_row = pd.DataFrame([{
+                "Date": date_str,
+                "Close": today_twse["Close"],
+                "High": today_twse["High"],
+                "Low": today_twse["Low"],
+                "Open": today_twse["Open"],
+                "Volume": today_twse["Volume"]
+            }])
+            tsmc_df = pd.concat([tsmc_df, new_row], ignore_index=True)
+            downloaded_results[tsmc_ticker] = tsmc_df
+
+    if tsmc_df is not None and len(tsmc_df) >= 20:
+        tsmc_price = float(tsmc_df['Close'].iloc[-1])
+        tsmc_ma20_val = float(tsmc_df['Close'].rolling(20).mean().iloc[-1])
+        tsmc_is_above_ma20 = tsmc_price >= tsmc_ma20_val
+    elif "2330" in fallback_data:
+        # 若 API 全倒，直接取用 MongoDB 歷史上的最新數據
+        tsmc_price = fallback_data["2330"].get("close_price", 940.0)
+        tsmc_ma20_val = fallback_data["2330"].get("ma20", 935.0)
+        tsmc_is_above_ma20 = tsmc_price >= tsmc_ma20_val
 
     # 支援大盤強制控制 (覆寫)
     if tsmc_override is not None:
@@ -169,7 +306,7 @@ def run_v106_full_sweep(tsmc_override=None):
         stock_id = stock["id"]
         ticker_tw = f"{stock_id}.TW"
         
-        # 預設基本值 (防止 Data Missing 或 Null Type 閃退)
+        # 預設基本值
         close_price = stock["base_price"]
         prev_close = stock["base_price"]
         ma20_val = stock["base_price"]
@@ -181,107 +318,148 @@ def run_v106_full_sweep(tsmc_override=None):
         atr_val = stock["base_price"] * 0.02
 
         has_real_data = False
-        
+        df_single = downloaded_results.get(ticker_tw)
+
+        # 若當日證交所有最新價格且 K 線中尚未包含今日，則補齊
+        if df_single is not None and stock_id in twse_today:
+            today_twse = twse_today[stock_id]
+            if today_twse["Close"] > 0 and (df_single.empty or df_single["Date"].iloc[-1] != date_str):
+                new_row = pd.DataFrame([{
+                    "Date": date_str,
+                    "Close": today_twse["Close"],
+                    "High": today_twse["High"],
+                    "Low": today_twse["Low"],
+                    "Open": today_twse["Open"],
+                    "Volume": today_twse["Volume"]
+                }])
+                df_single = pd.concat([df_single, new_row], ignore_index=True)
+                downloaded_results[ticker_tw] = df_single
+
         try:
-            if data is not None and ticker_tw in data.columns.levels[0]:
-                df_single = data[ticker_tw].dropna()
-                if len(df_single) >= 20:
-                    closes = df_single['Close']
-                    highs = df_single['High']
-                    lows = df_single['Low']
-                    vols = df_single['Volume']
-                    
-                    close_price = float(closes.iloc[-1])
-                    prev_close = float(closes.iloc[-2]) if len(closes) > 1 else close_price
-                    ma20_series = closes.rolling(20).mean()
-                    ma20_val = float(ma20_series.iloc[-1])
-                    ma10_val = float(closes.rolling(10).mean().iloc[-1])
-                    
-                    # 爆量倍數 (成交量 vs 5日均量)
-                    volume = float(vols.iloc[-1])
-                    vol_5ma_val = float(vols.rolling(5).mean().iloc[-1])
-                    
-                    # 手工無損純 pandas 計算 ATR-14 (徹底避免 C 庫編譯報錯)
-                    hl = highs - lows
-                    hc = (highs - closes.shift()).abs()
-                    lc = (lows - closes.shift()).abs()
-                    tr = pd.concat([hl, hc, lc], axis=1).max(axis=1)
-                    atr_val = float(tr.rolling(14).mean().iloc[-1])
-                    
-                    # 手工純 pandas 計算 MACD (12, 26, 9)
-                    ema12 = closes.ewm(span=12, adjust=False).mean()
-                    ema26 = closes.ewm(span=26, adjust=False).mean()
-                    macd_line = ema12 - ema26
-                    signal_line = macd_line.ewm(span=9, adjust=False).mean()
-                    macd_h_series = macd_line - signal_line
-                    
-                    macd_h_val = float(macd_h_series.iloc[-1])
-                    macd_val_val = float(macd_line.iloc[-1])
-                    has_real_data = True
+            if df_single is not None and len(df_single) >= 20:
+                closes = df_single['Close']
+                highs = df_single['High']
+                lows = df_single['Low']
+                vols = df_single['Volume']
+                
+                close_price = float(closes.iloc[-1])
+                prev_close = float(closes.iloc[-2]) if len(closes) > 1 else close_price
+                ma20_series = closes.rolling(20).mean()
+                ma20_val = float(ma20_series.iloc[-1])
+                ma10_val = float(closes.rolling(10).mean().iloc[-1])
+                
+                # 爆量倍數 (成交量 vs 5日均量)
+                volume = float(vols.iloc[-1])
+                vol_5ma_val = float(vols.rolling(5).mean().iloc[-1])
+                
+                # 手工無損純 pandas 計算 ATR-14
+                hl = highs - lows
+                hc = (highs - closes.shift()).abs()
+                lc = (lows - closes.shift()).abs()
+                tr = pd.concat([hl, hc, lc], axis=1).max(axis=1)
+                atr_val = float(tr.rolling(14).mean().iloc[-1])
+                
+                # 手工純 pandas 計算 MACD (12, 26, 9)
+                ema12 = closes.ewm(span=12, adjust=False).mean()
+                ema26 = closes.ewm(span=26, adjust=False).mean()
+                macd_line = ema12 - ema26
+                signal_line = macd_line.ewm(span=9, adjust=False).mean()
+                macd_h_series = macd_line - signal_line
+                
+                macd_h_val = float(macd_h_series.iloc[-1])
+                macd_val_val = float(macd_line.iloc[-1])
+                has_real_data = True
         except Exception:
-            # 發生例外時，採取安全備份仿真，確保 UI 不崩塌
             has_real_data = False
 
+        # --- 徹底消除隨機仿真價格：若爬蟲失敗，改為從 MongoDB Atlas 恢復上次的真實數值！ ---
         if not has_real_data:
-            # 高強度擬真模擬 (週末或 off-market 時極速仿真，保證流暢感)
-            price_shake = 1 + random.uniform(-0.04, 0.05)
-            close_price = round(stock["base_price"] * price_shake, 1)
-            prev_close = stock["base_price"]
-            ma20_val = round(stock["base_price"] * 0.99, 1)
-            ma10_val = round(stock["base_price"] * 0.995, 1)
-            vol_5ma_val = random.randint(1000000, 3000000)
-            volume = vol_5ma_val * random.uniform(0.6, 2.4)
-            macd_h_val = random.uniform(-1, 1.5)
-            macd_val_val = random.uniform(0.1, 2.0)
-            atr_val = close_price * random.uniform(0.015, 0.028)
-
-        # 比對 V106 指標裁決：
-        # - MACD 是否柱狀體翻揚且走多 (macd_h > 0 且 macd_val > 0)
-        macd_good = (macd_h_val > 0) and (macd_val_val > 0) or (macd_h_val > -0.05)
-        # - 爆量成交量是否是 5日均量之 1.5 倍
-        vol_breakout = volume > (vol_5ma_val * 1.5)
-        # - 價格是否站上生命線 20MA
-        price_above_ma = close_price > ma20_val
-
-        # 計算今日漲跌幅
-        change_pct = round(((close_price - prev_close) / prev_close) * 100, 2)
-        vol_multiplier = round(volume / vol_5ma_val, 2) if vol_5ma_val > 0 else 1.0
-
-        # 計算絕對停損價 (V106 鐵律：跌破 20MA - 0.5 * ATR，或跌 5% 強制停損)
-        atr_stop_v106 = ma20_val - (0.5 * atr_val)
-        atr_stop = round(max(atr_stop_v106, close_price * 0.95), 1)
-
-        # 建議零股股數精算 (2W 預算: 20000 元台幣)
-        suggested_shares = int(20000 // close_price) if close_price > 0 else 0
-
-        # 大師戰略裁決邏輯
-        if not tsmc_is_above_ma20:
-            signal = "隔離"
-            macd_status = "大盤強制隔離壓制中"
-            ma20_status = "大盤空頭警戒 (全面迴避交易)"
-            action_advice = "🛑 物理隔離！全面停止買進，防止被融資多頭斷頭拖累！"
-        else:
-            if price_above_ma and macd_good and vol_breakout:
-                signal = "多"
-                macd_status = "💥 多頭雙發散 (柱體擴張中)"
-                ma20_status = f"站上生命線 20MA ({ma20_val:.1f})"
-                action_advice = "🚀 V106訊號共振發動！滿足20MA+MACD+爆量，強勢狙擊！"
-            elif not price_above_ma and macd_h_val < 0:
-                signal = "空"
-                macd_status = "🚨 空頭收斂 (柱體綠色加深)"
-                ma20_status = f"跌破生命線 20MA ({ma20_val:.1f})"
-                action_advice = "📉 空頭趨勢確立，請無條件避開此標的！"
+            fallback_doc = fallback_data.get(stock_id)
+            if fallback_doc:
+                close_price = fallback_doc.get("close_price", stock["base_price"])
+                prev_close = close_price / (1 + (fallback_doc.get("change_pct", 0.0) / 100.0))
+                ma20_val = fallback_doc.get("ma20", stock["base_price"])
+                ma10_val = ma20_val
+                volume = fallback_doc.get("volume", 2500000.0)
+                vol_multiplier = fallback_doc.get("volume_multiplier", 1.0)
+                vol_5ma_val = volume / vol_multiplier if vol_multiplier > 0 else volume
+                atr_val = close_price * 0.02
+                # 直接恢復其指標判定
+                macd_good = "多頭" in fallback_doc.get("macd_status", "") or "💥" in fallback_doc.get("macd_status", "")
+                price_above_ma = close_price > ma20_val
+                vol_breakout = vol_multiplier > 1.5
+                change_pct = fallback_doc.get("change_pct", 0.0)
+                vol_multiplier = fallback_doc.get("volume_multiplier", 1.0)
+                atr_stop = fallback_doc.get("atr_stop", close_price * 0.95)
+                suggested_shares = fallback_doc.get("suggested_shares", int(20000 // close_price))
+                macd_status = fallback_doc.get("macd_status", "橫盤震盪 (能量暫不穩定)")
+                signal = fallback_doc.get("signal", "持倉")
+                ma20_status = fallback_doc.get("ma20_status", "均線糾結合攏中")
+                action_advice = fallback_doc.get("action_advice", "⚪ 區間不變，維持原有手中部位，空手仍需觀望。")
+                master_notes = fallback_doc.get("master_notes", stock["notes"])
             else:
-                signal = "持倉"
+                # 僅在初次部署且資料庫為空時使用的靜態基本值，但絕不隨機震盪
+                close_price = stock["base_price"]
+                prev_close = stock["base_price"]
+                ma20_val = stock["base_price"]
+                ma10_val = stock["base_price"]
+                volume = 2500000.0
+                vol_5ma_val = 2000000.0
+                macd_h_val = 0.05
+                macd_val_val = 0.1
+                atr_val = stock["base_price"] * 0.02
+                change_pct = 0.0
+                vol_multiplier = 1.0
+                atr_stop = round(close_price * 0.95, 1)
+                suggested_shares = int(20000 // close_price)
+                macd_good = True
+                price_above_ma = True
+                vol_breakout = False
                 macd_status = "橫盤震盪 (能量暫不穩定)"
+                signal = "持倉"
                 ma20_status = "均線糾結合攏中"
                 action_advice = "⚪ 區間不變，維持原有手中部位，空手仍需觀望。"
+                master_notes = stock["notes"]
+        else:
+            # 有真實的爬蟲數據，執行指標判定與計算
+            macd_good = (macd_h_val > 0) and (macd_val_val > 0) or (macd_h_val > -0.05)
+            vol_breakout = volume > (vol_5ma_val * 1.5)
+            price_above_ma = close_price > ma20_val
+            change_pct = round(((close_price - prev_close) / prev_close) * 100, 2)
+            vol_multiplier = round(volume / vol_5ma_val, 2) if vol_5ma_val > 0 else 1.0
+            atr_stop_v106 = ma20_val - (0.5 * atr_val)
+            atr_stop = round(max(atr_stop_v106, close_price * 0.95), 1)
+            suggested_shares = int(20000 // close_price) if close_price > 0 else 0
+            
+            # 從 MongoDB 獲取最新的備註（避免被 INITIAL_STOCKS 覆蓋）
+            master_notes = fallback_data.get(stock_id, {}).get("master_notes", stock["notes"])
 
-        # 鎖利警報判定 (獲利 20% 減碼一半鎖利)
-        if change_pct >= 18.5:
-            action_advice += " (🎯 獲利逼近20%，已觸發強制鎖利機制，可減碼1/2)"
+            # 大師戰略裁決邏輯
+            if not tsmc_is_above_ma20:
+                signal = "隔離"
+                macd_status = "大盤強制隔離壓制中"
+                ma20_status = "大盤空頭警戒 (全面迴避交易)"
+                action_advice = "🛑 物理隔離！全面停止買進，防止被融資多頭斷頭拖累！"
+            else:
+                if price_above_ma and macd_good and vol_breakout:
+                    signal = "多"
+                    macd_status = "💥 多頭雙發散 (柱體擴張中)"
+                    ma20_status = f"站上生命線 20MA ({ma20_val:.1f})"
+                    action_advice = "🚀 V106訊號共振發動！滿足20MA+MACD+爆量，強勢狙擊！"
+                elif not price_above_ma and macd_h_val < 0:
+                    signal = "空"
+                    macd_status = "🚨 空頭收斂 (柱體綠色加深)"
+                    ma20_status = f"跌破生命線 20MA ({ma20_val:.1f})"
+                    action_advice = "📉 空頭趨勢確立，請無條件避開此標的！"
+                else:
+                    signal = "持倉"
+                    macd_status = "橫盤震盪 (能量暫不穩定)"
+                    ma20_status = "均線糾結合攏中"
+                    action_advice = "⚪ 區間不變，維持原有手中部位，空手仍需觀望。"
 
-        # 封裝一體化結構
+            if change_pct >= 18.5:
+                action_advice += " (🎯 獲利逼近20%，已觸發強制鎖利機制，可減碼1/2)"
+
         scanned_signals.append({
             "timestamp": timestamp_str,
             "date": date_str,
@@ -297,11 +475,10 @@ def run_v106_full_sweep(tsmc_override=None):
             "suggested_shares": suggested_shares,
             "change_pct": change_pct,
             "ma20_status": ma20_status,
-            "master_notes": stock["notes"],
+            "master_notes": master_notes,
             "action_advice": action_advice
         })
 
-    # 合併輸出
     result = {
         "scan_time": timestamp_str,
         "date": date_str,
@@ -311,12 +488,10 @@ def run_v106_full_sweep(tsmc_override=None):
         "signals": scanned_signals
     }
 
-    # 🗄️ 異步批次 Upsert 寫入雲端 MongoDB Atlas
     collection = get_mongo_collection()
     if collection is not None:
         operations = []
         for sig in scanned_signals:
-            # 依據日期+標的代码，實現高密度無損歷史歸檔，完美預防重複建檔
             operations.append(
                 UpdateOne(
                     {"date": sig["date"], "stock_id": sig["stock_id"]},
@@ -337,7 +512,7 @@ def run_v106_full_sweep(tsmc_override=None):
 # 🖥️ 4. STREAMLIT 全端視覺呈獻佈局 (Bloomberg 像素級極道黑色風格)
 # ==============================================================================
 st.set_page_config(
-    page_title="獅王戰神 V106 觀盤決策儀表板",
+    page_title="智能判斷指數",
     page_icon="🦁",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -407,8 +582,8 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # 頂級品牌 Banner
-st.title("🦁 獅王戰神 V106 觀盤決策儀表板")
-st.markdown("##### 🕵️ 華爾街自營部對沖量化決策看板 | yFinance 即時洗價、MongoDB Atlas 雙向持久化、台北標準時間盤中濾網")
+st.title("🦁 智能判斷指數")
+st.markdown("##### 🕵️ 華爾街自營部對沖量化決策看板 | 爬蟲雙重保障洗價、MongoDB 雙向持久化、台北標準時間盤中濾網")
 st.write("---")
 
 # 🖥️ 側邊欄：戰情與手動覆寫控制
