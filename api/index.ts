@@ -8,16 +8,19 @@ let cachedApp: any = null;
 app.all("*", async (req: any, res: any) => {
   try {
     if (!cachedApp) {
-      // Dynamic import inside route handler avoids top-level await issues
-      const serverModule = await import("../server.js");
+      // Dynamic import from the pre-compiled server.cjs to avoid typescript/vite packaging errors on Vercel
+      const serverModule = await import("../dist/server.cjs");
+      // CommonJS default export could be nested under serverModule.default or serverModule.default.default
       cachedApp = serverModule.default;
+      if (cachedApp && cachedApp.default) {
+        cachedApp = cachedApp.default;
+      }
     }
-    // Delegate to the real Express app instance
     return cachedApp(req, res);
   } catch (err: any) {
     res.status(500).json({
       success: false,
-      message: "Server dynamic load failed",
+      message: "Server dynamic load from dist/server.cjs failed",
       error: err.message,
       stack: err.stack,
       env: {
