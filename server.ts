@@ -92,6 +92,7 @@ async function connectToMongo() {
       exitsCollection = db.collection("exit_logs");
       dbConnected = true;
       console.log("🟢 [MongoDB Atlas] 金鑰對接成功！順利載入 LionKing_DB (signals, holdings, exit_logs)。");
+      prefetchMissingStocks().catch(err => console.error("Prefetch error:", err));
     } catch (error) {
       console.error("🔴 [MongoDB Atlas] 連線失敗，自動啟用記憶體避險機制 (In-Memory Failover):", error);
       dbConnected = false;
@@ -541,6 +542,94 @@ app.get("/api/strategy-summary", async (req, res) => {
 
 const execAsync = promisify(exec);
 
+interface QueueItem {
+  stockId: string;
+  priority: "high" | "low";
+  resolve?: () => void;
+  reject?: (err: Error) => void;
+}
+
+const crawlerQueue: QueueItem[] = [];
+let isCrawlerRunning = false;
+
+async function triggerCrawler() {
+  if (isCrawlerRunning) return;
+  isCrawlerRunning = true;
+
+  while (crawlerQueue.length > 0) {
+    // Sort so high priority is processed first
+    crawlerQueue.sort((a, b) => {
+      if (a.priority === "high" && b.priority === "low") return -1;
+      if (a.priority === "low" && b.priority === "high") return 1;
+      return 0;
+    });
+
+    const item = crawlerQueue.shift();
+    if (!item) break;
+
+    const { stockId, resolve, reject } = item;
+    console.log(`[Crawler Queue] Processing stock ${stockId} (Priority: ${item.priority})...`);
+
+    try {
+      let exists = false;
+      if (dbConnected && signalsCollection) {
+        const extendedCollection = signalsCollection.database.collection("stock_extended_details");
+        const doc = await extendedCollection.findOne({ stock_id: stockId });
+        if (doc) {
+          exists = true;
+          console.log(`[Crawler Queue] Stock ${stockId} already exists in DB. Skipping crawl.`);
+        }
+      }
+
+      if (!exists) {
+        await execAsync(`python fetch_extended_data.py --stock ${stockId}`);
+        console.log(`[Crawler Queue] Successfully crawled stock ${stockId}.`);
+      }
+
+      if (resolve) resolve();
+    } catch (err: any) {
+      console.error(`[Crawler Queue] Error crawling stock ${stockId}:`, err);
+      if (reject) reject(err);
+    }
+
+    // Anti-Lock backoff delay: 2 to 5 seconds
+    const delay = 2000 + Math.random() * 3000;
+    console.log(`[Crawler Queue] Sleeping for ${(delay / 1000).toFixed(1)}s to prevent IP ban...`);
+    await new Promise((res) => setTimeout(res, delay));
+  }
+
+  isCrawlerRunning = false;
+}
+
+async function prefetchMissingStocks() {
+  if (!dbConnected || !signalsCollection) return;
+  console.log("🔍 [Prefetch] Scanning for missing extended stock details in DB...");
+  const db = signalsCollection.database;
+  const extendedCollection = db.collection("stock_extended_details");
+  
+  try {
+    const existingStocks = await extendedCollection.find({}, { projection: { stock_id: 1 } }).toArray();
+    const existingIds = new Set(existingStocks.map(doc => doc.stock_id));
+    
+    let count = 0;
+    for (const stock of INITIAL_STOCKS) {
+      if (!existingIds.has(stock.id)) {
+        crawlerQueue.push({ stockId: stock.id, priority: "low" });
+        count++;
+      }
+    }
+    
+    if (count > 0) {
+      console.log(`📡 [Prefetch] Found ${count} stocks missing from DB. Enqueued in background crawler queue.`);
+      triggerCrawler();
+    } else {
+      console.log("🟢 [Prefetch] All 90 stocks are fully preloaded in DB. No background crawling needed.");
+    }
+  } catch (err) {
+    console.error("❌ [Prefetch] Failed to scan or preload stocks:", err);
+  }
+}
+
 // 1c. Fetch Extended Stock Details (Financials, Insiders, Institutional Holders, SEC Filings, News)
 app.get("/api/stock-details/:id", async (req, res) => {
   const stockId = req.params.id;
@@ -552,14 +641,32 @@ app.get("/api/stock-details/:id", async (req, res) => {
       details = await extendedCollection.findOne({ stock_id: stockId });
       
       if (!details) {
-        console.log(`[API on-demand] Stock ${stockId} not found in DB. Spawning python crawler...`);
-        try {
-          // Spawn Python script to fetch the stock data on-demand
-          await execAsync(`python fetch_extended_data.py --stock ${stockId}`);
-          // Query again
+        console.log(`[API on-demand] Stock ${stockId} not found in DB. Queueing high-priority crawl...`);
+        
+        const alreadyQueued = crawlerQueue.some(item => item.stockId === stockId);
+        if (!alreadyQueued) {
+          crawlerQueue.unshift({ stockId, priority: "high" });
+          triggerCrawler();
+        } else {
+          const idx = crawlerQueue.findIndex(item => item.stockId === stockId);
+          if (idx !== -1) {
+            crawlerQueue[idx].priority = "high";
+            crawlerQueue.sort((a, b) => {
+              if (a.priority === "high" && b.priority === "low") return -1;
+              if (a.priority === "low" && b.priority === "high") return 1;
+              return 0;
+            });
+          }
+        }
+
+        // Poll MongoDB every 500ms up to 20 times (10 seconds total)
+        for (let i = 0; i < 20; i++) {
+          await new Promise(r => setTimeout(r, 500));
           details = await extendedCollection.findOne({ stock_id: stockId });
-        } catch (crawlerErr) {
-          console.error(`[API on-demand] Crawler failed for stock ${stockId}:`, crawlerErr);
+          if (details) {
+            console.log(`[API on-demand] Stock ${stockId} data ready after ${(i + 1) * 0.5}s.`);
+            break;
+          }
         }
       }
     }
@@ -567,7 +674,6 @@ app.get("/api/stock-details/:id", async (req, res) => {
     if (details) {
       res.json({ success: true, data: details });
     } else {
-      // Fallback
       res.json({ 
         success: false, 
         message: `Extended data for ${stockId} is currently not available.`

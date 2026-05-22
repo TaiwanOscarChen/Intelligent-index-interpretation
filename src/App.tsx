@@ -596,9 +596,9 @@ export default function App() {
     }
     if (sig === "隔離") {
       return (
-        <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-amber-950/70 border border-amber-600/50 text-amber-400 inline-flex items-center gap-1">
-          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-bounce"></span>
-          ⚠️ 物理隔離
+        <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-950/70 border border-emerald-500/50 text-emerald-400 inline-flex items-center gap-1 shadow-[0_0_8px_rgba(16,185,129,0.12)]">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          🟢 物理隔離
         </span>
       );
     }
@@ -949,17 +949,17 @@ export default function App() {
                         {data ? data.tsmcPrice : 1045.0} <span className="text-xs text-zinc-500">元</span>
                       </div>
                     </div>
-                    <div className={`p-2 rounded-lg ${data && data.tsmcPrice >= data.tsmcMa20Value ? "bg-emerald-950/80 border border-emerald-500/30 text-emerald-400" : "bg-rose-955 border border-rose-500/30 text-rose-400"}`}>
+                    <div className={`p-2 rounded-lg ${data && data.tsmcPrice >= data.tsmcMa20Value ? "bg-rose-950/70 border border-rose-500/30 text-rose-400" : "bg-emerald-950/80 border border-emerald-500/30 text-emerald-400"}`}>
                       <Zap className="w-4 h-4 animate-pulse" />
                     </div>
                   </div>
                   <div className="mt-3.5 text-[11px] text-zinc-400 flex items-center justify-between">
                     <span>月線水位: {data ? data.tsmcMa20Value : 1030.0} 元</span>
-                    <span className={`font-bold font-mono ${data && data.tsmcPrice >= data.tsmcMa20Value ? "text-emerald-400" : "text-rose-400"}`}>
-                      {data && data.tsmcPrice >= data.tsmcMa20Value ? "🟢 買點開放" : "🔴 全面停買隔離"}
+                    <span className={`font-bold font-mono ${data && data.tsmcPrice >= data.tsmcMa20Value ? "text-rose-400" : "text-emerald-400"}`}>
+                      {data && data.tsmcPrice >= data.tsmcMa20Value ? "🔴 買點開放" : "🟢 全面停買隔離"}
                     </span>
                   </div>
-                  <div className={`absolute bottom-0 left-0 right-0 h-0.5 ${data && data.tsmcPrice >= data.tsmcMa20Value ? "bg-emerald-500" : "bg-rose-500"}`}></div>
+                  <div className={`absolute bottom-0 left-0 right-0 h-0.5 ${data && data.tsmcPrice >= data.tsmcMa20Value ? "bg-rose-500" : "bg-emerald-500"}`}></div>
                 </div>
 
                 {/* 大盤隔離狀態 */}
@@ -1000,7 +1000,7 @@ export default function App() {
                       <div className="text-sm font-bold text-zinc-300 mt-0.5">{holdCount}</div>
                     </div>
                     <div className="bg-zinc-900/60 p-1.5 rounded border border-zinc-850">
-                      <div className="text-[9px] text-amber-500">隔</div>
+                      <div className="text-[9px] text-emerald-400 font-bold">隔</div>
                       <div className="text-sm font-bold text-white mt-0.5">{quarantinedCount}</div>
                     </div>
                   </div>
@@ -1015,19 +1015,19 @@ export default function App() {
                     <div className="grid grid-cols-3 gap-1 mt-2.5">
                       <button 
                         onClick={() => handleTsmcOverrideChange("force_green")}
-                        className={`py-1 text-[10px] rounded transition-all font-mono font-bold ${overrideTsmcState === "force_green" ? "bg-emerald-600 text-white" : "bg-zinc-900 text-zinc-400 border border-zinc-850 hover:text-white"}`}
+                        className={`py-1 text-[10px] rounded transition-all font-mono font-bold ${overrideTsmcState === "force_green" ? "bg-rose-600 text-white shadow-[0_0_8px_rgba(244,63,94,0.3)]" : "bg-zinc-900 text-zinc-400 border border-zinc-850 hover:text-white"}`}
                       >
-                        綠燈
+                        紅燈(買點)
                       </button>
                       <button 
                         onClick={() => handleTsmcOverrideChange("force_red")}
-                        className={`py-1 text-[10px] rounded transition-all font-mono font-bold ${overrideTsmcState === "force_red" ? "bg-rose-600 text-white" : "bg-zinc-900 text-zinc-400 border border-zinc-850 hover:text-white"}`}
+                        className={`py-1 text-[10px] rounded transition-all font-mono font-bold ${overrideTsmcState === "force_red" ? "bg-emerald-600 text-white shadow-[0_0_8px_rgba(16,184,129,0.3)]" : "bg-zinc-900 text-zinc-400 border border-zinc-850 hover:text-white"}`}
                       >
-                        紅燈
+                        綠燈(隔離)
                       </button>
                       <button 
                         onClick={() => handleTsmcOverrideChange("auto")}
-                        className={`py-1 text-[10px] rounded transition-all font-mono font-bold ${overrideTsmcState === "auto" ? "bg-[#E5A823] text-black" : "bg-zinc-900 text-zinc-400 border border-zinc-850 hover:text-white"}`}
+                        className={`py-1 text-[10px] rounded transition-all font-mono font-bold ${overrideTsmcState === "auto" ? "bg-zinc-700 text-white" : "bg-zinc-900 text-zinc-400 border border-zinc-850 hover:text-white"}`}
                       >
                         自動
                       </button>
@@ -1133,7 +1133,7 @@ export default function App() {
                                 : sig === "空" 
                                 ? "bg-emerald-950/70 border border-emerald-500/50 text-emerald-400" 
                                 : sig === "隔離" 
-                                ? "bg-amber-950/70 border border-amber-600/50 text-amber-400" 
+                                ? "bg-emerald-950/70 border border-emerald-500/50 text-emerald-400" 
                                 : "bg-zinc-800 text-white border border-zinc-700"
                               : "bg-zinc-900 text-zinc-550 border border-transparent hover:text-zinc-350"
                           }`}
@@ -1173,7 +1173,7 @@ export default function App() {
                         <th className="py-2.5 px-2 text-right">漲跌%</th>
                         <th className="py-2.5 px-2 text-center text-[#FFB74D]">評分</th>
                         <th className="py-2.5 px-3 text-left">建議進場價格區間 (5檔定價)</th>
-                        <th className="py-2.5 px-2 text-right text-yellow-500 font-bold">減碼價(20%)</th>
+                        <th className="py-2.5 px-2 text-right text-rose-400 font-bold">減碼價(20%)</th>
                         <th className="py-2.5 px-2 text-right text-rose-400">移動停利</th>
                         <th className="py-2.5 px-2 text-right text-emerald-400 font-bold">防呆停損</th>
                         <th className="py-2.5 px-2 text-center">策略訊號</th>
@@ -1230,7 +1230,7 @@ export default function App() {
                               <td className="py-2 px-3 text-left font-mono text-[10px] text-zinc-350 max-w-[210px] truncate" title={stock.suggested_entry_price}>
                                 {stock.suggested_entry_price}
                               </td>
-                              <td className="py-2 px-2 text-right font-mono text-yellow-500 font-bold">
+                              <td className="py-2 px-2 text-right font-mono text-rose-400 font-bold">
                                 {stock.take_profit_half_price?.toFixed(1) || "-"}
                               </td>
                               <td className="py-2 px-2 text-right font-mono text-rose-400">
@@ -1931,10 +1931,10 @@ export default function App() {
                   </div>
                   <span className={`px-2.5 py-1 text-[10px] font-mono font-bold rounded ${
                     data && data.tsmcPrice >= data.tsmcMa20Value 
-                      ? "bg-emerald-950/70 border border-emerald-500/40 text-emerald-400" 
-                      : "bg-rose-955 border border-rose-500/40 text-rose-400"
+                      ? "bg-rose-955 border border-rose-500/40 text-rose-400" 
+                      : "bg-emerald-950/70 border border-emerald-500/40 text-emerald-400"
                   }`}>
-                    {data && data.tsmcPrice >= data.tsmcMa20Value ? "📈 剛性多頭" : "📉 空頭防禦"}
+                    {data && data.tsmcPrice >= data.tsmcMa20Value ? "🔴 買點開放" : "🟢 全面停買隔離"}
                   </span>
                 </div>
                 {/* Comparison Bar */}
@@ -1954,8 +1954,8 @@ export default function App() {
                 </div>
                 <p className="text-[10px] text-zinc-500 mt-3.5 leading-normal font-medium">
                   {data && data.tsmcPrice >= data.tsmcMa20Value 
-                    ? "🟢 大盤站上月線生命線，策略全面解除買進限制！" 
-                    : "🔴 大盤跌破月線生命線，啟動物理隔離，暫停任何多頭信號。"}
+                    ? "🔴 大盤站上月線生命線，策略全面解除買進限制！" 
+                    : "🟢 大盤跌破月線生命線，啟動物理隔離，暫停任何多頭信號。"}
                 </p>
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
               </div>
@@ -2058,8 +2058,8 @@ export default function App() {
                   <div className="text-lg font-bold text-zinc-300 mt-1 font-mono">{summary.overall.holdCount}</div>
                 </div>
                 <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-900">
-                  <div className="text-amber-500 text-[10px] font-bold">⚠️ 物理隔離</div>
-                  <div className="text-lg font-bold text-amber-500 mt-1 font-mono">{summary.overall.isoCount}</div>
+                  <div className="text-[#10b881] text-[10px] font-bold">🟢 物理隔離</div>
+                  <div className="text-lg font-bold text-[#10b881] mt-1 font-mono">{summary.overall.isoCount}</div>
                 </div>
                 <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-900">
                   <div className="text-[#FFD54F] text-[10px] font-bold">精英比率 (⭐&ge;33)</div>
@@ -2467,7 +2467,7 @@ export default function App() {
                       <th className="py-3 px-2 text-right">進場均價</th>
                       <th className="py-3 px-2 text-right">持倉股數</th>
                       <th className="py-3 px-2 text-right">現價</th>
-                      <th className="py-3 px-2 text-right text-yellow-500">減碼停利(20%)</th>
+                      <th className="py-3 px-2 text-right text-rose-400 font-bold">減碼停利(20%)</th>
                       <th className="py-3 px-2 text-right text-rose-400">移動停利</th>
                       <th className="py-3 px-2 text-right text-emerald-400">強制停損</th>
                       <th className="py-3 px-2 text-right">未實現損益 (P&L)</th>
@@ -2491,8 +2491,16 @@ export default function App() {
                         return (
                           <tr key={item.stock_id} className="hover:bg-zinc-900/30 transition">
                             <td className="py-3 px-4 font-bold text-white">
-                              <span className="font-mono">{item.stock_id}</span>
-                              <span className="text-[10px] text-zinc-500 ml-1.5">{item.stock_name}</span>
+                              <div className="flex items-center gap-1">
+                                <span className="font-mono">{item.stock_id}</span>
+                                <span className="text-[10px] text-zinc-500 ml-1.5">{item.stock_name}</span>
+                                {item.current_pnl_pct >= 20.0 && (
+                                  <span className="inline-block w-2 h-2 rounded-full bg-rose-500 animate-pulse ml-1.5 shadow-[0_0_8px_rgba(244,63,94,0.6)]" title="獲利 20% 強制減碼警示" />
+                                )}
+                                {(item.current_price <= item.stop_loss_price || item.suggested_action.includes("停損")) && (
+                                  <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse ml-1.5 shadow-[0_0_8px_rgba(16,184,129,0.6)]" title="跌破 20MA 停損隔離警示" />
+                                )}
+                              </div>
                             </td>
                             <td className="py-3 px-2 text-right font-mono text-zinc-400">
                               {item.buy_date} {item.buy_time}
@@ -2500,7 +2508,7 @@ export default function App() {
                             <td className="py-3 px-2 text-right font-mono font-semibold">{item.buy_price.toFixed(1)}</td>
                             <td className="py-3 px-2 text-right font-mono">{item.shares} 股</td>
                             <td className="py-3 px-2 text-right font-mono font-semibold text-white">{item.current_price.toFixed(1)}</td>
-                            <td className="py-3 px-2 text-right font-mono text-yellow-500 font-bold">
+                            <td className="py-3 px-2 text-right font-mono text-rose-400 font-bold">
                               {Math.round(item.buy_price * 1.2 * 10) / 10}
                             </td>
                             <td className="py-3 px-2 text-right font-mono text-rose-400">
@@ -2516,9 +2524,9 @@ export default function App() {
                             <td className="py-3 px-3 text-center">
                               <span className={`px-2 py-0.5 rounded text-[10px] font-bold inline-flex items-center gap-1 ${
                                 item.suggested_action.includes("停損")
-                                  ? "bg-rose-950 text-rose-400 border border-rose-500/40"
-                                  : item.suggested_action.includes("移動停利")
                                   ? "bg-emerald-950 text-emerald-400 border border-emerald-500/40"
+                                  : (item.suggested_action.includes("停利") || item.suggested_action.includes("減碼"))
+                                  ? "bg-rose-950 text-rose-400 border border-rose-500/40"
                                   : "bg-zinc-800 text-zinc-400"
                               }`}>
                                 {item.suggested_action}
@@ -2527,7 +2535,7 @@ export default function App() {
                             <td className="py-3 px-4 text-center">
                               <button
                                 onClick={() => openExitModalForHolding(item)}
-                                className="px-3 py-1 rounded bg-[#E5A823] text-black font-bold hover:opacity-90 transition active:scale-[0.96] text-[11px]"
+                                className="px-3 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-bold hover:opacity-90 transition active:scale-[0.96] text-[11px] shadow-[0_0_8px_rgba(16,184,129,0.2)]"
                               >
                                 出場結算
                               </button>
@@ -2600,7 +2608,13 @@ export default function App() {
                         <div className={`text-sm font-bold mt-1 ${item.pnl_value >= 0 ? "text-rose-400" : "text-emerald-400"}`}>
                           {item.pnl_value >= 0 ? `+${Math.round(item.pnl_value).toLocaleString()}` : Math.round(item.pnl_value).toLocaleString()} 元
                         </div>
-                        <div className="text-[10px] bg-zinc-900 border border-zinc-850 text-zinc-450 px-2 py-0.5 rounded mt-3 font-sans font-semibold">
+                        <div className={`text-[10px] border px-2 py-0.5 rounded mt-3 font-sans font-semibold ${
+                          item.exit_reason.includes("停損")
+                            ? "bg-emerald-950/60 border-emerald-500/30 text-emerald-400"
+                            : (item.exit_reason.includes("停利") || item.exit_reason.includes("減碼"))
+                            ? "bg-rose-950/60 border-rose-500/30 text-rose-400"
+                            : "bg-zinc-900 border-zinc-850 text-zinc-400"
+                        }`}>
                           原因: {item.exit_reason}
                         </div>
                       </div>
@@ -2725,8 +2739,23 @@ export default function App() {
                   if (!activeSig) {
                     return <p className="text-xs text-zinc-550 italic font-mono">請先在雷達表完成一次洗價掃描</p>;
                   }
+                  
+                  const isEStopOrStopLoss = activeSig.close_price <= activeSig.stop_loss_price || activeSig.signal === "隔離" || activeSig.action_signal.includes("停損");
+                  const holdingItem = holdings.find(h => h.stock_id === chatStockId);
+                  const isTakeProfitAlert = holdingItem && holdingItem.current_pnl_pct >= 20.0;
+                  
                   return (
                     <div className="space-y-3.5 text-xs font-mono">
+                      {isEStopOrStopLoss && (
+                        <div className="bg-emerald-950/70 border border-emerald-500/50 text-emerald-400 text-[10px] p-2.5 rounded-lg animate-pulse shadow-[0_0_10px_rgba(16,184,129,0.2)] leading-relaxed select-none mb-1">
+                          🟢 跌破 20MA 停損隔離警示中 - 收盤價已在月線下方，嚴禁進場且強制執行停損風控！
+                        </div>
+                      )}
+                      {isTakeProfitAlert && (
+                        <div className="bg-rose-950/70 border border-rose-500/50 text-rose-400 text-[10px] p-2.5 rounded-lg animate-pulse shadow-[0_0_10px_rgba(244,63,94,0.2)] leading-relaxed select-none mb-1">
+                          🔴 獲利 20% 減碼警示中 - 當前帳面獲利已達 {holdingItem.current_pnl_pct.toFixed(2)}%，請執行強制減碼 50% 本金回收風控！
+                        </div>
+                      )}
                       
                       <div className="grid grid-cols-2 gap-2 text-center text-[10px]">
                         <div className="bg-zinc-950 p-2 rounded border border-zinc-900">
@@ -2752,7 +2781,15 @@ export default function App() {
                         </div>
                         <div className="flex justify-between text-[11px] border-t border-zinc-900 pt-1.5">
                           <span className="text-zinc-500">具體行動:</span>
-                          <span className="text-white font-bold">{activeSig.action_signal}</span>
+                          <span className={`font-bold ${
+                            activeSig.action_signal.includes("買進") 
+                              ? "text-rose-400" 
+                              : activeSig.action_signal.includes("停損") 
+                              ? "text-emerald-400" 
+                              : "text-white"
+                          }`}>
+                            {activeSig.action_signal}
+                          </span>
                         </div>
                         <div className="flex justify-between text-[11px] border-t border-zinc-900 pt-1.5">
                           <span className="text-zinc-500">建議進場點:</span>
@@ -2763,7 +2800,7 @@ export default function App() {
                       <div className="grid grid-cols-3 gap-1.5 text-center text-[9px]">
                         <div className="bg-zinc-950 p-1.5 rounded border border-zinc-900">
                           <div className="text-zinc-550">20% 減碼點</div>
-                          <div className="text-yellow-500 font-bold mt-0.5">{activeSig.take_profit_half_price}</div>
+                          <div className="text-rose-400 font-bold mt-0.5">{activeSig.take_profit_half_price}</div>
                         </div>
                         <div className="bg-zinc-950 p-1.5 rounded border border-zinc-900">
                           <div className="text-zinc-550">移動停利線</div>
@@ -3012,10 +3049,10 @@ export default function App() {
                 <button
                   onClick={handleBuyOrderSubmit}
                   disabled={isSubmittingBuy || (buyPrice * buyShares > 25000)}
-                  className={`px-5 py-2 rounded-lg font-bold text-xs ${
+                  className={`px-5 py-2 rounded-lg font-bold text-xs transition duration-200 ${
                     (buyPrice * buyShares > 25000)
                       ? "bg-zinc-800 text-zinc-650 cursor-not-allowed"
-                      : "bg-[#E5A823] text-black hover:opacity-90 active:scale-[0.98] transition"
+                      : "bg-rose-600 hover:bg-rose-500 text-white hover:opacity-90 active:scale-[0.98] shadow-[0_0_12px_rgba(244,63,94,0.3)] hover:shadow-[0_0_16px_rgba(244,63,94,0.4)]"
                   }`}
                 >
                   {isSubmittingBuy ? "正在對衝建倉中..." : "🚀 確認模擬建倉"}
@@ -3122,7 +3159,7 @@ export default function App() {
                 <button
                   onClick={handleExitOrderSubmit}
                   disabled={isSubmittingExit}
-                  className="px-5 py-2 rounded-lg font-bold text-xs bg-[#E5A823] text-black hover:opacity-90 active:scale-[0.98] transition"
+                  className="px-5 py-2 rounded-lg font-bold text-xs bg-emerald-600 hover:bg-emerald-500 text-white hover:opacity-90 active:scale-[0.98] transition shadow-[0_0_12px_rgba(16,184,129,0.3)] hover:shadow-[0_0_16px_rgba(16,184,129,0.4)]"
                 >
                   {isSubmittingExit ? "正在召喚 AI 大師檢討交易中..." : "🚪 確認清倉結算"}
                 </button>

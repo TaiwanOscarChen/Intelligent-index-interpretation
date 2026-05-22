@@ -166,9 +166,14 @@ def calculate_ema(series, period):
 
 def calculate_rsi(series, period=14):
     delta = series.diff()
-    gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
-    loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
-    rs = gain / loss
+    gain = delta.clip(lower=0)
+    loss = -delta.clip(upper=0)
+    
+    # Welles Wilder's smoothing using ewm (exponential moving average with alpha = 1 / period)
+    avg_gain = gain.ewm(alpha=1/period, adjust=False).mean()
+    avg_loss = loss.ewm(alpha=1/period, adjust=False).mean()
+    
+    rs = avg_gain / avg_loss
     rsi = 100 - (100 / (1 + rs))
     return rsi.fillna(50)
 
@@ -293,6 +298,7 @@ def run_v2026_full_sweep():
         atr_val = stock["base_price"] * 0.02
         bb_middle = stock["base_price"]
         bb_upper = stock["base_price"] * 1.05
+        bb_lower = stock["base_price"] * 0.95
         vwap_5d = stock["base_price"]
         
         # 漲幅及表現
@@ -366,8 +372,9 @@ def run_v2026_full_sweep():
                     
                     # Bollinger Bands
                     bb_middle = ma20_val
-                    std_dev = safe_float(closes.rolling(20).std().iloc[-1])
+                    std_dev = safe_float(closes.rolling(20).std().iloc[-1]) if len(closes) >= 20 else 0.0
                     bb_upper = bb_middle + 2 * std_dev
+                    bb_lower = bb_middle - 2 * std_dev
                     
                     # 5日 VWAP
                     typical_price = (highs + lows + closes) / 3
@@ -413,6 +420,7 @@ def run_v2026_full_sweep():
             atr_val = round(close_price * random.uniform(0.015, 0.03), 1)
             bb_middle = ma20_val
             bb_upper = bb_middle * 1.06
+            bb_lower = bb_middle * 0.94
             vwap_5d = round(close_price * random.uniform(0.99, 1.01), 1)
 
         # 40分神級評分系統 (V2026.Max Score Conditions)
@@ -608,6 +616,9 @@ def run_v2026_full_sweep():
             "ma20_status": ma20_status,
             "volume_multiplier": round(volume / vol_5ma_val, 2) if vol_5ma_val > 0 else 1.0,
             "atr_stop": atr_stop,
+            "bb_middle": round(bb_middle, 1),
+            "bb_upper": round(bb_upper, 1),
+            "bb_lower": round(bb_lower, 1),
             "change_pct": change_pct,
             "master_notes": stock["notes"],
             "category": stock["category"],
