@@ -27,7 +27,8 @@ import {
   Briefcase,
   DollarSign,
   LineChart,
-  Lock
+  Lock,
+  Sparkles
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { StockSignal, ScanResult, StockSignalOption, HoldingItem, ExitLogItem } from "./types.js";
@@ -463,6 +464,11 @@ export default function App() {
   };
 
   const processedSignals = getProcessedSignals();
+
+  const longCount = data?.signals?.filter(s => s.signal === "多").length || 0;
+  const shortCount = data?.signals?.filter(s => s.signal === "空").length || 0;
+  const holdCount = data?.signals?.filter(s => s.signal === "持倉").length || 0;
+  const quarantinedCount = data?.signals?.filter(s => s.signal === "隔離").length || 0;
 
   // Blacklisted stocks (Below 20MA or Score < 33)
   const getBlacklistedStocks = () => {
