@@ -10,6 +10,7 @@ import { MongoClient, Db, Collection } from "mongodb";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 import { exec } from "child_process";
+import { promisify } from "util";
 import { INITIAL_STOCKS, StockBasicInfo } from "./src/initial_stocks.js";
 import { StockSignal, ScanResult, StockSignalOption, HoldingItem, ExitLogItem } from "./src/types.js";
 
@@ -534,6 +535,46 @@ app.get("/api/strategy-summary", async (req, res) => {
     });
   } catch (err: any) {
     console.error("Strategy Summary API error:", err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+const execAsync = promisify(exec);
+
+// 1c. Fetch Extended Stock Details (Financials, Insiders, Institutional Holders, SEC Filings, News)
+app.get("/api/stock-details/:id", async (req, res) => {
+  const stockId = req.params.id;
+  try {
+    let details = null;
+    if (dbConnected && signalsCollection) {
+      const db = signalsCollection.database;
+      const extendedCollection = db.collection("stock_extended_details");
+      details = await extendedCollection.findOne({ stock_id: stockId });
+      
+      if (!details) {
+        console.log(`[API on-demand] Stock ${stockId} not found in DB. Spawning python crawler...`);
+        try {
+          // Spawn Python script to fetch the stock data on-demand
+          await execAsync(`python fetch_extended_data.py --stock ${stockId}`);
+          // Query again
+          details = await extendedCollection.findOne({ stock_id: stockId });
+        } catch (crawlerErr) {
+          console.error(`[API on-demand] Crawler failed for stock ${stockId}:`, crawlerErr);
+        }
+      }
+    }
+    
+    if (details) {
+      res.json({ success: true, data: details });
+    } else {
+      // Fallback
+      res.json({ 
+        success: false, 
+        message: `Extended data for ${stockId} is currently not available.`
+      });
+    }
+  } catch (err: any) {
+    console.error("Error in stock-details API:", err);
     res.status(500).json({ success: false, message: err.message });
   }
 });

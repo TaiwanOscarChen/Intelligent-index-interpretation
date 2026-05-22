@@ -85,6 +85,11 @@ export default function App() {
   const [isGeneratingNotes, setIsGeneratingNotes] = useState<boolean>(false);
   const [isSavingNotes, setIsSavingNotes] = useState<boolean>(false);
 
+  // Extended details states
+  const [extendedDetails, setExtendedDetails] = useState<any>(null);
+  const [isLoadingExtended, setIsLoadingExtended] = useState<boolean>(false);
+  const [detailTab, setDetailTab] = useState<"notes" | "financials" | "insiders" | "filings">("notes");
+
   // Chat
   const [chatMessages, setChatMessages] = useState<Array<{role: "user" | "assistant", content: string}>>([
     {
@@ -182,6 +187,31 @@ export default function App() {
   useEffect(() => {
     fetchStrategySummary();
   }, [activeTab, data]);
+
+  useEffect(() => {
+    if (selectedStock) {
+      const fetchExtendedDetails = async () => {
+        setIsLoadingExtended(true);
+        try {
+          const response = await fetch(`/api/stock-details/${selectedStock.stock_id}`);
+          const resData = await response.json();
+          if (resData.success && resData.data) {
+            setExtendedDetails(resData.data);
+          } else {
+            setExtendedDetails(null);
+          }
+        } catch (err) {
+          console.error("Failed to fetch extended stock details:", err);
+          setExtendedDetails(null);
+        } finally {
+          setIsLoadingExtended(false);
+        }
+      };
+      fetchExtendedDetails();
+    } else {
+      setExtendedDetails(null);
+    }
+  }, [selectedStock]);
 
   useEffect(() => {
     if (data && data.signals && screenerCategories.length === 0) {
@@ -1295,111 +1325,490 @@ export default function App() {
 
                     <hr className="border-zinc-850" />
 
-                    {/* Technical score & checklist summary */}
-                    <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-850/80 space-y-2">
-                      <div className="flex justify-between items-center text-xs">
-                        <span className="text-zinc-400">當前策略評分:</span>
-                        <span className="font-mono text-[#FFB74D] font-bold text-sm">
-                          {selectedStock.score} / 40 分
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center text-xs border-t border-zinc-850/40 pt-1.5">
-                        <span className="text-zinc-400">行動指令:</span>
-                        <span className={`px-2 py-0.5 text-[9px] font-bold rounded ${
-                          selectedStock.action_signal.includes("買進") 
-                            ? "bg-rose-950 text-rose-400 border border-rose-500/40" 
-                            : selectedStock.action_signal.includes("停損") 
-                            ? "bg-emerald-950 text-emerald-400 border border-emerald-500/40"
-                            : "bg-zinc-800 text-zinc-400"
-                        }`}>
-                          {selectedStock.action_signal}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center text-xs border-t border-zinc-850/40 pt-1.5">
-                        <span className="text-zinc-400">5檔動態定價:</span>
-                        <span className="font-mono text-white text-[10px]">
-                          成本: {selectedStock.dynamicTiers?.vwap5d} | 漲停: {selectedStock.dynamicTiers?.limitUp}
-                        </span>
-                      </div>
+                    {/* Tab Navigation inside Sidebar */}
+                    <div className="grid grid-cols-4 gap-1 bg-zinc-950 p-1 rounded-lg border border-zinc-850 text-center font-bold font-mono my-2 shadow-[inset_0_1px_2px_rgba(0,0,0,0.4)]">
+                      <button
+                        onClick={() => setDetailTab("notes")}
+                        className={`py-2 text-[9px] rounded transition-all flex flex-col items-center justify-center gap-0.5 ${
+                          detailTab === "notes"
+                            ? "bg-[#E5A823] text-black shadow font-black"
+                            : "text-zinc-450 hover:text-white"
+                        }`}
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                        <span>實戰備忘</span>
+                      </button>
+                      <button
+                        onClick={() => setDetailTab("financials")}
+                        className={`py-2 text-[9px] rounded transition-all flex flex-col items-center justify-center gap-0.5 ${
+                          detailTab === "financials"
+                            ? "bg-[#E5A823] text-black shadow font-black"
+                            : "text-zinc-450 hover:text-white"
+                        }`}
+                      >
+                        <LineChart className="w-3.5 h-3.5" />
+                        <span>財務分析</span>
+                      </button>
+                      <button
+                        onClick={() => setDetailTab("insiders")}
+                        className={`py-2 text-[9px] rounded transition-all flex flex-col items-center justify-center gap-0.5 ${
+                          detailTab === "insiders"
+                            ? "bg-[#E5A823] text-black shadow font-black"
+                            : "text-zinc-450 hover:text-white"
+                        }`}
+                      >
+                        <Flame className="w-3.5 h-3.5" />
+                        <span>籌碼內線</span>
+                      </button>
+                      <button
+                        onClick={() => setDetailTab("filings")}
+                        className={`py-2 text-[9px] rounded transition-all flex flex-col items-center justify-center gap-0.5 ${
+                          detailTab === "filings"
+                            ? "bg-[#E5A823] text-black shadow font-black"
+                            : "text-zinc-450 hover:text-white"
+                        }`}
+                      >
+                        <BookOpen className="w-3.5 h-3.5" />
+                        <span>SEC/新聞</span>
+                      </button>
                     </div>
 
-                    {/* Gemini intelligent notes generation section */}
-                    <div className="flex flex-col gap-2">
-                      <div className="flex justify-between items-center">
-                        <h4 className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider font-mono flex items-center gap-1.5">
-                          <Edit3 className="w-3.5 h-3.5" />
-                          操盤手機構備忘錄
-                        </h4>
-                        
-                        <button
-                          onClick={generateAiNotesWithGemini}
-                          disabled={isGeneratingNotes}
-                          className="px-2.5 py-1 text-[9px] font-bold rounded-full bg-indigo-950 text-indigo-300 border border-indigo-500/40 hover:bg-indigo-900 transition flex items-center gap-1"
-                        >
-                          {isGeneratingNotes ? (
-                            <span className="w-2.5 h-2.5 border-t-2 border-indigo-400 animate-spin rounded-full"></span>
-                          ) : (
-                            <Sparkles className="w-3 h-3 text-indigo-400 animate-pulse" />
-                          )}
-                          AI 大師診斷
-                        </button>
-                      </div>
+                    {/* Tab Contents */}
+                    {detailTab === "notes" && (
+                      <div className="flex flex-col gap-4">
+                        {/* Technical score & checklist summary */}
+                        <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-850/80 space-y-2">
+                          <div className="flex justify-between items-center text-xs">
+                            <span className="text-zinc-400">當前策略評分:</span>
+                            <span className="font-mono text-[#FFB74D] font-bold text-sm">
+                              {selectedStock.score} / 40 分
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center text-xs border-t border-zinc-850/40 pt-1.5">
+                            <span className="text-zinc-400">行動指令:</span>
+                            <span className={`px-2 py-0.5 text-[9px] font-bold rounded ${
+                              selectedStock.action_signal.includes("買進") 
+                                ? "bg-rose-950 text-rose-400 border border-rose-500/40" 
+                                : selectedStock.action_signal.includes("停損") 
+                                ? "bg-emerald-950 text-emerald-400 border border-emerald-500/40"
+                                : "bg-zinc-800 text-zinc-400"
+                            }`}>
+                              {selectedStock.action_signal}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center text-xs border-t border-zinc-850/40 pt-1.5">
+                            <span className="text-zinc-400">5檔動態定價:</span>
+                            <span className="font-mono text-white text-[10px]">
+                              成本: {selectedStock.dynamicTiers?.vwap5d} | 漲停: {selectedStock.dynamicTiers?.limitUp}
+                            </span>
+                          </div>
+                        </div>
 
-                      <div className="relative">
-                        <textarea
-                          value={notesText}
-                          onChange={(e) => setNotesText(e.target.value)}
-                          rows={4}
-                          placeholder="請輸入機構實戰策略筆記，或者點選右上角 [AI 大師診斷] 自動剖析對沖位階..."
-                          className="w-full text-xs bg-zinc-950 border border-zinc-850 rounded-lg p-3 text-zinc-200 placeholder-zinc-650 resize-none focus:outline-none focus:border-[#E5A823]/80 leading-relaxed font-sans"
-                        />
-                        {isGeneratingNotes && (
-                          <div className="absolute inset-0 bg-[#0d0e12]/90 rounded-lg flex flex-col items-center justify-center text-xs text-indigo-400">
-                            <span className="w-5 h-5 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin mb-1.5"></span>
-                            AI 正在對接對沖中樞運算中...
+                        {/* Gemini intelligent notes generation section */}
+                        <div className="flex flex-col gap-2">
+                          <div className="flex justify-between items-center">
+                            <h4 className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider font-mono flex items-center gap-1.5">
+                              <Edit3 className="w-3.5 h-3.5" />
+                              操盤手機構備忘錄
+                            </h4>
+                            
+                            <button
+                              onClick={generateAiNotesWithGemini}
+                              disabled={isGeneratingNotes}
+                              className="px-2.5 py-1 text-[9px] font-bold rounded-full bg-indigo-950 text-indigo-300 border border-indigo-500/40 hover:bg-indigo-900 transition flex items-center gap-1"
+                            >
+                              {isGeneratingNotes ? (
+                                <span className="w-2.5 h-2.5 border-t-2 border-indigo-400 animate-spin rounded-full"></span>
+                              ) : (
+                                <Sparkles className="w-3 h-3 text-indigo-400 animate-pulse" />
+                              )}
+                              AI 大師診斷
+                            </button>
+                          </div>
+
+                          <div className="relative">
+                            <textarea
+                              value={notesText}
+                              onChange={(e) => setNotesText(e.target.value)}
+                              rows={4}
+                              placeholder="請輸入機構實戰策略筆記，或者點選右上角 [AI 大師診斷] 自動剖析對沖位階..."
+                              className="w-full text-xs bg-zinc-950 border border-zinc-850 rounded-lg p-3 text-zinc-200 placeholder-zinc-650 resize-none focus:outline-none focus:border-[#E5A823]/80 leading-relaxed font-sans"
+                            />
+                            {isGeneratingNotes && (
+                              <div className="absolute inset-0 bg-[#0d0e12]/90 rounded-lg flex flex-col items-center justify-center text-xs text-indigo-400">
+                                <span className="w-5 h-5 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin mb-1.5"></span>
+                                AI 正在對接對沖中樞運算中...
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Save Notes button */}
+                          <div className="flex items-center justify-end gap-2 mt-1">
+                            <button
+                              onClick={() => setNotesText(INITIAL_STOCKS.find(s => s.id === selectedStock.stock_id)?.fundamentalNotes || "")}
+                              className="px-3 py-1.5 text-xs text-zinc-550 border border-zinc-850 rounded hover:text-white transition font-medium"
+                            >
+                              還原
+                            </button>
+                            <button
+                              onClick={saveManualNotes}
+                              disabled={isSavingNotes}
+                              className="px-4 py-1.5 text-xs font-bold rounded bg-[#E5A823] text-black hover:opacity-90 transition active:scale-[0.98]"
+                            >
+                              {isSavingNotes ? "寫入中..." : "💾 儲存個股註記"}
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* V2026.Max Score Checklist Breakdown */}
+                        <div className="mt-2">
+                          <h4 className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider font-mono mb-2">
+                            📋 V2026.Max 40分布林指標檢核 (滿分 {selectedStock.score} 分)
+                          </h4>
+                          <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-850 max-h-[160px] overflow-y-auto space-y-1 text-[10px] font-mono">
+                            {selectedStock.scoreBreakdown && Object.entries(selectedStock.scoreBreakdown).map(([key, val]) => {
+                              return (
+                                <div key={key} className="flex justify-between items-center py-0.5 border-b border-zinc-900/50">
+                                  <span className="text-zinc-450 truncate max-w-[210px]">{key}</span>
+                                  {val ? (
+                                    <span className="text-[#f43f5e] font-bold">🟢 符合 (+1)</span>
+                                  ) : (
+                                    <span className="text-zinc-655 text-zinc-600">🔴 未符合 (0)</span>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {detailTab === "financials" && (
+                      <div className="flex flex-col gap-4">
+                        {isLoadingExtended ? (
+                          <div className="space-y-4 animate-pulse p-2">
+                            <div className="h-4 bg-zinc-850 rounded w-1/3"></div>
+                            <div className="h-24 bg-zinc-850 rounded"></div>
+                            <div className="h-4 bg-zinc-850 rounded w-1/2"></div>
+                            <div className="h-20 bg-zinc-850 rounded"></div>
+                          </div>
+                        ) : extendedDetails ? (
+                          <div className="flex flex-col gap-4 text-xs">
+                            {/* Profile */}
+                            <div className="bg-zinc-950 p-3.5 rounded-lg border border-zinc-850/80 space-y-2">
+                              <h4 className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider font-mono">
+                                🏢 公司基本資訊 (Profile)
+                              </h4>
+                              <div className="grid grid-cols-2 gap-2 text-[10px] font-mono">
+                                <div><span className="text-zinc-500">板塊:</span> <span className="text-white font-bold">{extendedDetails.profile?.sector || selectedStock.category}</span></div>
+                                <div><span className="text-zinc-500">行業:</span> <span className="text-white font-bold">{extendedDetails.profile?.industry || selectedStock.industry}</span></div>
+                                <div><span className="text-zinc-500">員工:</span> <span className="text-white font-bold">{extendedDetails.profile?.employees ? extendedDetails.profile.employees.toLocaleString() : "無數據"} 人</span></div>
+                                <div><span className="text-zinc-500">地區:</span> <span className="text-white font-bold">{extendedDetails.profile?.country || "Taiwan"}</span></div>
+                              </div>
+                              {extendedDetails.profile?.website && (
+                                <div className="text-[9px] font-mono text-zinc-500 truncate pt-1 border-t border-zinc-900/50">
+                                  官網: <a href={extendedDetails.profile.website} target="_blank" rel="noopener noreferrer" className="text-[#FFB74D] hover:underline">{extendedDetails.profile.website}</a>
+                                </div>
+                              )}
+                              <div className="text-[10px] text-zinc-400 font-sans leading-relaxed pt-2 border-t border-zinc-900 max-h-36 overflow-y-auto pr-1">
+                                {extendedDetails.profile?.summary || "無詳細公司介紹數據。"}
+                              </div>
+                            </div>
+
+                            {/* Financials Table */}
+                            <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-850/80 space-y-2">
+                              <h4 className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider font-mono">
+                                📊 近四季財務表現 (Financials)
+                              </h4>
+                              {extendedDetails.financials && extendedDetails.financials.length > 0 ? (
+                                <div className="overflow-x-auto">
+                                  <table className="w-full text-left border-collapse table-auto text-[9px] font-mono">
+                                    <thead>
+                                      <tr className="border-b border-zinc-850 text-zinc-500 uppercase pb-1">
+                                        <th className="py-1">季度</th>
+                                        <th className="py-1 text-right">營收 (億)</th>
+                                        <th className="py-1 text-right">淨利 (億)</th>
+                                        <th className="py-1 text-right text-[#f43f5e]">毛利%</th>
+                                        <th className="py-1 text-right text-[#FFB74D]">營利%</th>
+                                        <th className="py-1 text-right">EPS</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {extendedDetails.financials.map((f: any, idx: number) => (
+                                        <tr key={idx} className="border-b border-zinc-900/40 hover:bg-zinc-900/30">
+                                          <td className="py-1 text-zinc-300 font-bold">{f.period}</td>
+                                          <td className="py-1 text-right text-white">{f.revenue ? (f.revenue / 100000000).toFixed(1) : "0.0"}</td>
+                                          <td className="py-1 text-right text-white">{f.net_income ? (f.net_income / 100000000).toFixed(1) : "0.0"}</td>
+                                          <td className="py-1 text-right text-[#f43f5e] font-bold">{f.gross_margin ? `${f.gross_margin}%` : "0%"}</td>
+                                          <td className="py-1 text-right text-[#FFB74D] font-bold">{f.operating_margin ? `${f.operating_margin}%` : "0%"}</td>
+                                          <td className="py-1 text-right text-white font-bold">{f.eps ? f.eps.toFixed(2) : "0.00"}</td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              ) : (
+                                <div className="text-center py-4 text-zinc-550 font-mono text-[9px]">
+                                  ⚠️ 暫無近四季季報數據 (OTC 無揭露或 yfinance 解析限制)
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-center py-8 text-zinc-550 font-mono text-[10px] border border-zinc-850 rounded-lg p-4 bg-zinc-950">
+                            <AlertTriangle className="w-8 h-8 text-zinc-650 mx-auto mb-2" />
+                            無法取得本股的財務資訊
+                            <p className="text-[9px] text-zinc-600 mt-1">請重新點選或重啟後台爬蟲</p>
                           </div>
                         )}
                       </div>
+                    )}
 
-                      {/* Save Notes button */}
-                      <div className="flex items-center justify-end gap-2 mt-1">
-                        <button
-                          onClick={() => setNotesText(INITIAL_STOCKS.find(s => s.id === selectedStock.stock_id)?.fundamentalNotes || "")}
-                          className="px-3 py-1.5 text-xs text-zinc-550 border border-zinc-850 rounded hover:text-white transition font-medium"
-                        >
-                          還原
-                        </button>
-                        <button
-                          onClick={saveManualNotes}
-                          disabled={isSavingNotes}
-                          className="px-4 py-1.5 text-xs font-bold rounded bg-[#E5A823] text-black hover:opacity-90 transition active:scale-[0.98]"
-                        >
-                          {isSavingNotes ? "寫入中..." : "💾 儲存個股註記"}
-                        </button>
+                    {detailTab === "insiders" && (
+                      <div className="flex flex-col gap-4">
+                        {isLoadingExtended ? (
+                          <div className="space-y-4 animate-pulse p-2">
+                            <div className="h-4 bg-zinc-850 rounded w-1/3"></div>
+                            <div className="h-20 bg-zinc-850 rounded"></div>
+                            <div className="h-4 bg-zinc-850 rounded w-1/2"></div>
+                            <div className="h-20 bg-zinc-850 rounded"></div>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col gap-4 text-xs">
+                            {/* Local Chips Analysis */}
+                            <div className="bg-zinc-950 p-3.5 rounded-lg border border-zinc-850/80 space-y-3">
+                              <h4 className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider font-mono">
+                                🇹🇼 台北本體籌碼動態 (Local Chips)
+                              </h4>
+                              
+                              <div className="space-y-2 text-[10px] font-mono">
+                                {/* Foreign holdings bar */}
+                                <div>
+                                  <div className="flex justify-between items-center mb-1">
+                                    <span className="text-zinc-500">外資持股比:</span>
+                                    <span className="text-white font-bold">{selectedStock.foreignRatio?.toFixed(2)}%</span>
+                                  </div>
+                                  <div className="w-full h-1.5 bg-zinc-900 rounded-full overflow-hidden">
+                                    <div className="h-full bg-rose-500" style={{ width: `${Math.min(selectedStock.foreignRatio || 0, 100)}%` }}></div>
+                                  </div>
+                                </div>
+
+                                {/* Inst holdings bar */}
+                                <div>
+                                  <div className="flex justify-between items-center mb-1">
+                                    <span className="text-zinc-500">投信持股比:</span>
+                                    <span className="text-white font-bold">{selectedStock.instRatio?.toFixed(2)}%</span>
+                                  </div>
+                                  <div className="w-full h-1.5 bg-zinc-900 rounded-full overflow-hidden">
+                                    <div className="h-full bg-amber-500" style={{ width: `${Math.min(selectedStock.instRatio || 0, 100)}%` }}></div>
+                                  </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3 pt-1">
+                                  <div className="bg-zinc-900/40 p-2 rounded border border-zinc-900">
+                                    <div className="text-[9px] text-zinc-500">外資鎖碼連天</div>
+                                    <div className={`text-xs font-bold font-mono mt-0.5 ${
+                                      selectedStock.foreignDays > 0 ? "text-[#f43f5e]" : selectedStock.foreignDays < 0 ? "text-[#10b881]" : "text-zinc-400"
+                                    }`}>
+                                      {selectedStock.foreignDays > 0 ? `+${selectedStock.foreignDays} 天買超` : selectedStock.foreignDays < 0 ? `${selectedStock.foreignDays} 天賣超` : "平盤觀望"}
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="bg-zinc-900/40 p-2 rounded border border-zinc-900">
+                                    <div className="text-[9px] text-zinc-500">投信鎖碼連天</div>
+                                    <div className={`text-xs font-bold font-mono mt-0.5 ${
+                                      selectedStock.instDays > 0 ? "text-[#f43f5e]" : selectedStock.instDays < 0 ? "text-[#10b881]" : "text-zinc-400"
+                                    }`}>
+                                      {selectedStock.instDays > 0 ? `+${selectedStock.instDays} 天買超` : selectedStock.instDays < 0 ? `${selectedStock.instDays} 天賣超` : "平盤觀望"}
+                                    </div>
+                                  </div>
+
+                                  <div className="bg-zinc-900/40 p-2 rounded border border-zinc-900">
+                                    <div className="text-[9px] text-zinc-500">融資單日變化</div>
+                                    <div className={`text-xs font-bold font-mono mt-0.5 ${
+                                      selectedStock.marginChange < 0 ? "text-[#10b881]" : selectedStock.marginChange > 0 ? "text-[#f43f5e]" : "text-zinc-400"
+                                    }`}>
+                                      {selectedStock.marginChange > 0 ? `+${selectedStock.marginChange}` : selectedStock.marginChange < 0 ? `${selectedStock.marginChange}` : "0"} 張
+                                    </div>
+                                  </div>
+
+                                  <div className="bg-zinc-900/40 p-2 rounded border border-zinc-900">
+                                    <div className="text-[9px] text-zinc-500">券資比 (空頭壓制)</div>
+                                    <div className="text-xs font-bold font-mono text-white mt-0.5">
+                                      {selectedStock.marginShortRatio?.toFixed(2)}%
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* US ADR Counterpart / Insiders if has ADR */}
+                            {extendedDetails?.has_adr ? (
+                              <div className="space-y-4">
+                                {/* Insider Transactions */}
+                                <div className="bg-zinc-950 p-3.5 rounded-lg border border-zinc-850/80 space-y-2">
+                                  <div className="flex justify-between items-center">
+                                    <h4 className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider font-mono">
+                                      🇺🇸 美股 {extendedDetails.adr_symbol} 內線交易 (Insiders)
+                                    </h4>
+                                    <span className="text-[8px] bg-indigo-950 text-indigo-400 border border-indigo-500/30 px-1.5 py-0.5 rounded font-mono">ADR 對應</span>
+                                  </div>
+                                  
+                                  {extendedDetails.insiders && extendedDetails.insiders.length > 0 ? (
+                                    <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                                      {extendedDetails.insiders.map((item: any, idx: number) => {
+                                        const isBuy = item.type?.toLowerCase().includes("buy") || item.type?.toLowerCase().includes("purchase");
+                                        return (
+                                          <div key={idx} className="bg-zinc-900/50 p-2 rounded border border-zinc-900 text-[10px] flex justify-between items-start gap-1 font-mono">
+                                            <div className="truncate max-w-[140px]">
+                                              <div className="text-white font-bold truncate">{item.name}</div>
+                                              <div className="text-zinc-500 text-[9px] truncate">{item.position}</div>
+                                            </div>
+                                            <div className="text-right">
+                                              <div className={`font-bold ${isBuy ? "text-[#f43f5e]" : "text-[#10b881]"}`}>
+                                                {item.type}
+                                              </div>
+                                              <div className="text-zinc-400 text-[9px] mt-0.5">
+                                                {item.shares ? item.shares.toLocaleString() : "0"} 股 | ${item.value ? item.value.toLocaleString() : "0"}
+                                              </div>
+                                              <div className="text-zinc-500 text-[8px] mt-0.5">{item.date}</div>
+                                            </div>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  ) : (
+                                    <div className="text-center py-4 text-zinc-650 font-mono text-[9px]">
+                                      ⚠️ 暫無近期美股內線交易申報數據。
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* Institutional Holders */}
+                                <div className="bg-zinc-950 p-3.5 rounded-lg border border-zinc-850/80 space-y-2">
+                                  <h4 className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider font-mono">
+                                    🏛️ 美股 {extendedDetails.adr_symbol} 大資金機構 (Institutions)
+                                  </h4>
+                                  
+                                  {extendedDetails.institutions && extendedDetails.institutions.length > 0 ? (
+                                    <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                                      {extendedDetails.institutions.map((item: any, idx: number) => (
+                                        <div key={idx} className="bg-zinc-900/50 p-2 rounded border border-zinc-900 text-[10px] flex justify-between items-start gap-1 font-mono">
+                                          <div className="truncate max-w-[150px]">
+                                            <div className="text-white font-bold truncate">{item.name}</div>
+                                            <div className="text-zinc-500 text-[9px]">持股比: {item.pct ? item.pct.toFixed(2) : "0.00"}%</div>
+                                          </div>
+                                          <div className="text-right">
+                                            <div className="text-zinc-300 font-bold">
+                                              {item.shares ? item.shares.toLocaleString() : "0"} 股
+                                            </div>
+                                            <div className={`text-[9px] mt-0.5 font-bold ${item.pctChange >= 0 ? "text-[#f43f5e]" : "text-[#10b881]"}`}>
+                                              異動: {item.pctChange >= 0 ? `+${item.pctChange.toFixed(2)}%` : `${item.pctChange.toFixed(2)}%`}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <div className="text-center py-4 text-zinc-650 font-mono text-[9px]">
+                                      ⚠️ 暫無大型法人持股變動申報。
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="bg-zinc-950 p-3.5 rounded-lg border border-zinc-850/80 text-center py-6 text-zinc-550 font-mono text-[9px]">
+                                ℹ️ 本標的無美股 ADR/OTC 對應本體，未提供美股內線及大型機構申報數據。
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
+                    )}
 
-                    </div>
+                    {detailTab === "filings" && (
+                      <div className="flex flex-col gap-4">
+                        {isLoadingExtended ? (
+                          <div className="space-y-4 animate-pulse p-2">
+                            <div className="h-4 bg-zinc-850 rounded w-1/3"></div>
+                            <div className="h-20 bg-zinc-850 rounded"></div>
+                            <div className="h-4 bg-zinc-850 rounded w-1/2"></div>
+                            <div className="h-20 bg-zinc-850 rounded"></div>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col gap-4 text-xs">
+                            {/* SEC Filings Section - Only if has ADR */}
+                            {extendedDetails?.has_adr && (
+                              <div className="bg-zinc-950 p-3.5 rounded-lg border border-zinc-850/80 space-y-2">
+                                <h4 className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider font-mono flex items-center justify-between">
+                                  <span>📂 SEC 備案與揭露 (SEC Filings)</span>
+                                  <span className="text-[9px] text-[#FFB74D] font-mono">EDGAR</span>
+                                </h4>
+                                
+                                {extendedDetails.sec_filings && extendedDetails.sec_filings.length > 0 ? (
+                                  <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                                    {extendedDetails.sec_filings.map((filing: any, idx: number) => (
+                                      <a
+                                        key={idx}
+                                        href={filing.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="block bg-zinc-900/50 hover:bg-zinc-900/80 p-2 rounded border border-zinc-900 text-[10px] font-mono transition group"
+                                      >
+                                        <div className="flex justify-between items-center text-zinc-400 group-hover:text-[#FFB74D] font-bold">
+                                          <span>{filing.type} - 申報檔案</span>
+                                          <span className="text-[8px] text-zinc-550">{filing.date}</span>
+                                        </div>
+                                        <div className="text-[9px] text-zinc-500 mt-1 truncate group-hover:text-zinc-300">
+                                          {filing.title}
+                                        </div>
+                                      </a>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div className="text-center py-4 text-zinc-660 font-mono text-[9px]">
+                                    ⚠️ 暫無近期 SEC EDGAR 申報紀錄。
+                                  </div>
+                                )}
+                              </div>
+                            )}
 
-                    {/* V2026.Max Score Checklist Breakdown */}
-                    <div className="mt-2">
-                      <h4 className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider font-mono mb-2">
-                        📋 V2026.Max 40分布林指標檢核 (滿分 {selectedStock.score} 分)
-                      </h4>
-                      <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-850 max-h-[160px] overflow-y-auto space-y-1 text-[10px] font-mono">
-                        {selectedStock.scoreBreakdown && Object.entries(selectedStock.scoreBreakdown).map(([key, val]) => {
-                          return (
-                            <div key={key} className="flex justify-between items-center py-0.5 border-b border-zinc-900/50">
-                              <span className="text-zinc-450 truncate max-w-[210px]">{key}</span>
-                              {val ? (
-                                <span className="text-rose-400 font-bold">🟢 符合 (+1)</span>
+                            {/* Market News Section */}
+                            <div className="bg-zinc-950 p-3.5 rounded-lg border border-zinc-850/80 space-y-2">
+                              <h4 className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider font-mono">
+                                📰 盤中市場熱點與新聞動態 (Market News)
+                              </h4>
+                              
+                              {extendedDetails?.news && extendedDetails.news.length > 0 ? (
+                                <div className="space-y-2 max-h-[280px] overflow-y-auto pr-1">
+                                  {extendedDetails.news.map((item: any, idx: number) => (
+                                    <a
+                                      key={idx}
+                                      href={item.link}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="block bg-zinc-900/50 hover:bg-zinc-900/80 p-2.5 rounded border border-zinc-900 transition group"
+                                    >
+                                      <div className="text-[10px] text-white font-bold leading-snug group-hover:text-[#FFB74D] line-clamp-2 font-sans">
+                                        {item.title}
+                                      </div>
+                                      <div className="flex justify-between items-center text-[8px] text-zinc-500 font-mono mt-1.5">
+                                        <span>{item.publisher}</span>
+                                        <span>{item.date ? new Date(item.date).toLocaleString(undefined, {hour12: false}).substring(5, 16) : "即時"}</span>
+                                      </div>
+                                    </a>
+                                  ))}
+                                </div>
                               ) : (
-                                <span className="text-zinc-600">🔴 未符合 (0)</span>
+                                <div className="text-center py-6 text-zinc-600 font-mono text-[9px]">
+                                  ⚠️ 暫無近期市場新聞，系統將自動隨盤勢更新
+                                </div>
                               )}
                             </div>
-                          );
-                        })}
+                          </div>
+                        )}
                       </div>
-                    </div>
+                    )}
 
                   </div>
                 ) : (
