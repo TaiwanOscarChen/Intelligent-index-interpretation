@@ -1,18 +1,23 @@
 import express from "express";
 
-let app: any;
+const app = express();
+app.use(express.json());
 
-try {
-  // Use dynamic import to catch boot/module resolution errors on Vercel
-  const serverModule = await import("../server.js");
-  app = serverModule.default;
-} catch (err: any) {
-  app = express();
-  app.use(express.json());
-  app.all("*", (req: any, res: any) => {
+let cachedApp: any = null;
+
+app.all("*", async (req: any, res: any) => {
+  try {
+    if (!cachedApp) {
+      // Dynamic import inside route handler avoids top-level await issues
+      const serverModule = await import("../server.js");
+      cachedApp = serverModule.default;
+    }
+    // Delegate to the real Express app instance
+    return cachedApp(req, res);
+  } catch (err: any) {
     res.status(500).json({
       success: false,
-      message: "Server initialization failed dynamically on Vercel",
+      message: "Server dynamic load failed",
       error: err.message,
       stack: err.stack,
       env: {
@@ -20,7 +25,7 @@ try {
         NODE_ENV: process.env.NODE_ENV
       }
     });
-  });
-}
+  }
+});
 
 export default app;
