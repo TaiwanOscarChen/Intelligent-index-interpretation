@@ -24,7 +24,82 @@
 }
 
 body {
-  background-color: #0b0c10;
+  background-color: #08090c;
   color: #d1d4dc;
   font-family: var(--font-sans);
+}
+
+/* Premium Glassmorphism and Gold Hover glow utility classes */
+.premium-card {
+  background: rgba(14, 17, 23, 0.75) !important;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(63, 63, 70, 0.3) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.premium-card:hover {
+  border-color: rgba(229, 168, 37, 0.4) !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(229, 168, 37, 0.08) !important;
+  transform: translateY(-2px);
+}
+
+/* Micro animations for active signals */
+@keyframes signal-pulse-yellow {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
+  }
+  50% {
+    transform: scale(1.2);
+    box-shadow: 0 0 16px rgba(245, 158, 11, 0.9);
+  }
+}
+
+.animate-pulse-yellow {
+  animation: signal-pulse-yellow 2s infinite ease-in-out;
+}
+
+@keyframes signal-pulse-rose {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 8px rgba(244, 63, 94, 0.6);
+  }
+  50% {
+    transform: scale(1.2);
+    box-shadow: 0 0 16px rgba(244, 63, 94, 0.9);
+  }
+}
+
+.animate-pulse-rose {
+  animation: signal-pulse-rose 2s infinite ease-in-out;
+}
+
+/* RWD Smooth Horizontal Scroll Indicators */
+.scroll-fade {
+  position: relative;
+}
+
+.scroll-fade::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 30px;
+  background: linear-gradient(to right, transparent, rgba(8, 9, 12, 0.9));
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.scroll-fade-active::after {
+  opacity: 1;
+}
+
+/* Glass table headers and rows */
+.glass-table-row {
+  transition: background-color 0.2s ease;
+}
+.glass-table-row:hover {
+  background-color: rgba(255, 255, 255, 0.02) !important;
 }

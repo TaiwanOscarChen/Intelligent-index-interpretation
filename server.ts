@@ -904,9 +904,9 @@ app.get("/api/holdings", async (req, res) => {
       // Determine strategy guidance actions
       let suggested_action = "🟢 續抱 (多頭發訊中)";
       if (current_price <= stop_loss_price) {
-        suggested_action = "🛑 強制停損 (E-Stop 物理隔離)";
+        suggested_action = "🟢 強制停損 (E-Stop 物理隔離)";
       } else if (current_price <= trailing_stop_price) {
-        suggested_action = "🟡 移動停利 (鎖定利潤出場)";
+        suggested_action = "🔴 移動停利 (鎖定利潤出場)";
       } else if (current_pnl_pct >= 20.0 && !item.take_profit_triggered) {
         suggested_action = "🟡 強制減碼 (50% 本金鎖利落袋)";
       }

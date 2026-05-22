@@ -609,6 +609,23 @@ export default function App() {
     );
   };
 
+  const renderActionBadge = (action: string) => {
+    if (!action) return null;
+    let className = "bg-zinc-800 text-zinc-400 border border-zinc-700/50";
+    if (action.includes("減碼")) {
+      className = "bg-amber-950 text-amber-400 border border-amber-500/40 shadow-[0_0_8px_rgba(245,158,11,0.15)]";
+    } else if (action.includes("加碼") || action.includes("買進") || action.includes("停利") || action.includes("買")) {
+      className = "bg-rose-950 text-rose-400 border border-rose-500/40 shadow-[0_0_8px_rgba(244,63,94,0.15)]";
+    } else if (action.includes("續抱") || action.includes("持倉") || action.includes("停損") || action.includes("清倉") || action.includes("賣")) {
+      className = "bg-emerald-950 text-emerald-400 border border-emerald-500/40 shadow-[0_0_8px_rgba(16,185,129,0.15)]";
+    }
+    return (
+      <span className={`px-2 py-0.5 rounded text-[10px] font-bold inline-flex items-center gap-1 ${className}`}>
+        {action}
+      </span>
+    );
+  };
+
   const getVixStatusText = () => {
     if (!data) return { text: "檢索中...", color: "text-zinc-500", bg: "bg-zinc-900/60" };
     if (data.macroEStopActive) {
@@ -941,7 +958,7 @@ export default function App() {
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                 
                 {/* TSMC 生命線 */}
-                <div className="bg-[#0e1117] border border-zinc-800 rounded-xl p-4 shadow relative overflow-hidden group">
+                <div className="premium-card rounded-xl p-4 shadow relative overflow-hidden group">
                   <div className="flex items-start justify-between">
                     <div>
                       <h3 className="text-[10px] text-zinc-500 font-black tracking-wider uppercase font-mono">台積電生命線 (20MA)</h3>
@@ -963,7 +980,7 @@ export default function App() {
                 </div>
 
                 {/* 大盤隔離狀態 */}
-                <div className="bg-[#0e1117] border border-zinc-800 rounded-xl p-4 shadow relative overflow-hidden group">
+                <div className="premium-card rounded-xl p-4 shadow relative overflow-hidden group">
                   <div className="flex items-start justify-between">
                     <div>
                       <h3 className="text-[10px] text-zinc-500 font-black tracking-wider uppercase font-mono">台北交易時間防線</h3>
@@ -984,7 +1001,7 @@ export default function App() {
                 </div>
 
                 {/* Score Stats */}
-                <div className="bg-[#0e1117] border border-zinc-800 rounded-xl p-4 shadow relative overflow-hidden group">
+                <div className="premium-card rounded-xl p-4 shadow relative overflow-hidden group">
                   <h3 className="text-[10px] text-zinc-500 font-black tracking-wider uppercase font-mono mb-2">90 檔純高 Beta 分佈</h3>
                   <div className="grid grid-cols-4 gap-1 text-center font-mono">
                     <div className="bg-zinc-900/60 p-1.5 rounded border border-zinc-850">
@@ -1007,7 +1024,7 @@ export default function App() {
                 </div>
 
                 {/* Override testing */}
-                <div className="bg-[#0e1117] border border-zinc-800 rounded-xl p-4 shadow relative overflow-hidden flex flex-col justify-between">
+                <div className="premium-card rounded-xl p-4 shadow relative overflow-hidden flex flex-col justify-between">
                   <div>
                     <h3 className="text-[10px] text-[#FFB74D] font-black tracking-wider uppercase font-mono flex items-center gap-1.5">
                       <Sliders className="w-3.5 h-3.5" /> 大盤剛性回測
@@ -1088,7 +1105,7 @@ export default function App() {
               </div>
 
               {/* Main Matrix Table */}
-              <div className="bg-[#0d0f14] border border-zinc-800 rounded-xl shadow-2xl overflow-hidden">
+              <div className="premium-card rounded-xl shadow-2xl overflow-hidden">
                 
                 {/* Filters Row */}
                 <div className="p-4 border-b border-zinc-800 bg-[#0e1117] flex flex-wrap gap-4 items-center justify-between">
@@ -1286,7 +1303,7 @@ export default function App() {
             {/* Right Side Tactical Intelligence Panel */}
             <div className="lg:col-span-4 flex flex-col gap-6">
               
-              <div className="bg-[#0e1117] border border-zinc-800 rounded-xl shadow-xl overflow-hidden sticky top-[135px]">
+              <div className="premium-card rounded-xl shadow-xl overflow-hidden sticky top-[135px]">
                 
                 {/* Header */}
                 <div className="p-4 bg-gradient-to-r from-zinc-900 to-[#0e1117] border-b border-zinc-850 flex items-center justify-between">
@@ -1386,15 +1403,7 @@ export default function App() {
                           </div>
                           <div className="flex justify-between items-center text-xs border-t border-zinc-850/40 pt-1.5">
                             <span className="text-zinc-400">行動指令:</span>
-                            <span className={`px-2 py-0.5 text-[9px] font-bold rounded ${
-                              selectedStock.action_signal.includes("買進") 
-                                ? "bg-rose-950 text-rose-400 border border-rose-500/40" 
-                                : selectedStock.action_signal.includes("停損") 
-                                ? "bg-emerald-950 text-emerald-400 border border-emerald-500/40"
-                                : "bg-zinc-800 text-zinc-400"
-                            }`}>
-                              {selectedStock.action_signal}
-                            </span>
+                            {renderActionBadge(selectedStock.action_signal)}
                           </div>
                           <div className="flex justify-between items-center text-xs border-t border-zinc-850/40 pt-1.5">
                             <span className="text-zinc-400">5檔動態定價:</span>
@@ -1832,7 +1841,7 @@ export default function App() {
             {/* Top Market Dashboard */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Market Sentiment Gauge */}
-              <div className="bg-[#0e1117] border border-zinc-800 rounded-xl p-5 shadow-lg relative overflow-hidden group">
+              <div className="premium-card rounded-xl p-5 shadow-lg relative overflow-hidden group">
                 <div className="flex justify-between items-start">
                   <div>
                     <h3 className="text-[10px] text-zinc-500 font-black tracking-wider uppercase font-mono">綜合市場情緒指標</h3>
@@ -1875,7 +1884,7 @@ export default function App() {
               </div>
 
               {/* VIX Fear Barometer */}
-              <div className="bg-[#0e1117] border border-zinc-800 rounded-xl p-5 shadow-lg relative overflow-hidden group">
+              <div className="premium-card rounded-xl p-5 shadow-lg relative overflow-hidden group">
                 <div className="flex justify-between items-start">
                   <div>
                     <h3 className="text-[10px] text-zinc-500 font-black tracking-wider uppercase font-mono">VIX 恐慌指數歷史趨勢條</h3>
@@ -1920,7 +1929,7 @@ export default function App() {
               </div>
 
               {/* TSMC 月線生命線儀表板 */}
-              <div className="bg-[#0e1117] border border-zinc-800 rounded-xl p-5 shadow-lg relative overflow-hidden group">
+              <div className="premium-card rounded-xl p-5 shadow-lg relative overflow-hidden group">
                 <div className="flex justify-between items-start">
                   <div>
                     <h3 className="text-[10px] text-zinc-500 font-black tracking-wider uppercase font-mono">台積電 2330 月線生命線儀表板</h3>
@@ -2036,7 +2045,7 @@ export default function App() {
             </div>
 
             {/* Tactical stats panel */}
-            <div className="bg-[#0e1117] border border-zinc-800 rounded-xl p-5 shadow-lg mt-8">
+            <div className="premium-card rounded-xl p-5 shadow-lg mt-8">
               <h4 className="text-white text-xs font-bold font-mono tracking-wider mb-4 uppercase">
                 📊 全球高 Beta 投資組合統計矩陣
               </h4>
@@ -2077,7 +2086,7 @@ export default function App() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-fade-in select-none">
             {/* Left: Filter Controls */}
             <div className="lg:col-span-4 flex flex-col gap-6">
-              <div className="bg-[#0e1117] border border-zinc-800 rounded-xl p-5 shadow-lg space-y-5">
+              <div className="premium-card rounded-xl p-5 shadow-lg space-y-5">
                 <div className="flex items-center gap-2 border-b border-zinc-850 pb-3">
                   <Sliders className="w-5 h-5 text-[#FFB74D]" />
                   <h3 className="font-bold text-white text-sm">智能選股多維度篩選器</h3>
@@ -2227,7 +2236,7 @@ export default function App() {
               </div>
 
               {/* 三大法人籌碼大盤統計 */}
-              <div className="bg-[#0e1117] border border-zinc-800 rounded-xl p-5 shadow-lg space-y-4">
+              <div className="premium-card rounded-xl p-5 shadow-lg space-y-4">
                 <div className="flex items-center gap-2 border-b border-zinc-850 pb-3">
                   <Award className="w-5 h-5 text-indigo-400 animate-pulse" />
                   <h4 className="text-white text-xs font-bold font-mono uppercase">三大法人籌碼雷達監控</h4>
@@ -2284,7 +2293,7 @@ export default function App() {
 
             {/* Right: Screener Filtered Results Table */}
             <div className="lg:col-span-8 flex flex-col gap-6">
-              <div className="bg-[#0d0f14] border border-zinc-800 rounded-xl shadow-2xl overflow-hidden flex-1 flex flex-col justify-between">
+              <div className="premium-card rounded-xl shadow-2xl overflow-hidden flex-1 flex flex-col justify-between">
                 
                 {/* Table Header / Action Strip */}
                 <div className="p-4 border-b border-zinc-800 bg-[#0e1117] flex flex-col sm:flex-row gap-4 items-center justify-between">
@@ -2423,7 +2432,7 @@ export default function App() {
           <div className="space-y-6 animate-fade-in">
             
             {/* Holdings Head card */}
-            <div className="bg-[#0e1117] border border-zinc-800 rounded-xl p-6 shadow flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div className="premium-card rounded-xl p-6 shadow flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
               <div>
                 <h3 className="text-white text-lg font-bold">📦 實時模擬對沖持倉管理區</h3>
                 <p className="text-xs text-zinc-450 mt-1">
@@ -2457,7 +2466,7 @@ export default function App() {
             </div>
 
             {/* Holdings Table */}
-            <div className="bg-[#0d0f14] border border-zinc-800 rounded-xl shadow-xl overflow-hidden">
+            <div className="premium-card rounded-xl shadow-xl overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse table-auto text-xs">
                   <thead>
@@ -2495,7 +2504,7 @@ export default function App() {
                                 <span className="font-mono">{item.stock_id}</span>
                                 <span className="text-[10px] text-zinc-500 ml-1.5">{item.stock_name}</span>
                                 {item.current_pnl_pct >= 20.0 && (
-                                  <span className="inline-block w-2 h-2 rounded-full bg-rose-500 animate-pulse ml-1.5 shadow-[0_0_8px_rgba(244,63,94,0.6)]" title="獲利 20% 強制減碼警示" />
+                                  <span className="inline-block w-2 h-2 rounded-full bg-amber-500 animate-pulse ml-1.5 shadow-[0_0_8px_rgba(245,158,11,0.6)]" title="獲利 20% 強制減碼警示" />
                                 )}
                                 {(item.current_price <= item.stop_loss_price || item.suggested_action.includes("停損")) && (
                                   <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse ml-1.5 shadow-[0_0_8px_rgba(16,184,129,0.6)]" title="跌破 20MA 停損隔離警示" />
@@ -2522,15 +2531,7 @@ export default function App() {
                               <div className="text-[10px] text-zinc-500 mt-0.5">{item.current_pnl_value >= 0 ? `+${Math.round(item.current_pnl_value)}` : Math.round(item.current_pnl_value)} 元</div>
                             </td>
                             <td className="py-3 px-3 text-center">
-                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold inline-flex items-center gap-1 ${
-                                item.suggested_action.includes("停損")
-                                  ? "bg-emerald-950 text-emerald-400 border border-emerald-500/40"
-                                  : (item.suggested_action.includes("停利") || item.suggested_action.includes("減碼"))
-                                  ? "bg-rose-950 text-rose-400 border border-rose-500/40"
-                                  : "bg-zinc-800 text-zinc-400"
-                              }`}>
-                                {item.suggested_action}
-                              </span>
+                              {renderActionBadge(item.suggested_action)}
                             </td>
                             <td className="py-3 px-4 text-center">
                               <button
@@ -2556,7 +2557,7 @@ export default function App() {
         {activeTab === "exits" && (
           <div className="space-y-6 animate-fade-in">
             
-            <div className="bg-[#0e1117] border border-zinc-800 rounded-xl p-6 shadow">
+            <div className="premium-card rounded-xl p-6 shadow">
               <h3 className="text-white text-lg font-bold">🚪 歷史出場操盤檢討日誌</h3>
               <p className="text-xs text-zinc-450 mt-1">
                 記錄您所有歷史模擬持倉的清倉記錄，並包含 <code>Gemini 3.5-Flash</code> 為您客製化產生的精闢操盤回顧與改進方向。
@@ -2565,14 +2566,14 @@ export default function App() {
 
             <div className="grid grid-cols-1 gap-6">
               {exits.length === 0 ? (
-                <div className="bg-[#0d0f14] border border-zinc-800 rounded-xl p-16 text-center text-zinc-550 font-mono shadow-xl">
+                <div className="premium-card rounded-xl p-16 text-center text-zinc-550 font-mono shadow-xl">
                   <History className="w-10 h-10 text-zinc-700 mx-auto mb-2" />
                   目前無歷史已結算部位檢討記錄。
                 </div>
               ) : (
                 exits.map((item, idx) => {
                   return (
-                    <div key={item._id || idx} className="bg-[#0d0f14] border border-zinc-800 rounded-xl p-5 shadow-lg flex flex-col md:flex-row gap-5 relative overflow-hidden group">
+                    <div key={item._id || idx} className="premium-card rounded-xl p-5 shadow-lg flex flex-col md:flex-row gap-5 relative overflow-hidden group">
                       <div className={`absolute top-0 bottom-0 left-0 w-1.5 ${item.pnl_pct >= 0 ? "bg-rose-500" : "bg-emerald-500"}`}></div>
                       
                       {/* Left: Metadata */}
@@ -2608,14 +2609,8 @@ export default function App() {
                         <div className={`text-sm font-bold mt-1 ${item.pnl_value >= 0 ? "text-rose-400" : "text-emerald-400"}`}>
                           {item.pnl_value >= 0 ? `+${Math.round(item.pnl_value).toLocaleString()}` : Math.round(item.pnl_value).toLocaleString()} 元
                         </div>
-                        <div className={`text-[10px] border px-2 py-0.5 rounded mt-3 font-sans font-semibold ${
-                          item.exit_reason.includes("停損")
-                            ? "bg-emerald-950/60 border-emerald-500/30 text-emerald-400"
-                            : (item.exit_reason.includes("停利") || item.exit_reason.includes("減碼"))
-                            ? "bg-rose-950/60 border-rose-500/30 text-rose-400"
-                            : "bg-zinc-900 border-zinc-850 text-zinc-400"
-                        }`}>
-                          原因: {item.exit_reason}
+                        <div className="mt-3">
+                          {renderActionBadge("原因: " + item.exit_reason)}
                         </div>
                       </div>
 
@@ -2644,7 +2639,7 @@ export default function App() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-fade-in">
             
             {/* Left dialog window */}
-            <div className="lg:col-span-8 bg-[#0d0f14] border border-zinc-800 rounded-xl shadow-2xl flex flex-col h-[650px] overflow-hidden">
+            <div className="lg:col-span-8 premium-card rounded-xl shadow-2xl flex flex-col h-[650px] overflow-hidden">
               
               {/* Chat room Header */}
               <div className="p-4 bg-[#0e1117] border-b border-zinc-850 flex items-center justify-between">
@@ -2728,7 +2723,7 @@ export default function App() {
             {/* Right pre-loaded indicator widget */}
             <div className="lg:col-span-4 space-y-6">
               
-              <div className="bg-[#0e1117] border border-zinc-800 rounded-xl p-5 shadow-lg">
+              <div className="premium-card rounded-xl p-5 shadow-lg">
                 <h3 className="text-white text-sm font-bold flex items-center gap-1.5 mb-3">
                   <Sliders className="w-4 h-4 text-[#FFB74D]" />
                   當前研討標的最新量化指引 ({chatStockId})
@@ -2779,17 +2774,9 @@ export default function App() {
                           <span className="text-zinc-500">策略信號:</span>
                           {renderSignalBadge(activeSig.signal)}
                         </div>
-                        <div className="flex justify-between text-[11px] border-t border-zinc-900 pt-1.5">
+                        <div className="flex justify-between items-center text-[11px] border-t border-zinc-900 pt-1.5">
                           <span className="text-zinc-500">具體行動:</span>
-                          <span className={`font-bold ${
-                            activeSig.action_signal.includes("買進") 
-                              ? "text-rose-400" 
-                              : activeSig.action_signal.includes("停損") 
-                              ? "text-emerald-400" 
-                              : "text-white"
-                          }`}>
-                            {activeSig.action_signal}
-                          </span>
+                          {renderActionBadge(activeSig.action_signal)}
                         </div>
                         <div className="flex justify-between text-[11px] border-t border-zinc-900 pt-1.5">
                           <span className="text-zinc-500">建議進場點:</span>
@@ -2834,7 +2821,7 @@ export default function App() {
             {/* Left rule sheet details */}
             <div className="lg:col-span-8 space-y-6">
               
-              <div className="bg-[#0e1117] border border-zinc-800 rounded-xl p-6 shadow-lg space-y-4">
+              <div className="premium-card rounded-xl p-6 shadow-lg space-y-4">
                 <h2 className="text-white text-lg font-bold flex items-center gap-2">
                   <Award className="w-5 h-5 text-[#FFB74D]" />
                   獅王戰神 V2026.Max 全域對沖量化鐵律與風控 SOP 白皮書
@@ -2907,7 +2894,7 @@ export default function App() {
             {/* Right: Real-time blacklist filter */}
             <div className="lg:col-span-4 space-y-6">
               
-              <div className="bg-[#0e1117] border border-zinc-800 rounded-xl p-5 shadow-lg">
+              <div className="premium-card rounded-xl p-5 shadow-lg">
                 <h3 className="text-rose-400 text-sm font-bold flex items-center gap-2 mb-3">
                   <Lock className="w-4 h-4" />
                   當前物理隔離 / 量化避雷黑名單
@@ -2978,7 +2965,7 @@ export default function App() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-[#0e1117] border border-zinc-800 rounded-xl p-6 max-w-md w-full shadow-2xl relative"
+              className="premium-card rounded-xl p-6 max-w-md w-full shadow-2xl relative"
             >
               
               {/* Close Button */}
@@ -3078,7 +3065,7 @@ export default function App() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-[#0e1117] border border-zinc-800 rounded-xl p-6 max-w-md w-full shadow-2xl relative"
+              className="premium-card rounded-xl p-6 max-w-md w-full shadow-2xl relative"
             >
               
               <button 
