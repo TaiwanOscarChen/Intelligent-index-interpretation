@@ -913,8 +913,8 @@ export default function App() {
                         <th className="py-2.5 px-2 text-center text-[#FFB74D]">評分</th>
                         <th className="py-2.5 px-3 text-left">建議進場價格區間 (5檔定價)</th>
                         <th className="py-2.5 px-2 text-right text-yellow-500 font-bold">減碼價(20%)</th>
-                        <th className="py-2.5 px-2 text-right text-emerald-400">移動停利</th>
-                        <th className="py-2.5 px-2 text-right text-rose-400 font-bold">防呆停損</th>
+                        <th className="py-2.5 px-2 text-right text-rose-400">移動停利</th>
+                        <th className="py-2.5 px-2 text-right text-emerald-400 font-bold">防呆停損</th>
                         <th className="py-2.5 px-2 text-center">策略訊號</th>
                         <th className="py-2.5 px-3 text-center">實戰操作</th>
                       </tr>
@@ -972,10 +972,10 @@ export default function App() {
                               <td className="py-2 px-2 text-right font-mono text-yellow-500 font-bold">
                                 {stock.take_profit_half_price?.toFixed(1) || "-"}
                               </td>
-                              <td className="py-2 px-2 text-right font-mono text-emerald-400">
+                              <td className="py-2 px-2 text-right font-mono text-rose-400">
                                 {stock.trailing_stop_price?.toFixed(1) || "-"}
                               </td>
-                              <td className="py-2 px-2 text-right font-mono text-rose-400 font-bold">
+                              <td className="py-2 px-2 text-right font-mono text-emerald-400 font-bold">
                                 {stock.stop_loss_price?.toFixed(1) || "-"}
                               </td>
                               <td className="py-2 px-2 text-center">
@@ -1236,8 +1236,8 @@ export default function App() {
                       <th className="py-3 px-2 text-right">持倉股數</th>
                       <th className="py-3 px-2 text-right">現價</th>
                       <th className="py-3 px-2 text-right text-yellow-500">減碼停利(20%)</th>
-                      <th className="py-3 px-2 text-right text-emerald-400">移動停利</th>
-                      <th className="py-3 px-2 text-right text-rose-400">強制停損</th>
+                      <th className="py-3 px-2 text-right text-rose-400">移動停利</th>
+                      <th className="py-3 px-2 text-right text-emerald-400">強制停損</th>
                       <th className="py-3 px-2 text-right">未實現損益 (P&L)</th>
                       <th className="py-3 px-3 text-center">操盤手指導建議</th>
                       <th className="py-3 px-4 text-center">清倉指令</th>
@@ -1271,10 +1271,10 @@ export default function App() {
                             <td className="py-3 px-2 text-right font-mono text-yellow-500 font-bold">
                               {Math.round(item.buy_price * 1.2 * 10) / 10}
                             </td>
-                            <td className="py-3 px-2 text-right font-mono text-emerald-400">
+                            <td className="py-3 px-2 text-right font-mono text-rose-400">
                               {item.trailing_stop_price?.toFixed(1) || "-"}
                             </td>
-                            <td className="py-3 px-2 text-right font-mono text-rose-400 font-bold">
+                            <td className="py-3 px-2 text-right font-mono text-emerald-400 font-bold">
                               {item.stop_loss_price?.toFixed(1) || "-"}
                             </td>
                             <td className={`py-3 px-2 text-right font-mono font-black ${item.current_pnl_value >= 0 ? "text-rose-400" : "text-emerald-400"}`}>
@@ -1535,11 +1535,11 @@ export default function App() {
                         </div>
                         <div className="bg-zinc-950 p-1.5 rounded border border-zinc-900">
                           <div className="text-zinc-550">移動停利線</div>
-                          <div className="text-emerald-400 font-bold mt-0.5">{activeSig.trailing_stop_price}</div>
+                          <div className="text-rose-400 font-bold mt-0.5">{activeSig.trailing_stop_price}</div>
                         </div>
                         <div className="bg-zinc-950 p-1.5 rounded border border-zinc-900">
                           <div className="text-zinc-550">E-Stop 停損</div>
-                          <div className="text-rose-400 font-bold mt-0.5">{activeSig.stop_loss_price}</div>
+                          <div className="text-emerald-400 font-bold mt-0.5">{activeSig.stop_loss_price}</div>
                         </div>
                       </div>
 
