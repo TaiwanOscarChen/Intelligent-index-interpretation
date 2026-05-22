@@ -642,7 +642,13 @@ def run_v2026_full_sweep():
             "take_profit_half_price": take_profit_half_price,
             "trailing_stop_price": trailing_stop_price,
             "action_signal": action_signal,
-            "liquidity_warning": volume < 50000
+            "liquidity_warning": volume < 50000,
+            
+            # Global Macro Meta (Antigravity Parity)
+            "vixValue": round(vix_value, 2),
+            "macroEStopActive": macro_estop_active,
+            "tsmcPrice": round(tsmc_price, 1),
+            "tsmcMa20Value": round(tsmc_ma20_val, 1)
         }
         
         scanned_signals.append(sig_doc)

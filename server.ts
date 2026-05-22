@@ -352,11 +352,14 @@ app.get("/api/signals", async (req, res) => {
         localScanResult.signals = mappedSignals;
         
         // Fetch VIX / TSMC values from MongoDB if possible (e.g. strategy_signals meta)
-        const tsmc = mappedSignals.find(s => s.stock_id === "2330");
-        if (tsmc) {
-          localScanResult.tsmcPrice = tsmc.close_price;
-          localScanResult.tsmcMa20Value = 1030.0; // fallback standard
-          localScanResult.tsmcMa20Status = tsmc.close_price >= 1030.0 ? "綠燈 - 開放雙倍投資" : "紅燈 - 物理隔離停買";
+        const tsmcDoc = dbSignals.find((s: any) => s.stock_id === "2330");
+        if (tsmcDoc) {
+          localScanResult.tsmcPrice = tsmcDoc.close_price;
+          localScanResult.tsmcMa20Value = tsmcDoc.tsmcMa20Value || 1030.0;
+          localScanResult.tsmcMa20Status = tsmcDoc.close_price >= localScanResult.tsmcMa20Value ? "綠燈 - 開放雙倍投資" : "紅燈 - 物理隔離停買";
+          localScanResult.vixValue = tsmcDoc.vixValue || 18.5;
+          localScanResult.macroEStopActive = tsmcDoc.macroEStopActive || false;
+          localScanResult.scanTime = tsmcDoc.timestamp || localScanResult.scanTime;
         }
       }
     }
@@ -436,10 +439,14 @@ app.post("/api/scan", async (req, res) => {
         });
 
         // Sync macro metrics
-        const tsmc = localScanResult.signals.find(s => s.stock_id === "2330");
-        if (tsmc) {
-          localScanResult.tsmcPrice = tsmc.close_price;
-          localScanResult.tsmcMa20Status = tsmc.close_price >= 1030.0 ? "綠燈 - 開放雙倍投資" : "紅燈 - 物理隔離停買";
+        const tsmcDoc = dbSignals.find(s => s.stock_id === "2330");
+        if (tsmcDoc) {
+          localScanResult.tsmcPrice = tsmcDoc.close_price;
+          localScanResult.tsmcMa20Value = tsmcDoc.tsmcMa20Value || 1030.0;
+          localScanResult.tsmcMa20Status = tsmcDoc.close_price >= localScanResult.tsmcMa20Value ? "綠燈 - 開放雙倍投資" : "紅燈 - 物理隔離停買";
+          localScanResult.vixValue = tsmcDoc.vixValue || 18.5;
+          localScanResult.macroEStopActive = tsmcDoc.macroEStopActive || false;
+          localScanResult.scanTime = tsmcDoc.timestamp || localScanResult.scanTime;
         }
       }
     } else {
@@ -918,4 +925,8 @@ const startViteAndExpress = async () => {
   }, 10 * 60 * 1000); // 10 minutes
 };
 
-startViteAndExpress();
+if (!process.env.VERCEL) {
+  startViteAndExpress();
+}
+
+export default app;
