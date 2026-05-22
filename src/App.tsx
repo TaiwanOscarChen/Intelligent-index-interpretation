@@ -954,7 +954,7 @@ export default function App() {
                               <td className="py-2 px-2 text-right font-mono font-semibold">
                                 {stock.close_price.toFixed(1)}
                               </td>
-                              <td className={`py-2 px-2 text-right font-mono font-black ${stock.change_pct >= 0 ? "text-rose-455" : "text-emerald-455"}`}>
+                              <td className={`py-2 px-2 text-right font-mono font-black ${stock.change_pct >= 0 ? "text-rose-400" : "text-emerald-400"}`}>
                                 {stock.change_pct >= 0 ? `+${stock.change_pct.toFixed(2)}` : stock.change_pct.toFixed(2)}%
                               </td>
                               <td className="py-2 px-2 text-center">
@@ -1056,7 +1056,7 @@ export default function App() {
                       <div className="text-right">
                         <span className="text-lg font-mono font-black text-white">{selectedStock.close_price.toFixed(1)}</span>
                         <span className="text-[10px] text-zinc-450 ml-0.5">元</span>
-                        <div className={`text-xs font-bold font-mono mt-0.5 ${selectedStock.change_pct >= 0 ? "text-rose-455" : "text-emerald-455"}`}>
+                        <div className={`text-xs font-bold font-mono mt-0.5 ${selectedStock.change_pct >= 0 ? "text-rose-400" : "text-emerald-400"}`}>
                           {selectedStock.change_pct >= 0 ? `+${selectedStock.change_pct.toFixed(2)}` : selectedStock.change_pct.toFixed(2)}%
                         </div>
                       </div>
@@ -1277,7 +1277,7 @@ export default function App() {
                             <td className="py-3 px-2 text-right font-mono text-rose-400 font-bold">
                               {item.stop_loss_price?.toFixed(1) || "-"}
                             </td>
-                            <td className={`py-3 px-2 text-right font-mono font-black ${item.current_pnl_value >= 0 ? "text-rose-455" : "text-emerald-455"}`}>
+                            <td className={`py-3 px-2 text-right font-mono font-black ${item.current_pnl_value >= 0 ? "text-rose-400" : "text-emerald-400"}`}>
                               <div>{item.current_pnl_pct >= 0 ? `+${item.current_pnl_pct.toFixed(2)}` : item.current_pnl_pct.toFixed(2)}%</div>
                               <div className="text-[10px] text-zinc-500 mt-0.5">{item.current_pnl_value >= 0 ? `+${Math.round(item.current_pnl_value)}` : Math.round(item.current_pnl_value)} 元</div>
                             </td>
@@ -1362,10 +1362,10 @@ export default function App() {
 
                       {/* Middle: Profit card */}
                       <div className="md:w-56 shrink-0 flex flex-col justify-center items-center font-mono border-r border-zinc-850/60 pr-5">
-                        <div className={`text-2xl font-black ${item.pnl_pct >= 0 ? "text-rose-455" : "text-emerald-455"}`}>
+                        <div className={`text-2xl font-black ${item.pnl_pct >= 0 ? "text-rose-400" : "text-emerald-400"}`}>
                           {item.pnl_pct >= 0 ? `+${item.pnl_pct.toFixed(2)}` : item.pnl_pct.toFixed(2)}%
                         </div>
-                        <div className={`text-sm font-bold mt-1 ${item.pnl_value >= 0 ? "text-rose-455" : "text-emerald-455"}`}>
+                        <div className={`text-sm font-bold mt-1 ${item.pnl_value >= 0 ? "text-rose-400" : "text-emerald-400"}`}>
                           {item.pnl_value >= 0 ? `+${Math.round(item.pnl_value).toLocaleString()}` : Math.round(item.pnl_value).toLocaleString()} 元
                         </div>
                         <div className="text-[10px] bg-zinc-900 border border-zinc-850 text-zinc-450 px-2 py-0.5 rounded mt-3 font-sans font-semibold">
@@ -1871,7 +1871,7 @@ export default function App() {
                   return (
                     <div className="flex justify-between border-t border-zinc-900 pt-2.5 font-bold text-sm">
                       <span className="text-zinc-400 font-sans">預計結算損益:</span>
-                      <span className={estProfit >= 0 ? "text-rose-400" : "text-emerald-455"}>
+                      <span className={estProfit >= 0 ? "text-rose-400" : "text-emerald-400"}>
                         {estProfit >= 0 ? `+${estProfit.toLocaleString()}` : estProfit.toLocaleString()} 元 ({Math.round(((exitPrice - exitStock.buy_price) / exitStock.buy_price) * 10000) / 100}%)
                       </span>
                     </div>
