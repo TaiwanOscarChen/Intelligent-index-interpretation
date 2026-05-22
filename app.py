@@ -101,16 +101,14 @@ if not MONGO_URI:
     )
 
 @st.cache_resource(show_spinner=False)
-def get_mongo_collection():
+def get_mongo_collection(collection_name="lion_signals"):
     if not MONGO_URI or "cluster0.xxxx" in MONGO_URI or "<password>" in MONGO_URI:
         return None
     try:
         # 連線逾時設定 5000ms 避免渲染阻塞
         client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
         db = client["LionKing_DB"]
-        collection = db["lion_signals"]
-        # Ping 測試
-        client.admin.command('ping')
+        collection = db[collection_name]
         return collection
     except Exception as e:
         import threading
@@ -441,6 +439,12 @@ def run_v106_full_sweep(tsmc_override=None, is_background=False):
         reduced_50 = False
         high_since_entry = close_price
         entry_support = round(ma20_val * 1.005, 1)
+        suggested_entry_price = 0.0
+        stop_loss_price = 0.0
+        take_profit_half_price = 0.0
+        trailing_stop_price = 0.0
+        action_signal = "觀望"
+        liquidity_warning = False
 
         has_real_data = False
         df_single = downloaded_results.get(ticker_tw)
@@ -474,9 +478,23 @@ def run_v106_full_sweep(tsmc_override=None, is_background=False):
                 ma20_slope = float(ma20_series.iloc[-1] - ma20_series.iloc[-2]) if len(ma20_series) >= 2 else 0.0
                 ma10_val = float(closes.rolling(10).mean().iloc[-1])
                 
+                # 計算 MA5 
+                ma5_series = closes.rolling(5).mean()
+                ma5_val = float(ma5_series.iloc[-1])
+                
                 # 爆量倍數 (成交量 vs 5日均量)
                 volume = float(vols.iloc[-1])
                 vol_5ma_val = float(vols.rolling(5).mean().iloc[-1])
+                
+                # 過去 20 日最高收盤價與最高價
+                max_past_20_closes = float(closes.iloc[-21:-1].max()) if len(closes) >= 21 else close_price
+                highest_past_20_high = float(highs.iloc[-21:-1].max()) if len(highs) >= 21 else close_price
+                
+                # VWAP 典型成交量加權平均價
+                typical_price = (closes + highs + lows) / 3
+                vwap_num = (typical_price[-5:] * vols[-5:]).sum()
+                vwap_den = vols[-5:].sum()
+                vwap = float(vwap_num / vwap_den) if vwap_den > 0 else close_price
                 
                 # 手工無損純 pandas 計算 ATR-14
                 hl = highs - lows
@@ -533,6 +551,12 @@ def run_v106_full_sweep(tsmc_override=None, is_background=False):
                 vol_multiplier = fallback_doc.get("volume_multiplier", 1.0)
                 atr_stop = fallback_doc.get("atr_stop", close_price * 0.95)
                 suggested_shares = fallback_doc.get("suggested_shares", int(20000 // close_price))
+                suggested_entry_price = fallback_doc.get("suggested_entry_price", 0.0)
+                stop_loss_price = fallback_doc.get("stop_loss_price", 0.0)
+                take_profit_half_price = fallback_doc.get("take_profit_half_price", 0.0)
+                trailing_stop_price = fallback_doc.get("trailing_stop_price", 0.0)
+                action_signal = fallback_doc.get("action_signal", "觀望")
+                liquidity_warning = fallback_doc.get("liquidity_warning", False)
             else:
                 # 僅在初次部署且資料庫為空時使用的靜態基本值，但絕不隨機震盪
                 close_price = stock["base_price"]
@@ -561,6 +585,12 @@ def run_v106_full_sweep(tsmc_override=None, is_background=False):
                 reduced_50 = False
                 high_since_entry = close_price
                 entry_support = round(ma20_val * 1.005, 1)
+                suggested_entry_price = 0.0
+                stop_loss_price = 0.0
+                take_profit_half_price = 0.0
+                trailing_stop_price = 0.0
+                action_signal = "觀望"
+                liquidity_warning = False
         else:
             # 有真實的爬蟲數據，執行指標判定與計算
             change_pct = round(((close_price - prev_close) / prev_close) * 100, 2)
@@ -579,61 +609,87 @@ def run_v106_full_sweep(tsmc_override=None, is_background=False):
             
             is_holding = (prev_signal in ["多", "持倉"]) and (prev_entry > 0.0)
             
+            # 防滑價機制：估算最佳五檔價差 (Spread)
+            # 若成交量極小，價差容易大於 1%
+            est_spread = 0.015 if volume < 50000 else 0.002
+            liquidity_warning = est_spread > 0.01
+
+            # 獅王戰神動態進場價格計算 (三種情境建議)
+            # 情境 1: S級極端強勢 (突破前高且連兩日站上 5MA)
+            is_breakout = close_price >= max_past_20_closes
+            is_above_ma5_2days = False
+            try:
+                if df_single is not None and len(df_single) >= 2:
+                    closes_s = df_single['Close']
+                    is_above_ma5_2days = (closes_s.iloc[-1] > df_single['Close'].rolling(5).mean().iloc[-1]) and \
+                                         (closes_s.iloc[-2] > df_single['Close'].rolling(5).mean().iloc[-2])
+            except Exception:
+                pass
+            is_s_grade = is_breakout and is_above_ma5_2days
+
+            # 情境 2: A級動能伏擊 (MACD 剛翻紅且站穩 20MA)
+            is_macd_turn_red = (macd_h_val > 0) and (prev_macd_h_val <= 0)
+            is_above_ma20 = close_price >= ma20_val
+            is_a_grade = is_macd_turn_red and is_above_ma20
+
+            # 情境 3: B級左側試單 (凹洞量，成交量小於5日均量50%)
+            is_b_grade = volume < vol_5ma_val * 0.5
+
             if is_holding:
                 entry_price = prev_entry
                 reduced_50 = prev_reduced_50
                 high_since_entry = max(prev_high_since_entry, close_price)
                 
-                # 出場信號判定
-                # 停損：跌破進場價 5% 或跌破 20MA 且放量 (volume > vol_5ma_val)
-                stop_loss_triggered = (close_price <= entry_price * 0.95) or (close_price < ma20_val and volume > vol_5ma_val)
+                # 1. 物理隔離停損價 (E-Stop)：進場價的 -5% 或實體跌破 20MA
+                stop_loss_price = round(min(entry_price * 0.95, ma20_val), 1)
                 
-                if stop_loss_triggered:
+                # 2. 強制鎖利減碼價：未實現獲利達 20%
+                take_profit_half_price = round(entry_price * 1.20, 1)
+                
+                # 3. 移動停利 (Trailing Stop)：10MA 或 1.5倍 ATR
+                trailing_stop_price = round(max(ma10_val, high_since_entry - 1.5 * atr_val), 1)
+
+                # 出場與操作訊號判定
+                if close_price <= stop_loss_price:
                     signal = "空"
-                    macd_status = "🚨 趨勢破位觸發停損"
-                    ma20_status = f"跌破生命線 20MA ({ma20_val:.1f})"
-                    action_advice = "🚨 停損平倉！觸發無條件防守保護，請立即市價平倉！"
-                    # 出場重置
+                    action_signal = "停損"
+                    macd_status = "🚨 物理隔離停損 (E-Stop)"
+                    ma20_status = f"實體跌破 20MA ({ma20_val:.1f})"
+                    action_advice = "🚨 物理隔離停損觸發！🔴「無條件市價全數平倉」！"
+                    entry_price = 0.0
+                    reduced_50 = False
+                    take_profit = 0.0
+                    high_since_entry = 0.0
+                elif close_price >= take_profit_half_price and not reduced_50:
+                    signal = "持倉"
+                    action_signal = "減碼"
+                    reduced_50 = True
+                    macd_status = "🎯 獲利達標 +20%"
+                    ma20_status = f"獲利減碼點 ({take_profit_half_price:.1f})"
+                    action_advice = "🟡 帳面未實現獲利已達 +20%！獅王鐵律：獲利達 20%，強制減碼 50% 收回本金！"
+                elif close_price < trailing_stop_price:
+                    signal = "空"
+                    action_signal = "停損"
+                    macd_status = "🚨 跌破移動停利防線"
+                    ma20_status = f"移動停利線破位 ({trailing_stop_price:.1f})"
+                    action_advice = f"🔴 出場鎖利！股價已跌破移動停利線 {trailing_stop_price:.1f}，賸餘部位全數平倉！"
                     entry_price = 0.0
                     reduced_50 = False
                     take_profit = 0.0
                     high_since_entry = 0.0
                 else:
-                    # 停利與移動停利判定
-                    if close_price >= entry_price * 1.20 and not reduced_50:
-                        reduced_50 = True
-                        action_advice = "🎯 獲利達 20%！觸發減碼 50% 策略，請執行平倉半數鎖利！"
-                        signal = "持倉"
-                    
-                    if reduced_50:
-                        trail_stop = max(ma10_val, high_since_entry - 1.5 * atr_val)
-                        if close_price < trail_stop:
-                            signal = "空"
-                            macd_status = "🚨 觸發移動停利"
-                            ma20_status = f"跌破移動停利線 ({trail_stop:.1f})"
-                            action_advice = f"🚨 出場鎖利！股價跌破移動停利線 {trail_stop:.1f}，請全數市價平倉！"
-                            # 出場重置
-                            entry_price = 0.0
-                            reduced_50 = False
-                            take_profit = 0.0
-                            high_since_entry = 0.0
-                        else:
-                            signal = "持倉"
-                            macd_status = "💥 移動停利持防禦中"
-                            ma20_status = f"移動停利線 {trail_stop:.1f}"
-                            action_advice = f"⚪ 移動停利防線防禦中。目前防線：{trail_stop:.1f} 元，請抱緊剩餘持股。"
-                    else:
-                        # 正常持倉
-                        signal = "持倉"
-                        macd_status = "橫盤震盪 (能量暫不穩定)"
-                        ma20_status = "均線糾結合攏中"
-                        action_advice = f"⚪ 趨勢符合預期，目前持倉中。進場價：{entry_price:.1f}，目標停利：{entry_price*1.2:.1f}"
+                    signal = "持倉"
+                    action_signal = "觀望"
+                    macd_status = "💥 移動停利持防禦中"
+                    ma20_status = f"移動防線：{trailing_stop_price:.1f}"
+                    action_advice = f"🟢 安全持倉區，沿線續抱。目前移動停利防線為 {trailing_stop_price:.1f} 元，請抱緊剩餘持股。"
                 
-                take_profit = round(entry_price * 1.20, 1) if entry_price > 0 else 0.0
-                atr_stop = round(max(ma20_val - 0.5 * atr_val, close_price * 0.95), 1)
+                take_profit = take_profit_half_price if entry_price > 0 else 0.0
+                atr_stop = stop_loss_price
                 suggested_shares = int(20000 // close_price) if close_price > 0 else 0
+                suggested_entry_price = entry_price
+
             else:
-                # 未持倉，判定買入信號 (A級/S級伏擊)
                 entry_price = 0.0
                 reduced_50 = False
                 high_since_entry = close_price
@@ -641,38 +697,70 @@ def run_v106_full_sweep(tsmc_override=None, is_background=False):
                 
                 if not tsmc_is_above_ma20:
                     signal = "隔離"
+                    action_signal = "觀望"
                     macd_status = "大盤強制隔離壓制中"
-                    ma20_status = "大盤空頭警戒 (全面迴避交易)"
-                    action_advice = "🛑 物理隔離！全面停止買進，防止被融資多頭斷頭拖累！"
+                    ma20_status = "大盤空頭警戒"
+                    action_advice = "🛑 物理隔離！大盤空頭警戒，全面停止發出買進訊號，資金全面迴避交易！"
+                    suggested_entry_price = 0.0
+                    stop_loss_price = 0.0
+                    take_profit_half_price = 0.0
+                    trailing_stop_price = 0.0
+                    atr_stop = round(close_price * 0.95, 1)
                 else:
-                    # 買進條件 (價格 + 動能 + 量能)
                     price_cond = (close_price > ma20_val) and (ma20_slope > 0)
-                    momentum_cond = (macd_h_val > 0) and (macd_h_val > prev_macd_h_val) and (rsi_val < 80)
-                    vol_s_grade = volume > vol_5ma_val * 1.5
-                    vol_a_grade = volume < vol_5ma_val * 0.5
+                    momentum_cond = (macd_h_val > 0) and (rsi_val < 80)
                     
-                    if price_cond and momentum_cond and (vol_s_grade or vol_a_grade):
+                    if price_cond and momentum_cond and (is_s_grade or is_a_grade or is_b_grade):
                         signal = "多"
-                        entry_price = round(close_price, 1)
-                        take_profit = round(entry_price * 1.20, 1)
-                        if vol_s_grade:
-                            macd_status = "💥 S級伏擊 (量能爆增共振)"
-                            action_advice = "🚀 V106 S級伏擊發動！滿足20MA+MACD翻紅擴張+RSI安全+爆量突破，強勢狙擊！"
-                        else:
-                            macd_status = "💥 A級伏擊 (凹洞量縮回踩)"
-                            action_advice = "🚀 V106 A級伏擊發動！滿足20MA+MACD翻紅擴張+RSI安全+凹洞極致量縮，低吸佈局！"
+                        action_signal = "買進"
+                        
+                        if is_s_grade:
+                            suggested_entry_price = round(close_price, 1)
+                            macd_status = "💥 S級極端強勢 (軋空噴發)"
+                            action_advice = "🚀 V106 S級強勢！突破前高連站5MA，建議現價或「追價至漲停區間」買進！"
+                        elif is_a_grade:
+                            suggested_entry_price = round(vwap, 1)
+                            macd_status = "💥 A級動能伏擊 (右側點火)"
+                            action_advice = "🔥 V106 A級伏擊！MACD剛翻紅且站穩20MA，建議於「VWAP」或「現價附近」進場！"
+                        else: # is_b_grade
+                            suggested_entry_price = round(ma20_val * 1.01, 1)
+                            macd_status = "💥 B級左側試單 (量縮回踩)"
+                            action_advice = "💎 V106 B級試單！極致凹洞量縮，建議於「20MA + 0.5%~1.5% 緩衝區」掛 ROD 限價單！"
+                        
+                        if liquidity_warning:
+                            action_advice += " ⚠️【流動性警告，禁止市價單】"
+                            
+                        # 買進時先幫用戶算出防守停損、鎖利及移動停利線
+                        stop_loss_price = round(min(suggested_entry_price * 0.95, ma20_val), 1)
+                        take_profit_half_price = round(suggested_entry_price * 1.20, 1)
+                        trailing_stop_price = round(max(ma10_val, close_price - 1.5 * atr_val), 1)
+                        
+                        entry_price = suggested_entry_price
+                        take_profit = take_profit_half_price
+                        atr_stop = stop_loss_price
                     elif not (close_price > ma20_val) and macd_h_val < 0:
                         signal = "空"
+                        action_signal = "停損"
                         macd_status = "🚨 空頭收斂 (柱體綠色加深)"
                         ma20_status = f"跌破生命線 20MA ({ma20_val:.1f})"
                         action_advice = "📉 空頭趨勢確立，請無條件避開此標的！"
+                        suggested_entry_price = 0.0
+                        stop_loss_price = round(close_price * 0.95, 1)
+                        take_profit_half_price = round(close_price * 1.20, 1)
+                        trailing_stop_price = round(ma10_val, 1)
+                        atr_stop = stop_loss_price
                     else:
                         signal = "持倉"
+                        action_signal = "觀望"
                         macd_status = "橫盤震盪 (能量暫不穩定)"
                         ma20_status = "均線糾結合攏中"
                         action_advice = "⚪ 區間不變，維持原有手中部位，空手仍需觀望。"
+                        suggested_entry_price = 0.0
+                        stop_loss_price = 0.0
+                        take_profit_half_price = 0.0
+                        trailing_stop_price = 0.0
+                        atr_stop = round(close_price * 0.95, 1)
                 
-                atr_stop = round(max(ma20_val - 0.5 * atr_val, close_price * 0.95), 1)
                 suggested_shares = int(20000 // close_price) if close_price > 0 else 0
 
         scanned_signals.append({
@@ -698,7 +786,15 @@ def run_v106_full_sweep(tsmc_override=None, is_background=False):
             "rsi_val": round(rsi_val, 1),
             "entry_support": entry_support,
             "reduced_50": reduced_50,
-            "high_since_entry": round(high_since_entry, 1)
+            "high_since_entry": round(high_since_entry, 1),
+            
+            # 新增獅王戰神 V106 核心欄位
+            "suggested_entry_price": round(suggested_entry_price, 1),
+            "stop_loss_price": round(stop_loss_price, 1),
+            "take_profit_half_price": round(take_profit_half_price, 1),
+            "trailing_stop_price": round(trailing_stop_price, 1),
+            "action_signal": action_signal,
+            "liquidity_warning": liquidity_warning
         })
 
     result = {
@@ -710,34 +806,40 @@ def run_v106_full_sweep(tsmc_override=None, is_background=False):
         "signals": scanned_signals
     }
 
-    collection = get_mongo_collection()
-    if collection is not None:
-        operations = []
-        for sig in scanned_signals:
-            operations.append(
-                UpdateOne(
-                    {"date": sig["date"], "stock_id": sig["stock_id"]},
-                    {"$set": sig},
-                    upsert=True
+    # 雙 MongoDB 集合同步寫入機制
+    for coll_name in ["lion_signals", "strategy_signals"]:
+        collection = get_mongo_collection(coll_name)
+        if collection is not None:
+            operations = []
+            for sig in scanned_signals:
+                operations.append(
+                    UpdateOne(
+                        {"date": sig["date"], "stock_id": sig["stock_id"]},
+                        {"$set": sig},
+                        upsert=True
+                    )
                 )
-            )
-        try:
-            if operations:
-                collection.bulk_write(operations)
+            try:
+                if operations:
+                    collection.bulk_write(operations)
+                    import threading
+                    if not is_background and threading.current_thread() is threading.main_thread():
+                        if coll_name == "lion_signals":
+                            st.sidebar.success(f"🎯 50檔精英信號已同步至雙集合 ({len(operations)} 筆)")
+                    else:
+                        print(f"[MongoDB] Bulk write to {coll_name} complete ({len(operations)} records)")
+            except Exception as e:
                 import threading
                 if not is_background and threading.current_thread() is threading.main_thread():
-                    st.sidebar.success(f"🎯 50檔精英信號 Upsert 寫入雲端 'lion_signals' (共 {len(operations)} 筆)")
+                    st.sidebar.error(f"❌ MongoDB {coll_name} 寫入異常: {e}")
                 else:
-                    print(f"[MongoDB] Upsert complete ({len(operations)} records)")
-                
-                # 自動觸發 Google Drive 雲端備份 CSV
-                upload_to_google_drive(scanned_signals)
-        except Exception as e:
-            import threading
-            if not is_background and threading.current_thread() is threading.main_thread():
-                st.sidebar.error(f"❌ MongoDB 大批次 Upsert 寫入異常: {e}")
-            else:
-                print(f"[MongoDB] Bulk write error: {e}")
+                    print(f"[MongoDB] Bulk write to {coll_name} error: {e}")
+
+    # 自動觸發 Google Drive 雲端備份 CSV
+    try:
+        upload_to_google_drive(scanned_signals)
+    except Exception as e:
+        print(f"[Google Drive] Backup triggered but bypassed or failed: {e}")
 
     return result
 
