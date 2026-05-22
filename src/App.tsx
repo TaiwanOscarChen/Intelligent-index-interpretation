@@ -47,7 +47,21 @@ export default function App() {
   const [selectedStock, setSelectedStock] = useState<StockSignal | null>(null);
   
   // Tab control
-  const [activeTab, setActiveTab] = useState<"radar" | "holdings" | "exits" | "chat" | "sop">("radar");
+  const [activeTab, setActiveTab] = useState<"radar" | "holdings" | "exits" | "chat" | "sop" | "strategy" | "screener">("radar");
+
+  // Strategy Tab States
+  const [strategySummary, setStrategySummary] = useState<any>(null);
+  const [isStrategyLoading, setIsStrategyLoading] = useState<boolean>(false);
+  
+  // Screener Tab States
+  const [screenerCategories, setScreenerCategories] = useState<string[]>([]);
+  const [selectedScreenerCategories, setSelectedScreenerCategories] = useState<string[]>([]);
+  const [screenerMinScore, setScreenerMinScore] = useState<number>(33); // 預設 Score >= 33 精英模式
+  const [screenerMaxPer, setScreenerMaxPer] = useState<number>(100); // PER limit
+  const [screenerMinForeignDays, setScreenerMinForeignDays] = useState<number>(0);
+  const [screenerMinInstDays, setScreenerMinInstDays] = useState<number>(0);
+  const [screenerSortBy, setScreenerSortBy] = useState<string>("score_desc");
+  const [screenerChangeRange, setScreenerChangeRange] = useState<string>("all"); // all, up, down, up_3, down_3
 
   // Holdings & Exits
   const [holdings, setHoldings] = useState<HoldingItem[]>([]);
@@ -147,6 +161,33 @@ export default function App() {
         setSelectedStock(updated);
         setNotesText(updated.master_notes || "");
       }
+    }
+  }, [data]);
+
+  const fetchStrategySummary = async () => {
+    setIsStrategyLoading(true);
+    try {
+      const response = await fetch("/api/strategy-summary");
+      const resData = await response.json();
+      if (resData.success) {
+        setStrategySummary(resData.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch strategy summary:", error);
+    } finally {
+      setIsStrategyLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStrategySummary();
+  }, [activeTab, data]);
+
+  useEffect(() => {
+    if (data && data.signals && screenerCategories.length === 0) {
+      const cats = Array.from(new Set(data.signals.map(s => s.category || "AI與權值")));
+      setScreenerCategories(cats);
+      setSelectedScreenerCategories(cats);
     }
   }, [data]);
 
@@ -339,6 +380,35 @@ export default function App() {
     }
   };
 
+  // Bulk buy filtered stocks in Screener
+  const handleBulkBuyFiltered = async () => {
+    const targets = getScreenerFilteredSignals();
+    if (targets.length === 0) return;
+    setIsLoading(true);
+    try {
+      for (const stock of targets) {
+        const shares = Math.floor(20000 / stock.close_price);
+        if (shares <= 0) continue;
+        await fetch("/api/holdings/buy", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            stock_id: stock.stock_id,
+            stock_name: stock.stock_name,
+            buy_price: stock.close_price,
+            shares: shares
+          })
+        });
+      }
+      await fetchHoldings();
+      setActiveTab("holdings");
+    } catch (error) {
+      console.error("Bulk buy failed:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Exit position modal triggers
   const openExitModalForHolding = (holding: HoldingItem) => {
     setExitStock(holding);
@@ -520,6 +590,137 @@ export default function App() {
     return { text: `🟢 總經安全 VIX: ${data.vixValue.toFixed(2)}，多頭運作順遂。`, color: "text-emerald-400", bg: "bg-emerald-950/20 border-emerald-600/20" };
   };
 
+  const getOnTheFlySummary = () => {
+    if (!data || !data.signals) return null;
+    const categories: Record<string, { totalScore: number; totalChangePct: number; count: number; category: string }> = {};
+    let totalScore = 0;
+    let totalChangePct = 0;
+    let totalCount = 0;
+    let multiCount = 0;
+    let emptyCount = 0;
+    let holdCount = 0;
+    let isoCount = 0;
+
+    data.signals.forEach(s => {
+      const cat = s.category || "AI與權值";
+      if (!categories[cat]) {
+        categories[cat] = { totalScore: 0, totalChangePct: 0, count: 0, category: cat };
+      }
+      categories[cat].totalScore += s.score || 0;
+      categories[cat].totalChangePct += s.change_pct || 0;
+      categories[cat].count += 1;
+
+      totalScore += s.score || 0;
+      totalChangePct += s.change_pct || 0;
+      totalCount += 1;
+
+      if (s.signal === "多") multiCount++;
+      else if (s.signal === "空") emptyCount++;
+      else if (s.signal === "持倉") holdCount++;
+      else if (s.signal === "隔離") isoCount++;
+    });
+
+    const categoryStats = Object.values(categories).map(c => ({
+      category: c.category,
+      avgScore: Math.round((c.totalScore / c.count) * 10) / 10,
+      avgChangePct: Math.round((c.totalChangePct / c.count) * 100) / 100,
+      count: c.count
+    }));
+
+    const avgScore = totalCount > 0 ? Math.round((totalScore / totalCount) * 10) / 10 : 0;
+    const avgChangePct = totalCount > 0 ? Math.round((totalChangePct / totalCount) * 100) / 100 : 0;
+
+    const vix = data.vixValue;
+    const macroEStop = data.macroEStopActive;
+    
+    let sentiment = "震盪整理";
+    let sentimentColor = "text-yellow-400";
+    let sentimentBg = "bg-yellow-950/20 border-yellow-500/30";
+    let sentimentScore = Math.round((avgScore / 40) * 100);
+
+    if (macroEStop || vix > 30) {
+      sentiment = "恐慌防禦 (崩盤避險)";
+      sentimentColor = "text-[#10b881]"; // Green (down)
+      sentimentBg = "bg-emerald-950/30 border-emerald-500/30";
+    } else if (avgScore >= 30 && avgChangePct > 0.5) {
+      sentiment = "極度樂觀 (多頭特快)";
+      sentimentColor = "text-[#f43f5e]"; // Red (up)
+      sentimentBg = "bg-rose-950/30 border-rose-500/40";
+    } else if (avgScore >= 25 && avgChangePct >= -0.2) {
+      sentiment = "審慎偏多 (右側點火)";
+      sentimentColor = "text-[#f43f5e]";
+      sentimentBg = "bg-rose-950/20 border-rose-500/25";
+    } else if (avgScore < 20 || avgChangePct < -1.0) {
+      sentiment = "空頭防禦 (全面減碼)";
+      sentimentColor = "text-[#10b881]";
+      sentimentBg = "bg-emerald-950/20 border-emerald-500/20";
+    }
+
+    return {
+      categoryStats,
+      overall: {
+        avgScore,
+        avgChangePct,
+        totalCount,
+        multiCount,
+        emptyCount,
+        holdCount,
+        isoCount,
+        sentiment,
+        sentimentColor,
+        sentimentBg,
+        sentimentScore,
+        vix,
+        macroEStop
+      }
+    };
+  };
+
+  const summary = strategySummary || getOnTheFlySummary();
+
+  const getScreenerFilteredSignals = () => {
+    if (!data || !data.signals) return [];
+    return data.signals.filter(s => {
+      // Category check
+      if (selectedScreenerCategories.length > 0 && !selectedScreenerCategories.includes(s.category || "AI與權值")) {
+        return false;
+      }
+      // Score check
+      if (s.score < screenerMinScore) {
+        return false;
+      }
+      // PER check
+      if (s.per > screenerMaxPer) {
+        return false;
+      }
+      // Foreign Days check
+      if (s.foreignDays < screenerMinForeignDays) {
+        return false;
+      }
+      // Inst Days check
+      if (s.instDays < screenerMinInstDays) {
+        return false;
+      }
+      // Change range check
+      if (screenerChangeRange === "up" && s.change_pct < 0) return false;
+      if (screenerChangeRange === "down" && s.change_pct >= 0) return false;
+      if (screenerChangeRange === "up_3" && s.change_pct < 3) return false;
+      if (screenerChangeRange === "down_3" && s.change_pct > -3) return false;
+      
+      return true;
+    }).sort((a, b) => {
+      if (screenerSortBy === "score_desc") return b.score - a.score;
+      if (screenerSortBy === "score_asc") return a.score - b.score;
+      if (screenerSortBy === "change_desc") return b.change_pct - a.change_pct;
+      if (screenerSortBy === "change_asc") return a.change_pct - b.change_pct;
+      if (screenerSortBy === "per_asc") return a.per - b.per;
+      if (screenerSortBy === "foreign_desc") return b.foreignDays - a.foreignDays;
+      return 0;
+    });
+  };
+
+  const screenerFiltered = getScreenerFilteredSignals();
+
   const vixStatus = getVixStatusText();
 
   return (
@@ -594,6 +795,36 @@ export default function App() {
               <LineChart className="w-4 h-4 text-[#FFB74D]" />
               📊 獅王大一統監控 (Master Radar)
               {activeTab === "radar" && (
+                <motion.div layoutId="tab-active-pill" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E5A823]" />
+              )}
+            </button>
+
+            <button
+              onClick={() => setActiveTab("strategy")}
+              className={`py-3 px-3 text-xs md:text-sm font-bold flex items-center gap-2 border-b-2 transition-all relative ${
+                activeTab === "strategy"
+                  ? "border-[#E5A823] text-white"
+                  : "border-transparent text-zinc-400 hover:text-white"
+              }`}
+            >
+              <LineChart className="w-4 h-4 text-[#FFB74D]" />
+              📈 財經策略分析
+              {activeTab === "strategy" && (
+                <motion.div layoutId="tab-active-pill" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E5A823]" />
+              )}
+            </button>
+
+            <button
+              onClick={() => setActiveTab("screener")}
+              className={`py-3 px-3 text-xs md:text-sm font-bold flex items-center gap-2 border-b-2 transition-all relative ${
+                activeTab === "screener"
+                  ? "border-[#E5A823] text-white"
+                  : "border-transparent text-zinc-400 hover:text-white"
+              }`}
+            >
+              <Search className="w-4 h-4 text-[#FFB74D]" />
+              🔍 智能選股雷達
+              {activeTab === "screener" && (
                 <motion.div layoutId="tab-active-pill" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E5A823]" />
               )}
             </button>
@@ -1183,6 +1414,598 @@ export default function App() {
 
             </div>
 
+          </div>
+        )}
+
+        {/* ======================= TAB: STRATEGY ======================= */}
+        {activeTab === "strategy" && summary && (
+          <div className="space-y-6 animate-fade-in select-none">
+            {/* Top Market Dashboard */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Market Sentiment Gauge */}
+              <div className="bg-[#0e1117] border border-zinc-800 rounded-xl p-5 shadow-lg relative overflow-hidden group">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="text-[10px] text-zinc-500 font-black tracking-wider uppercase font-mono">綜合市場情緒指標</h3>
+                    <div className={`text-2xl font-black mt-2 flex items-center gap-2 ${
+                      summary.overall.sentimentColor === "red" || summary.overall.sentimentColor === "text-[#f43f5e]" || summary.overall.sentimentColor?.includes("rose")
+                        ? "text-[#f43f5e]"
+                        : summary.overall.sentimentColor === "green" || summary.overall.sentimentColor === "text-[#10b881]" || summary.overall.sentimentColor?.includes("emerald")
+                        ? "text-[#10b881]"
+                        : "text-yellow-400"
+                    }`}>
+                      <Flame className="w-6 h-6 animate-pulse animate-duration-1000" />
+                      {summary.overall.sentiment}
+                    </div>
+                  </div>
+                  <div className="px-2.5 py-1.5 rounded-lg text-xs font-mono font-bold bg-zinc-900 border border-zinc-850 text-zinc-350">
+                    指數: {summary.overall.sentimentScore}%
+                  </div>
+                </div>
+                {/* Sentiment Meter Bar */}
+                <div className="mt-5">
+                  <div className="flex justify-between text-[10px] text-zinc-500 font-mono mb-1 font-semibold">
+                    <span>極度恐慌 (綠燈防禦)</span>
+                    <span>極度樂觀 (紅燈特快)</span>
+                  </div>
+                  <div className="w-full h-2 bg-zinc-950 rounded-full overflow-hidden border border-zinc-800">
+                    <div 
+                      className={`h-full bg-gradient-to-r ${
+                        summary.overall.vix > 30 || summary.overall.macroEStop
+                          ? "from-emerald-500 to-emerald-400 shadow-[0_0_8px_#10b881]"
+                          : "from-amber-500 via-yellow-400 to-rose-500 shadow-[0_0_8px_#f43f5e]"
+                      }`}
+                      style={{ width: `${summary.overall.sentimentScore}%` }}
+                    />
+                  </div>
+                </div>
+                <p className="text-[10px] text-zinc-500 mt-3.5 leading-normal font-medium">
+                  基於 90 檔高 Beta 標的評分分佈與今日平均漲跌幅的動態情緒矩陣。
+                </p>
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-yellow-500 to-rose-500"></div>
+              </div>
+
+              {/* VIX Fear Barometer */}
+              <div className="bg-[#0e1117] border border-zinc-800 rounded-xl p-5 shadow-lg relative overflow-hidden group">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="text-[10px] text-zinc-500 font-black tracking-wider uppercase font-mono">VIX 恐慌指數歷史趨勢條</h3>
+                    <div className="text-2xl font-mono font-black text-white mt-2 flex items-baseline gap-1">
+                      {summary.overall.vix?.toFixed(2)}
+                      <span className="text-xs text-zinc-500 font-sans font-normal">單位</span>
+                    </div>
+                  </div>
+                  <span className={`px-2.5 py-1 text-[10px] font-mono font-bold rounded ${
+                    summary.overall.vix < 20 
+                      ? "bg-emerald-950/70 border border-emerald-500/40 text-emerald-400" 
+                      : summary.overall.vix < 30 
+                      ? "bg-amber-950/70 border border-amber-500/40 text-amber-400" 
+                      : "bg-rose-955 border border-rose-500/40 text-rose-400"
+                  }`}>
+                    {summary.overall.vix < 20 ? "🟢 安全水位" : summary.overall.vix < 30 ? "⚠️ 警惕波動" : "🚨 恐慌警報"}
+                  </span>
+                </div>
+                {/* VIX Bar */}
+                <div className="mt-5">
+                  <div className="flex justify-between text-[10px] text-zinc-500 font-mono mb-1 font-semibold">
+                    <span>低波動 (VIX 10)</span>
+                    <span>高波動 (VIX 40)</span>
+                  </div>
+                  <div className="w-full h-2 bg-zinc-950 rounded-full overflow-hidden border border-zinc-800">
+                    <div 
+                      className={`h-full ${
+                        summary.overall.vix < 20 
+                          ? "bg-emerald-500 shadow-[0_0_8px_#10b881]" 
+                          : summary.overall.vix < 30 
+                          ? "bg-amber-500 shadow-[0_0_8px_#f59e0b]" 
+                          : "bg-rose-500 animate-pulse shadow-[0_0_8px_#f43f5e]"
+                      }`}
+                      style={{ width: `${Math.min(100, Math.max(0, ((summary.overall.vix - 10) / 30) * 100))}%` }}
+                    />
+                  </div>
+                </div>
+                <p className="text-[10px] text-zinc-500 mt-3.5 leading-normal font-medium">
+                  {summary.overall.vix > 30 ? "⚠️ 已觸發 Macro E-Stop，暫停一切買進操作！" : "🟢 宏觀安全閥門處於正常開啟水位，開放多頭運作。"}
+                </p>
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-emerald-500 to-amber-500"></div>
+              </div>
+
+              {/* TSMC 月線生命線儀表板 */}
+              <div className="bg-[#0e1117] border border-zinc-800 rounded-xl p-5 shadow-lg relative overflow-hidden group">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="text-[10px] text-zinc-500 font-black tracking-wider uppercase font-mono">台積電 2330 月線生命線儀表板</h3>
+                    <div className="text-2xl font-mono font-black text-white mt-2 flex items-baseline gap-1">
+                      {data ? data.tsmcPrice : 1045.0}
+                      <span className="text-xs text-zinc-500 font-sans font-normal">元</span>
+                    </div>
+                  </div>
+                  <span className={`px-2.5 py-1 text-[10px] font-mono font-bold rounded ${
+                    data && data.tsmcPrice >= data.tsmcMa20Value 
+                      ? "bg-emerald-950/70 border border-emerald-500/40 text-emerald-400" 
+                      : "bg-rose-955 border border-rose-500/40 text-rose-400"
+                  }`}>
+                    {data && data.tsmcPrice >= data.tsmcMa20Value ? "📈 剛性多頭" : "📉 空頭防禦"}
+                  </span>
+                </div>
+                {/* Comparison Bar */}
+                <div className="mt-5">
+                  <div className="flex justify-between text-[10px] text-zinc-500 font-mono mb-1 font-semibold">
+                    <span>月線水位: {data ? data.tsmcMa20Value : 1030.0} 元</span>
+                    <span>現價 vs 20MA</span>
+                  </div>
+                  <div className="w-full h-2 bg-zinc-950 rounded-full overflow-hidden border border-zinc-800">
+                    <div 
+                      className={`h-full ${data && data.tsmcPrice >= data.tsmcMa20Value ? "bg-rose-500 shadow-[0_0_8px_#f43f5e]" : "bg-emerald-500 shadow-[0_0_8px_#10b881]"}`}
+                      style={{ 
+                        width: `${Math.min(100, Math.max(0, 50 + (((data ? data.tsmcPrice : 1045.0) - (data ? data.tsmcMa20Value : 1030.0)) / (data ? data.tsmcMa20Value : 1030.0)) * 500))}%` 
+                      }}
+                    />
+                  </div>
+                </div>
+                <p className="text-[10px] text-zinc-500 mt-3.5 leading-normal font-medium">
+                  {data && data.tsmcPrice >= data.tsmcMa20Value 
+                    ? "🟢 大盤站上月線生命線，策略全面解除買進限制！" 
+                    : "🔴 大盤跌破月線生命線，啟動物理隔離，暫停任何多頭信號。"}
+                </p>
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
+              </div>
+            </div>
+
+            {/* Heatmap Section Title */}
+            <div className="flex items-center justify-between border-b border-zinc-800 pb-3 mt-8">
+              <div>
+                <h3 className="text-white text-base font-bold flex items-center gap-2">
+                  <LineChart className="w-5 h-5 text-[#FFB74D]" />
+                  8 大權重產業與高 Beta 類股強弱熱力圖 (Sectors Heatmap Radar)
+                </h3>
+                <p className="text-xs text-zinc-500 mt-1">
+                  雙因子立體雷達：背景區塊深淺呈現<strong>戰力分數 (金色外框越亮越強)</strong>，文字高亮呈現<strong>類股平均漲跌幅 (紅漲綠跌)</strong>。
+                </p>
+              </div>
+              <span className="text-[10px] font-mono text-zinc-500">
+                對沖週期: 今日實時盤中
+              </span>
+            </div>
+
+            {/* Gorgeous 8-Sector Grid Heatmap */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {summary.categoryStats?.map((stat: any) => {
+                const isHighVol = stat.avgScore >= 32;
+                
+                let scoreBg = "bg-zinc-900/60";
+                if (stat.avgScore >= 34) scoreBg = "bg-amber-950/20";
+                else if (stat.avgScore >= 30) scoreBg = "bg-zinc-900/80";
+
+                return (
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    key={stat.category}
+                    className={`p-5 rounded-xl border transition-all duration-300 flex flex-col justify-between h-44 shadow-lg ${scoreBg} ${
+                      isHighVol 
+                        ? "border-[#E5A823]/60 shadow-[0_0_15px_rgba(229,168,35,0.12)]" 
+                        : "border-zinc-800/80 hover:border-zinc-750"
+                    }`}
+                  >
+                    <div>
+                      <div className="flex justify-between items-center">
+                        <span className="font-bold text-white text-sm tracking-tight">{stat.category}</span>
+                        <span className="text-[10px] text-zinc-500 font-mono font-bold bg-zinc-950 px-2 py-0.5 rounded">
+                          {stat.count} 檔
+                        </span>
+                      </div>
+                      
+                      {/* Technical Score Indicator with Golden Glow */}
+                      <div className="mt-4">
+                        <div className="flex justify-between text-[10px] text-zinc-500 font-mono mb-1.5 items-baseline">
+                          <span>平均戰力評分</span>
+                          <span className="text-[#FFB74D] font-bold text-xs">{stat.avgScore} / 40</span>
+                        </div>
+                        <div className="w-full h-1.5 bg-zinc-950 rounded-full overflow-hidden border border-zinc-900">
+                          <div 
+                            className="h-full bg-gradient-to-r from-amber-600 to-[#FFD54F] shadow-[0_0_8px_#E5A823]"
+                            style={{ width: `${(stat.avgScore / 40) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Return Percentage Indicator (Taiwan Colors: Red = Up, Green = Down) */}
+                    <div className="flex items-center justify-between border-t border-zinc-850/60 pt-3 mt-3">
+                      <span className="text-[10px] text-zinc-500">今日均值漲跌</span>
+                      <span className={`text-base font-mono font-black tracking-tight flex items-center gap-1 ${
+                        stat.avgChangePct >= 0 
+                          ? "text-[#f43f5e] drop-shadow-[0_0_6px_rgba(244,63,94,0.15)]" 
+                          : "text-[#10b881] drop-shadow-[0_0_6px_rgba(16,185,129,0.15)]"
+                      }`}>
+                        {stat.avgChangePct >= 0 ? `▲ +${stat.avgChangePct.toFixed(2)}%` : `▼ ${stat.avgChangePct.toFixed(2)}%`}
+                      </span>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+
+            {/* Tactical stats panel */}
+            <div className="bg-[#0e1117] border border-zinc-800 rounded-xl p-5 shadow-lg mt-8">
+              <h4 className="text-white text-xs font-bold font-mono tracking-wider mb-4 uppercase">
+                📊 全球高 Beta 投資組合統計矩陣
+              </h4>
+              <div className="grid grid-cols-2 md:grid-cols-6 gap-4 font-mono text-center text-xs">
+                <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-900">
+                  <div className="text-zinc-550 text-[10px] font-bold">高 Beta 總檔數</div>
+                  <div className="text-lg font-bold text-white mt-1 font-mono">{summary.overall.totalCount} 檔</div>
+                </div>
+                <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-900">
+                  <div className="text-[#f43f5e] text-[10px] font-bold">🔴 多頭信號</div>
+                  <div className="text-lg font-bold text-[#f43f5e] mt-1 font-mono">{summary.overall.multiCount}</div>
+                </div>
+                <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-900">
+                  <div className="text-[#10b881] text-[10px] font-bold">🟢 空頭信號</div>
+                  <div className="text-lg font-bold text-[#10b881] mt-1 font-mono">{summary.overall.emptyCount}</div>
+                </div>
+                <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-900">
+                  <div className="text-zinc-400 text-[10px]">⚪ 觀望持倉</div>
+                  <div className="text-lg font-bold text-zinc-300 mt-1 font-mono">{summary.overall.holdCount}</div>
+                </div>
+                <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-900">
+                  <div className="text-amber-500 text-[10px] font-bold">⚠️ 物理隔離</div>
+                  <div className="text-lg font-bold text-amber-500 mt-1 font-mono">{summary.overall.isoCount}</div>
+                </div>
+                <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-900">
+                  <div className="text-[#FFD54F] text-[10px] font-bold">精英比率 (⭐&ge;33)</div>
+                  <div className="text-lg font-bold text-[#FFD54F] mt-1 font-mono">
+                    {data && data.signals ? Math.round((data.signals.filter(s => s.score >= 33).length / data.signals.length) * 100) : 0}%
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ======================= TAB: SCREENER ======================= */}
+        {activeTab === "screener" && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-fade-in select-none">
+            {/* Left: Filter Controls */}
+            <div className="lg:col-span-4 flex flex-col gap-6">
+              <div className="bg-[#0e1117] border border-zinc-800 rounded-xl p-5 shadow-lg space-y-5">
+                <div className="flex items-center gap-2 border-b border-zinc-850 pb-3">
+                  <Sliders className="w-5 h-5 text-[#FFB74D]" />
+                  <h3 className="font-bold text-white text-sm">智能選股多維度篩選器</h3>
+                </div>
+
+                {/* Categories Multiselect */}
+                <div className="space-y-2">
+                  <label className="text-[11px] text-zinc-450 font-bold uppercase tracking-wider font-mono">1. 權重類股過濾</label>
+                  <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto p-2 bg-zinc-950 rounded border border-zinc-900">
+                    {screenerCategories.map(cat => {
+                      const active = selectedScreenerCategories.includes(cat);
+                      return (
+                        <button
+                          key={cat}
+                          onClick={() => {
+                            if (active) {
+                              setSelectedScreenerCategories(selectedScreenerCategories.filter(c => c !== cat));
+                            } else {
+                              setSelectedScreenerCategories([...selectedScreenerCategories, cat]);
+                            }
+                          }}
+                          className={`text-[9px] font-bold px-2 py-1 rounded transition ${
+                            active
+                              ? "bg-amber-950/70 border border-amber-600/50 text-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.1)]"
+                              : "bg-zinc-900 text-zinc-550 border border-transparent hover:text-zinc-350"
+                          }`}
+                        >
+                          {cat}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div className="flex justify-end gap-2 text-[9px] font-mono font-bold mt-1">
+                    <button 
+                      onClick={() => setSelectedScreenerCategories(screenerCategories)}
+                      className="text-[#FFB74D] hover:underline"
+                    >
+                      全選
+                    </button>
+                    <span className="text-zinc-700">|</span>
+                    <button 
+                      onClick={() => setSelectedScreenerCategories([])}
+                      className="text-zinc-500 hover:underline"
+                    >
+                      清除
+                    </button>
+                  </div>
+                </div>
+
+                {/* Score slider */}
+                <div className="space-y-2">
+                  <div className="flex justify-between text-[11px] font-bold font-mono">
+                    <span className="text-zinc-400">2. 戰力分數下限限制</span>
+                    <span className="text-[#FFB74D] font-bold">{screenerMinScore} / 40</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={10}
+                    max={40}
+                    value={screenerMinScore}
+                    onChange={(e) => setScreenerMinScore(parseInt(e.target.value))}
+                    className="w-full accent-[#E5A823] cursor-pointer bg-zinc-950 rounded h-1"
+                  />
+                  <div className="flex justify-between text-[8px] font-mono text-zinc-550">
+                    <span>Score &ge; 10</span>
+                    <span className="text-amber-500 font-black">Score &ge; 33 (精英模式)</span>
+                    <span>Score &ge; 40</span>
+                  </div>
+                </div>
+
+                {/* Price change range selector */}
+                <div className="space-y-2">
+                  <label className="text-[11px] text-zinc-450 font-bold uppercase tracking-wider font-mono">3. 今日漲跌幅區間</label>
+                  <select
+                    value={screenerChangeRange}
+                    onChange={(e) => setScreenerChangeRange(e.target.value)}
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded p-2.5 text-xs text-white focus:outline-none focus:border-[#E5A823] font-sans"
+                  >
+                    <option value="all">不設限 (顯示全部)</option>
+                    <option value="up">僅顯示上漲 (Change &ge; 0%)</option>
+                    <option value="down">僅顯示下跌 (Change &lt; 0%)</option>
+                    <option value="up_3">強勢大漲 (Change &ge; +3%)</option>
+                    <option value="down_3">弱勢重挫 (Change &le; -3%)</option>
+                  </select>
+                </div>
+
+                {/* PER Slider */}
+                <div className="space-y-2">
+                  <div className="flex justify-between text-[11px] font-bold font-mono">
+                    <span className="text-zinc-400">4. 本益比上限限制</span>
+                    <span className="text-[#FFB74D] font-bold">PER &le; {screenerMaxPer} 倍</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={10}
+                    max={100}
+                    value={screenerMaxPer}
+                    onChange={(e) => setScreenerMaxPer(parseInt(e.target.value))}
+                    className="w-full accent-[#E5A823] cursor-pointer bg-zinc-950 rounded h-1"
+                  />
+                  <div className="flex justify-between text-[8px] font-mono text-zinc-550">
+                    <span>10倍</span>
+                    <span>100倍</span>
+                  </div>
+                </div>
+
+                {/* Institutional Net buy days */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider font-mono block">外資連買 (天)</label>
+                    <input
+                      type="number"
+                      min={-10}
+                      max={10}
+                      value={screenerMinForeignDays}
+                      onChange={(e) => setScreenerMinForeignDays(parseInt(e.target.value) || 0)}
+                      className="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-xs text-right text-white font-mono focus:outline-none focus:border-[#E5A823]"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider font-mono block">投信連買 (天)</label>
+                    <input
+                      type="number"
+                      min={-8}
+                      max={8}
+                      value={screenerMinInstDays}
+                      onChange={(e) => setScreenerMinInstDays(parseInt(e.target.value) || 0)}
+                      className="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-xs text-right text-white font-mono focus:outline-none focus:border-[#E5A823]"
+                    />
+                  </div>
+                </div>
+
+                {/* Reset button */}
+                <button
+                  onClick={() => {
+                    setSelectedScreenerCategories(screenerCategories);
+                    setScreenerMinScore(33);
+                    setScreenerMaxPer(100);
+                    setScreenerMinForeignDays(0);
+                    setScreenerMinInstDays(0);
+                    setScreenerChangeRange("all");
+                  }}
+                  className="w-full py-2.5 rounded bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-350 hover:text-white transition text-xs font-bold font-mono"
+                >
+                  🔄 恢復預設條件 (Score &ge; 33)
+                </button>
+              </div>
+
+              {/* 三大法人籌碼大盤統計 */}
+              <div className="bg-[#0e1117] border border-zinc-800 rounded-xl p-5 shadow-lg space-y-4">
+                <div className="flex items-center gap-2 border-b border-zinc-850 pb-3">
+                  <Award className="w-5 h-5 text-indigo-400 animate-pulse" />
+                  <h4 className="text-white text-xs font-bold font-mono uppercase">三大法人籌碼雷達監控</h4>
+                </div>
+                
+                {(() => {
+                  if (screenerFiltered.length === 0) {
+                    return <p className="text-xs text-zinc-550 italic font-mono">請調整篩選器以檢索法人籌碼</p>;
+                  }
+                  
+                  const withForeignBuy = screenerFiltered.filter(s => s.foreignDays > 0).length;
+                  const withInstBuy = screenerFiltered.filter(s => s.instDays > 0).length;
+                  const total = screenerFiltered.length;
+                  
+                  const foreignPct = Math.round((withForeignBuy / total) * 100);
+                  const instPct = Math.round((withInstBuy / total) * 100);
+
+                  return (
+                    <div className="space-y-4 text-xs font-mono">
+                      <div className="space-y-1.5">
+                        <div className="flex justify-between text-[11px] font-semibold">
+                          <span className="text-zinc-450">外資鎖碼比率 ({withForeignBuy}/{total})</span>
+                          <span className="text-[#FFB74D] font-bold">{foreignPct}%</span>
+                        </div>
+                        <div className="w-full h-2 bg-zinc-950 rounded-full overflow-hidden border border-zinc-900">
+                          <div 
+                            className="h-full bg-gradient-to-r from-amber-600 to-[#FFD54F] shadow-[0_0_6px_#E5A823]"
+                            style={{ width: `${foreignPct}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <div className="flex justify-between text-[11px] font-semibold">
+                          <span className="text-zinc-450">自營投信作帳比率 ({withInstBuy}/{total})</span>
+                          <span className="text-[#FFB74D] font-bold">{instPct}%</span>
+                        </div>
+                        <div className="w-full h-2 bg-zinc-950 rounded-full overflow-hidden border border-zinc-900">
+                          <div 
+                            className="h-full bg-gradient-to-r from-blue-600 to-indigo-400 shadow-[0_0_6px_#3b82f6]"
+                            style={{ width: `${instPct}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      <p className="text-[10px] text-zinc-550 font-sans leading-relaxed">
+                        反應目前所選的 {total} 檔股票中，外資與投信呈現連續買超（籌碼鎖定天數 &gt; 0）的比重。
+                      </p>
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+
+            {/* Right: Screener Filtered Results Table */}
+            <div className="lg:col-span-8 flex flex-col gap-6">
+              <div className="bg-[#0d0f14] border border-zinc-800 rounded-xl shadow-2xl overflow-hidden flex-1 flex flex-col justify-between">
+                
+                {/* Table Header / Action Strip */}
+                <div className="p-4 border-b border-zinc-800 bg-[#0e1117] flex flex-col sm:flex-row gap-4 items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="px-2.5 py-1 text-xs font-black bg-gradient-to-r from-yellow-500 to-amber-600 text-black rounded shadow font-mono">
+                      {screenerFiltered.length} 檔標的符合
+                    </span>
+                    <h3 className="text-white text-xs font-bold">高 Beta 機構智能選股池</h3>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span className="text-[11px] text-zinc-500 font-mono">排序:</span>
+                    <select
+                      value={screenerSortBy}
+                      onChange={(e) => setScreenerSortBy(e.target.value)}
+                      className="bg-zinc-950 border border-zinc-850 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#E5A823]"
+                    >
+                      <option value="score_desc">戰力評分 (高 → 低)</option>
+                      <option value="score_asc">戰力評分 (低 → 高)</option>
+                      <option value="change_desc">今日漲幅 (大 → 小)</option>
+                      <option value="change_asc">今日跌幅 (小 → 大)</option>
+                      <option value="per_asc">本益比 (低 → 高)</option>
+                      <option value="foreign_desc">外資鎖碼天數 (多 → 少)</option>
+                    </select>
+
+                    <button
+                      onClick={handleBulkBuyFiltered}
+                      disabled={screenerFiltered.length === 0 || data?.macroEStopActive}
+                      className={`px-4 py-1.5 rounded-lg font-bold text-xs uppercase tracking-wider transition-all shadow flex items-center gap-1.5 ${
+                        screenerFiltered.length === 0 || data?.macroEStopActive
+                          ? "bg-zinc-800 text-zinc-550 border border-zinc-850 cursor-not-allowed"
+                          : "bg-gradient-to-r from-[#E5A823] to-[#FFB74D] text-[#08090c] hover:scale-[1.02] active:scale-[0.98]"
+                      }`}
+                    >
+                      🚀 一鍵全部加入觀察持倉
+                    </button>
+                  </div>
+                </div>
+
+                {/* Filtered Table */}
+                <div className="overflow-x-auto overflow-y-auto max-h-[620px] flex-1">
+                  <table className="w-full text-left border-collapse table-auto text-xs">
+                    <thead>
+                      <tr className="border-b border-zinc-850 bg-[#0e1117]/95 text-[10px] uppercase font-mono font-bold text-zinc-500 sticky top-0 z-10 select-none">
+                        <th className="py-2.5 px-3">代號 / 股名</th>
+                        <th className="py-2.5 px-2 text-right">現價</th>
+                        <th className="py-2.5 px-2 text-right">漲跌%</th>
+                        <th className="py-2.5 px-2 text-center text-[#FFB74D]">評分</th>
+                        <th className="py-2.5 px-2 text-right">本益比</th>
+                        <th className="py-2.5 px-2 text-right">外資鎖碼</th>
+                        <th className="py-2.5 px-2 text-right">投信鎖碼</th>
+                        <th className="py-2.5 px-3 text-left">類股分類</th>
+                        <th className="py-2.5 px-3 text-center">實戰操作</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-850/60 text-zinc-350">
+                      {screenerFiltered.length === 0 ? (
+                        <tr>
+                          <td colSpan={9} className="py-24 text-center text-zinc-500 font-mono">
+                            <AlertTriangle className="w-10 h-10 text-amber-500/25 mx-auto mb-2" />
+                            雷達未能搜尋到任何匹配標的
+                            <p className="text-[11px] text-zinc-650 mt-1">💡 請嘗試調低戰力評分滑桿或放寬本益比限制</p>
+                          </td>
+                        </tr>
+                      ) : (
+                        screenerFiltered.map(stock => {
+                          return (
+                            <tr
+                              key={stock.stock_id}
+                              onClick={() => {
+                                setSelectedStock(stock);
+                                setNotesText(stock.master_notes || "");
+                                setActiveTab("radar");
+                              }}
+                              className="hover:bg-zinc-900/50 cursor-pointer transition"
+                            >
+                              <td className="py-2 px-3">
+                                <div className="font-mono font-bold text-white">{stock.stock_id}</div>
+                                <div className="text-[10px] text-zinc-500 mt-0.5">{stock.stock_name}</div>
+                              </td>
+                              <td className="py-2 px-2 text-right font-mono font-semibold text-white">
+                                {stock.close_price.toFixed(1)}
+                              </td>
+                              <td className={`py-2 px-2 text-right font-mono font-black ${stock.change_pct >= 0 ? "text-rose-400" : "text-emerald-400"}`}>
+                                {stock.change_pct >= 0 ? `+${stock.change_pct.toFixed(2)}` : stock.change_pct.toFixed(2)}%
+                              </td>
+                              <td className="py-2 px-2 text-center">
+                                <span className={`px-2 py-0.5 rounded font-mono font-bold text-xs ${
+                                  stock.score >= 33 
+                                    ? "bg-yellow-950 text-[#FFB74D] border border-yellow-500/40 shadow-[0_0_6px_rgba(245,158,11,0.1)]" 
+                                    : "bg-zinc-800/80 text-zinc-450"
+                                }`}>
+                                  {stock.score}
+                                </span>
+                              </td>
+                              <td className="py-2 px-2 text-right font-mono">{stock.per?.toFixed(1) || "-"}x</td>
+                              <td className={`py-2 px-2 text-right font-mono font-bold ${stock.foreignDays > 0 ? "text-[#f43f5e]" : stock.foreignDays < 0 ? "text-[#10b881]" : "text-zinc-550"}`}>
+                                {stock.foreignDays > 0 ? `▲ +${stock.foreignDays}` : stock.foreignDays < 0 ? `▼ ${stock.foreignDays}` : `${stock.foreignDays}`} 天
+                              </td>
+                              <td className={`py-2 px-2 text-right font-mono font-bold ${stock.instDays > 0 ? "text-[#f43f5e]" : stock.instDays < 0 ? "text-[#10b881]" : "text-zinc-550"}`}>
+                                {stock.instDays > 0 ? `▲ +${stock.instDays}` : stock.instDays < 0 ? `▼ ${stock.instDays}` : `${stock.instDays}`} 天
+                              </td>
+                              <td className="py-2 px-3 text-left text-zinc-450">{stock.category}</td>
+                              <td className="py-2 px-3 text-center" onClick={e => e.stopPropagation()}>
+                                <button
+                                  onClick={() => openBuyModalForStock(stock)}
+                                  disabled={data?.macroEStopActive}
+                                  className={`px-3 py-1 text-[10px] font-bold rounded shadow transition active:scale-[0.96] ${
+                                    data?.macroEStopActive 
+                                      ? "bg-zinc-800 text-zinc-550 border border-zinc-850 cursor-not-allowed"
+                                      : "bg-rose-900/90 text-rose-300 border border-rose-600/40 hover:bg-rose-800"
+                                  }`}
+                                >
+                                  建倉
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="p-3.5 bg-[#0e1117] border-t border-zinc-850 text-[10px] font-mono text-zinc-500 flex justify-between items-center select-none">
+                  <span>符合過濾組合的黃金池標的數: {screenerFiltered.length} 檔</span>
+                  <span>單檔建倉上限 NT$ 20,000</span>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 

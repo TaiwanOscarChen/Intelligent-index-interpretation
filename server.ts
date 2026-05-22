@@ -397,6 +397,147 @@ app.get("/api/signals", async (req, res) => {
   }
 });
 
+// 1b. Fetch Strategy Summary & Sector Statistics
+app.get("/api/strategy-summary", async (req, res) => {
+  try {
+    let signals: StockSignal[] = [];
+    if (dbConnected && signalsCollection) {
+      const dbSignals = await signalsCollection.find({}).toArray();
+      if (dbSignals && dbSignals.length > 0) {
+        signals = dbSignals.map(doc => {
+          return {
+            timestamp: doc.timestamp || localScanResult.scanTime,
+            stock_id: doc.stock_id,
+            stock_name: doc.stock_name,
+            close_price: doc.close_price,
+            signal: doc.signal as StockSignalOption,
+            macd_status: doc.macd_status || "",
+            ma20_status: doc.ma20_status || "",
+            volume_multiplier: doc.volume_multiplier || 1.0,
+            atr_stop: doc.atr_stop || 0,
+            change_pct: doc.change_pct || 0,
+            master_notes: doc.master_notes || "",
+            category: doc.category || "AI與權值",
+            industry: doc.industry || "電子零件",
+            score: doc.score || 30,
+            scoreBreakdown: doc.scoreBreakdown || {},
+            marginChange: doc.marginChange || 0,
+            marginShortRatio: doc.marginShortRatio || 0,
+            foreignDays: doc.foreignDays || 0,
+            instDays: doc.instDays || 0,
+            foreignRatio: doc.foreignRatio || 0,
+            instRatio: doc.instRatio || 0,
+            per: doc.per || 15,
+            pbr: doc.pbr || 1.5,
+            debtRatio: doc.debtRatio || 30,
+            perf1w: doc.perf1w || 0,
+            perf1m: doc.perf1m || 0,
+            perf3m: doc.perf3m || 0,
+            perf6m: doc.perf6m || 0,
+            perf1y: doc.perf1y || 0,
+            dynamicTiers: doc.dynamicTiers || { limitUp: doc.close_price, limitDown: doc.close_price, chaseUp2: doc.close_price, ambushDown2: doc.close_price, vwap5d: doc.close_price },
+            suggested_entry_price: doc.suggested_entry_price || "",
+            stop_loss_price: doc.stop_loss_price || 0,
+            take_profit_half_price: doc.take_profit_half_price || 0,
+            trailing_stop_price: doc.trailing_stop_price || 0,
+            action_signal: doc.action_signal || "觀望",
+            liquidity_warning: doc.liquidity_warning || false
+          };
+        });
+      }
+    }
+    
+    if (signals.length === 0) {
+      signals = localScanResult.signals;
+    }
+
+    // Group by category
+    const categories: Record<string, { totalScore: number; totalChangePct: number; count: number; category: string }> = {};
+    let totalScore = 0;
+    let totalChangePct = 0;
+    let totalCount = 0;
+    let multiCount = 0; // 多
+    let emptyCount = 0; // 空
+    let holdCount = 0; // 持倉
+    let isoCount = 0; // 隔離
+
+    signals.forEach(s => {
+      const cat = s.category || "AI與權值";
+      if (!categories[cat]) {
+        categories[cat] = { totalScore: 0, totalChangePct: 0, count: 0, category: cat };
+      }
+      categories[cat].totalScore += s.score || 0;
+      categories[cat].totalChangePct += s.change_pct || 0;
+      categories[cat].count += 1;
+
+      totalScore += s.score || 0;
+      totalChangePct += s.change_pct || 0;
+      totalCount += 1;
+
+      if (s.signal === "多") multiCount++;
+      else if (s.signal === "空") emptyCount++;
+      else if (s.signal === "持倉") holdCount++;
+      else if (s.signal === "隔離") isoCount++;
+    });
+
+    const categoryStats = Object.values(categories).map(c => ({
+      category: c.category,
+      avgScore: Math.round((c.totalScore / c.count) * 10) / 10,
+      avgChangePct: Math.round((c.totalChangePct / c.count) * 100) / 100,
+      count: c.count
+    }));
+
+    const avgScore = totalCount > 0 ? Math.round((totalScore / totalCount) * 10) / 10 : 0;
+    const avgChangePct = totalCount > 0 ? Math.round((totalChangePct / totalCount) * 100) / 100 : 0;
+
+    // Determine market sentiment
+    const vix = localScanResult.vixValue;
+    const macroEStop = localScanResult.macroEStopActive;
+    
+    let sentiment = "震盪整理";
+    let sentimentColor = "yellow"; // text-yellow-400
+    let sentimentScore = Math.round((avgScore / 40) * 100);
+
+    if (macroEStop || vix > 30) {
+      sentiment = "恐慌防禦 (崩盤避險)";
+      sentimentColor = "green"; // down / panic in Taiwan is green, but let's make it green/red based on preference
+    } else if (avgScore >= 30 && avgChangePct > 0.5) {
+      sentiment = "極度樂觀 (多頭特快)";
+      sentimentColor = "red"; // Up in Taiwan is red
+    } else if (avgScore >= 25 && avgChangePct >= -0.2) {
+      sentiment = "審慎偏多 (右側點火)";
+      sentimentColor = "red";
+    } else if (avgScore < 20 || avgChangePct < -1.0) {
+      sentiment = "空頭防禦 (全面減碼)";
+      sentimentColor = "green";
+    }
+
+    res.json({
+      success: true,
+      data: {
+        categoryStats,
+        overall: {
+          avgScore,
+          avgChangePct,
+          totalCount,
+          multiCount,
+          emptyCount,
+          holdCount,
+          isoCount,
+          sentiment,
+          sentimentColor,
+          sentimentScore,
+          vix,
+          macroEStop
+        }
+      }
+    });
+  } catch (err: any) {
+    console.error("Strategy Summary API error:", err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 // 2. Launch Matrix Scan
 app.post("/api/scan", async (req, res) => {
   const { overrideTsmc } = req.body;
