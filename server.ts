@@ -61,27 +61,44 @@ let signalsCollection: Collection<any> | null = null;
 let holdingsCollection: Collection<any> | null = null;
 let exitsCollection: Collection<any> | null = null;
 let dbConnected = false;
+let connectingPromise: Promise<void> | null = null;
 
 async function connectToMongo() {
-  if (!MONGO_URI || MONGO_URI.includes("cluster0.xxxx") || MONGO_URI.includes("<password>")) {
-    console.log("⚠️ [MongoDB Atlas] 無有效 MONGO_URI，全端系統自動降級為「記憶體安全沙盒 (In-Memory Sandbox)」模式。");
+  if (dbConnected && signalsCollection) {
     return;
   }
-  
-  try {
-    console.log("📡 [MongoDB Atlas] 正在建立與雲端對決資料庫的防護隧道...");
-    mongoClient = new MongoClient(MONGO_URI);
-    await mongoClient.connect();
-    db = mongoClient.db("LionKing_DB");
-    signalsCollection = db.collection("strategy_signals");
-    holdingsCollection = db.collection("simulated_holdings");
-    exitsCollection = db.collection("exit_logs");
-    dbConnected = true;
-    console.log("🟢 [MongoDB Atlas] 金鑰對接成功！順利載入 LionKing_DB (signals, holdings, exit_logs)。");
-  } catch (error) {
-    console.error("🔴 [MongoDB Atlas] 連線失敗，自動啟用記憶體避險機制 (In-Memory Failover):", error);
-    dbConnected = false;
+  if (connectingPromise) {
+    return connectingPromise;
   }
+  
+  connectingPromise = (async () => {
+    if (!MONGO_URI || MONGO_URI.includes("cluster0.xxxx") || MONGO_URI.includes("<password>")) {
+      console.log("⚠️ [MongoDB Atlas] 無有效 MONGO_URI，全端系統自動降級為「記憶體安全沙盒 (In-Memory Sandbox)」模式。");
+      return;
+    }
+    
+    try {
+      console.log("📡 [MongoDB Atlas] 正在建立與雲端對決資料庫的防護隧道...");
+      mongoClient = new MongoClient(MONGO_URI, {
+        connectTimeoutMS: 8000,
+        socketTimeoutMS: 8000,
+        serverSelectionTimeoutMS: 8000
+      });
+      await mongoClient.connect();
+      db = mongoClient.db("LionKing_DB");
+      signalsCollection = db.collection("strategy_signals");
+      holdingsCollection = db.collection("simulated_holdings");
+      exitsCollection = db.collection("exit_logs");
+      dbConnected = true;
+      console.log("🟢 [MongoDB Atlas] 金鑰對接成功！順利載入 LionKing_DB (signals, holdings, exit_logs)。");
+    } catch (error) {
+      console.error("🔴 [MongoDB Atlas] 連線失敗，自動啟用記憶體避險機制 (In-Memory Failover):", error);
+      dbConnected = false;
+      connectingPromise = null; // Allow retry on next request
+    }
+  })();
+  
+  return connectingPromise;
 }
 
 // Start database connection in background
@@ -299,6 +316,16 @@ function runInMemoryScanFallback(overrideTsmc?: 'green' | 'red') {
 }
 
 // REST API Endpoints
+
+// Ensure MongoDB is connected for all API requests
+app.use("/api", async (req, res, next) => {
+  try {
+    await connectToMongo();
+  } catch (err) {
+    console.error("❌ [MongoDB Middleware] Connection error:", err);
+  }
+  next();
+});
 
 // 1. Fetch Latest Signals
 app.get("/api/signals", async (req, res) => {
