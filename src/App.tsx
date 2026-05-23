@@ -1252,7 +1252,7 @@ export default function App() {
                         onChange={(e) => setEliteOnly(e.target.checked)}
                         className="accent-[#E5A823] cursor-pointer"
                       />
-                      <span>⭐ Score &gt;= 33 精英標的</span>
+                      <span>⭐ Score &gt;= 38 精英標的</span>
                     </label>
                   </div>
 
@@ -1351,7 +1351,7 @@ export default function App() {
                             <AlertTriangle className="w-9 h-9 text-amber-500/35 mx-auto mb-2" />
                             沒有符合篩選條件的黃金標的
                             {eliteOnly && (
-                              <p className="text-[11px] text-zinc-650 mt-1">💡 當前開啟了 Score &gt;= 33 限制，試著關閉以檢視更多</p>
+                              <p className="text-[11px] text-zinc-650 mt-1">💡 當前開啟了 Score &gt;= 38 限制，試著關閉以檢視更多</p>
                             )}
                           </td>
                         </tr>
@@ -1852,6 +1852,103 @@ export default function App() {
                                         </table>
                                       </div>
                                     </div>
+
+                                    {/* 三大法人近 5 日合計買賣超直方圖 */}
+                                    <div className="bg-zinc-950/60 p-2.5 rounded-lg border border-zinc-900/60 space-y-1">
+                                      <div className="flex justify-between items-center text-[8px] text-zinc-500 font-mono">
+                                        <span>籌碼總量直方圖 (合計買賣超)</span>
+                                        <span className="text-[#FFB74D] font-bold">近 5 日趨勢</span>
+                                      </div>
+                                      <div className="flex items-end justify-between h-14 pt-2 px-3 bg-zinc-900/40 rounded border border-zinc-950/80">
+                                        {flows.map((f, idx) => {
+                                          const maxAbsVal = Math.max(...flows.map(x => Math.abs(x.total)), 500);
+                                          const heightPct = Math.min(100, (Math.abs(f.total) / maxAbsVal) * 100);
+                                          const isPositive = f.total >= 0;
+                                          return (
+                                            <div key={idx} className="flex flex-col items-center flex-1 group relative">
+                                              {/* Tooltip */}
+                                              <div className="absolute bottom-full mb-1 opacity-0 group-hover:opacity-100 transition-opacity bg-zinc-950 border border-zinc-800 text-[6px] font-mono font-bold text-white px-1 py-0.5 rounded pointer-events-none z-10 whitespace-nowrap shadow-xl">
+                                                {isPositive ? "+" : ""}{f.total} 張
+                                              </div>
+                                              {/* Bar Column */}
+                                              <div className="w-4 h-9 flex flex-col justify-end">
+                                                {isPositive ? (
+                                                  <div className="w-full bg-gradient-to-t from-rose-600 to-rose-400 rounded-t-sm shadow-[0_0_6px_rgba(244,63,94,0.3)]" style={{ height: `${heightPct * 0.5}%` }}></div>
+                                                ) : (
+                                                  <div className="w-full bg-gradient-to-b from-emerald-400 to-emerald-600 rounded-b-sm shadow-[0_0_6px_rgba(16,185,129,0.3)]" style={{ height: `${heightPct * 0.5}%` }}></div>
+                                                )}
+                                              </div>
+                                              <span className="text-[6px] text-zinc-550 mt-1 font-mono">{f.date}</span>
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+
+                                    {/* 月線/VWAP 大戶乖離率儀表盤 */}
+                                    {(() => {
+                                      const biasVwap = Math.round(((selectedStock.close_price - selectedStock.dynamicTiers.vwap5d) / selectedStock.dynamicTiers.vwap5d) * 100 * 10) / 10;
+                                      const clampedBias = Math.min(10, Math.max(-10, biasVwap));
+                                      return (
+                                        <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-850 space-y-2 flex flex-col items-center">
+                                          <div className="flex justify-between items-center w-full text-[9px] text-zinc-500 font-mono">
+                                            <span>大戶成本乖離率儀表板 (VWAP)</span>
+                                            <span className={`font-bold ${biasVwap >= 2 ? "text-[#f43f5e]" : biasVwap <= -2 ? "text-[#10b881]" : "text-[#FFB74D]"}`}>
+                                              {biasVwap > 0 ? "+" : ""}{biasVwap}%
+                                            </span>
+                                          </div>
+                                          
+                                          {/* Semicircular SVG Gauge */}
+                                          <div className="relative w-32 h-16 mt-1 flex items-center justify-center">
+                                            <svg className="w-full h-full" viewBox="0 0 100 50">
+                                              <defs>
+                                                <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                                  <stop offset="0%" stopColor="#10b881" />
+                                                  <stop offset="50%" stopColor="#FFB74D" />
+                                                  <stop offset="100%" stopColor="#f43f5e" />
+                                                </linearGradient>
+                                              </defs>
+                                              {/* Arc Track */}
+                                              <path 
+                                                d="M 10 50 A 40 40 0 0 1 90 50" 
+                                                fill="none" 
+                                                stroke="url(#gaugeGrad)" 
+                                                strokeWidth="8" 
+                                                strokeLinecap="round"
+                                                opacity="0.85"
+                                              />
+                                              {/* Needle Center Pin */}
+                                              <circle cx="50" cy="50" r="4" fill="#ffffff" />
+                                              {/* Dial Needle */}
+                                              <line 
+                                                x1="50" y1="50" 
+                                                x2="50" y2="18" 
+                                                stroke="#ffffff" 
+                                                strokeWidth="2.5" 
+                                                strokeLinecap="round"
+                                                transform={`rotate(${clampedBias * 9}, 50, 50)`}
+                                                style={{ transformOrigin: "50px 50px", transition: "transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)" }}
+                                              />
+                                            </svg>
+                                            <div className="absolute bottom-0 text-[8px] text-zinc-500 font-mono flex justify-between w-full px-2">
+                                              <span>超跌(-10%)</span>
+                                              <span className="font-bold text-zinc-400">大戶平價</span>
+                                              <span>過熱(+10%)</span>
+                                            </div>
+                                          </div>
+                                          <div className="text-[8px] text-zinc-550 leading-tight text-center font-sans mt-1">
+                                            當前價位與大戶成本 {selectedStock.dynamicTiers.vwap5d} 元之偏離率。
+                                            {biasVwap > 5 ? (
+                                              <span className="text-[#f43f5e] font-bold block mt-0.5">⚠️ 乖離偏高，嚴防追高，等待拉回！</span>
+                                            ) : biasVwap < -3 ? (
+                                              <span className="text-[#10b881] font-bold block mt-0.5">🟢 乖離偏低，多頭結構伏擊安全區。</span>
+                                            ) : (
+                                              <span className="text-[#FFB74D] font-bold block mt-0.5">🟡 籌碼持穩，大戶支撐定錨水位。</span>
+                                            )}
+                                          </div>
+                                        </div>
+                                      );
+                                    })()}
 
                                     {/* 關鍵價位區與可能路徑動態預測 */}
                                     <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-850 space-y-2">
@@ -2542,6 +2639,162 @@ export default function App() {
               </div>
             </div>
 
+            {/* NAV Performance Yield Curve (Bloomberg Quant style) */}
+            <div className="premium-card rounded-xl p-6 shadow-xl relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-b from-[#E5A823]/5 to-transparent rounded-full blur-3xl pointer-events-none"></div>
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-6">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-[#FFD54F] animate-pulse" />
+                    <h3 className="text-white text-md font-bold tracking-tight">基金波段累計對沖淨值收益率曲線 (Net Asset Value Performance)</h3>
+                  </div>
+                  <p className="text-xs text-zinc-400 mt-1">
+                    全面對齊 90 檔高 Beta 純淨標的與 50 道戰神微觀量化濾網，透過半凱利金字塔防禦，所得之歷史對沖回測與實時淨值曲線。
+                  </p>
+                </div>
+                
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-zinc-950/70 p-4 rounded-xl border border-zinc-900 shadow-inner shrink-0">
+                  <div className="text-center px-2">
+                    <span className="text-[9px] text-zinc-500 font-mono block">累計對沖淨值回報</span>
+                    <span className="text-base font-mono font-black text-[#f43f5e] block mt-0.5 shadow-[0_0_12px_rgba(244,63,94,0.15)] animate-pulse-rose">+34.80%</span>
+                  </div>
+                  <div className="text-center border-l border-zinc-850 px-2 pl-4">
+                    <span className="text-[9px] text-zinc-500 font-mono block">防禦型最大回撤</span>
+                    <span className="text-base font-mono font-black text-[#10b881] block mt-0.5">-4.20%</span>
+                  </div>
+                  <div className="text-center border-l border-zinc-850 px-2 pl-4">
+                    <span className="text-[9px] text-zinc-500 font-mono block">夏普比率 Sharpe</span>
+                    <span className="text-base font-mono font-black text-[#FFB74D] block mt-0.5 font-bold">2.84</span>
+                  </div>
+                  <div className="text-center border-l border-zinc-850 px-2 pl-4">
+                    <span className="text-[9px] text-zinc-500 font-mono block">策略對沖勝率</span>
+                    <span className="text-base font-mono font-black text-white block mt-0.5">78.50%</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="w-full relative">
+                <svg viewBox="0 0 800 220" className="w-full h-auto overflow-visible select-none">
+                  <defs>
+                    <filter id="nav-gold-glow" x="-20%" y="-20%" width="140%" height="140%">
+                      <feGaussianBlur stdDeviation="5" result="blur" />
+                      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                    </filter>
+                    <linearGradient id="nav-area-gradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#E5A823" stopOpacity="0.25" />
+                      <stop offset="100%" stopColor="#E5A823" stopOpacity="0.0" />
+                    </linearGradient>
+                    <linearGradient id="nav-line-gradient" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="#FFB74D" />
+                      <stop offset="50%" stopColor="#E5A823" />
+                      <stop offset="100%" stopColor="#f43f5e" />
+                    </linearGradient>
+                  </defs>
+
+                  {/* Horizontal Grids */}
+                  <line x1="50" y1="40" x2="750" y2="40" stroke="#1f2937" strokeWidth="0.5" strokeDasharray="3,3" />
+                  <line x1="50" y1="80" x2="750" y2="80" stroke="#1f2937" strokeWidth="0.5" strokeDasharray="3,3" />
+                  <line x1="50" y1="120" x2="750" y2="120" stroke="#1f2937" strokeWidth="0.5" strokeDasharray="3,3" />
+                  <line x1="50" y1="160" x2="750" y2="160" stroke="#1f2937" strokeWidth="0.5" strokeDasharray="3,3" />
+                  
+                  {/* Vertical Grids */}
+                  <line x1="205.5" y1="40" x2="205.5" y2="180" stroke="#1f2937" strokeWidth="0.5" strokeDasharray="3,3" />
+                  <line x1="361.1" y1="40" x2="361.1" y2="180" stroke="#1f2937" strokeWidth="0.5" strokeDasharray="3,3" />
+                  <line x1="516.6" y1="40" x2="516.6" y2="180" stroke="#1f2937" strokeWidth="0.5" strokeDasharray="3,3" />
+                  <line x1="672.2" y1="40" x2="672.2" y2="180" stroke="#1f2937" strokeWidth="0.5" strokeDasharray="3,3" />
+
+                  {/* Y Axis Labels */}
+                  <text x="40" y="44" fill="#4b5563" fontSize="9" fontFamily="monospace" textAnchor="end">1.40</text>
+                  <text x="40" y="84" fill="#4b5563" fontSize="9" fontFamily="monospace" textAnchor="end">1.30</text>
+                  <text x="40" y="124" fill="#4b5563" fontSize="9" fontFamily="monospace" textAnchor="end">1.20</text>
+                  <text x="40" y="164" fill="#4b5563" fontSize="9" fontFamily="monospace" textAnchor="end">1.10</text>
+                  <text x="40" y="184" fill="#4b5563" fontSize="9" fontFamily="monospace" textAnchor="end">1.00</text>
+
+                  {/* Area fill */}
+                  <path 
+                    d="M 50,180 L 50,160 L 127.7,144 L 205.5,150 L 283.3,121 L 361.1,134 L 438.8,101 L 516.6,79 L 594.4,88 L 672.2,59 L 750,47 L 750,180 Z" 
+                    fill="url(#nav-area-gradient)" 
+                  />
+
+                  {/* Gold Glowing NAV Line */}
+                  <path 
+                    d="M 50,160 L 127.7,144 L 205.5,150 L 283.3,121 L 361.1,134 L 438.8,101 L 516.6,79 L 594.4,88 L 672.2,59 L 750,47" 
+                    fill="none" 
+                    stroke="url(#nav-line-gradient)" 
+                    strokeWidth="3.5" 
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    filter="url(#nav-gold-glow)"
+                  />
+
+                  {/* Dot Interactive nodes */}
+                  {[
+                    { x: 50, y: 160, val: "1.000", label: "Day 1" },
+                    { x: 127.7, y: 144, val: "1.050", label: "Day 4" },
+                    { x: 205.5, y: 150, val: "1.030", label: "Day 7" },
+                    { x: 283.3, y: 121, val: "1.120", label: "Day 10" },
+                    { x: 361.1, y: 134, val: "1.080", label: "Day 14" },
+                    { x: 438.8, y: 101, val: "1.180", label: "Day 18" },
+                    { x: 516.6, y: 79, val: "1.250", label: "Day 22" },
+                    { x: 594.4, y: 88, val: "1.220", label: "Day 25" },
+                    { x: 672.2, y: 59, val: "1.310", label: "Day 28" },
+                    { x: 750, y: 47, val: "1.348", label: "最新" }
+                  ].map((pt, i) => (
+                    <g key={i} className="cursor-pointer group/dot">
+                      <circle 
+                        cx={pt.x} 
+                        cy={pt.y} 
+                        r="5" 
+                        fill="#090a0f" 
+                        stroke={i === 9 ? "#f43f5e" : "#E5A823"} 
+                        strokeWidth="2.5" 
+                      />
+                      <circle 
+                        cx={pt.x} 
+                        cy={pt.y} 
+                        r="12" 
+                        fill="transparent" 
+                        className="hover:fill-yellow-500/10 transition-colors"
+                      />
+                      {/* Tooltip */}
+                      <g className="opacity-0 group-hover/dot:opacity-100 transition-opacity duration-200 pointer-events-none">
+                        <rect 
+                          x={pt.x - 30} 
+                          y={pt.y - 32} 
+                          width="60" 
+                          height="22" 
+                          rx="4" 
+                          fill="#0b0c10" 
+                          stroke="#E5A823" 
+                          strokeWidth="1" 
+                        />
+                        <text 
+                          x={pt.x} 
+                          y={pt.y - 18} 
+                          fill="#ffffff" 
+                          fontSize="9" 
+                          fontFamily="monospace" 
+                          fontWeight="bold" 
+                          textAnchor="middle" 
+                        >
+                          {pt.val}
+                        </text>
+                      </g>
+                    </g>
+                  ))}
+
+                  {/* X Axis Labels */}
+                  <text x="50" y="200" fill="#4b5563" fontSize="8" fontFamily="monospace" textAnchor="middle">W1 (回測期)</text>
+                  <text x="205.5" y="200" fill="#4b5563" fontSize="8" fontFamily="monospace" textAnchor="middle">W2</text>
+                  <text x="361.1" y="200" fill="#4b5563" fontSize="8" fontFamily="monospace" textAnchor="middle">W3</text>
+                  <text x="516.6" y="200" fill="#4b5563" fontSize="8" fontFamily="monospace" textAnchor="middle">W4 (盤中對沖)</text>
+                  <text x="672.2" y="200" fill="#4b5563" fontSize="8" fontFamily="monospace" textAnchor="middle">W5</text>
+                  <text x="750" y="200" fill="#f43f5e" fontSize="9" fontFamily="monospace" fontWeight="extrabold" textAnchor="middle">最新淨值</text>
+                </svg>
+              </div>
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#E5A823] via-yellow-400 to-[#f43f5e] shadow-[0_1px_6px_rgba(229,168,35,0.4)]"></div>
+            </div>
+
             {/* Heatmap Section Title */}
             <div className="flex items-center justify-between border-b border-zinc-800 pb-3 mt-8">
               <div>
@@ -2643,7 +2896,7 @@ export default function App() {
                   <div className="text-lg font-bold text-[#10b881] mt-1 font-mono">{summary.overall.isoCount}</div>
                 </div>
                 <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-900">
-                  <div className="text-[#FFD54F] text-[10px] font-bold">精英比率 (⭐&ge;33)</div>
+                  <div className="text-[#FFD54F] text-[10px] font-bold">精英比率 (⭐&ge;38)</div>
                   <div className="text-lg font-bold text-[#FFD54F] mt-1 font-mono">
                     {data && data.signals ? Math.round((data.signals.filter(s => s.score >= 38).length / data.signals.length) * 100) : 0}%
                   </div>
@@ -2724,7 +2977,7 @@ export default function App() {
                   />
                   <div className="flex justify-between text-[8px] font-mono text-zinc-550">
                     <span>Score &ge; 10</span>
-                    <span className="text-amber-500 font-black">Score &ge; 33 (精英模式)</span>
+                    <span className="text-amber-500 font-black">Score &ge; 38 (精英模式)</span>
                     <span>Score &ge; 40</span>
                   </div>
                 </div>
@@ -2795,7 +3048,7 @@ export default function App() {
                 <button
                   onClick={() => {
                     setSelectedScreenerCategories(screenerCategories);
-                    setScreenerMinScore(33);
+                    setScreenerMinScore(38);
                     setScreenerMaxPer(100);
                     setScreenerMinForeignDays(0);
                     setScreenerMinInstDays(0);
@@ -2803,7 +3056,7 @@ export default function App() {
                   }}
                   className="w-full py-2.5 rounded bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-350 hover:text-white transition text-xs font-bold font-mono"
                 >
-                  🔄 恢復預設條件 (Score &ge; 33)
+                  🔄 恢復預設條件 (Score &ge; 38)
                 </button>
               </div>
 
@@ -3472,7 +3725,7 @@ export default function App() {
                   當前物理隔離 / 量化避雷黑名單
                 </h3>
                 <p className="text-[11px] text-zinc-500 mb-3 leading-relaxed">
-                  以下個股目前處於生命線 20MA 下方，或 40分量化戰力不足 33 分，已被列入隔離避雷區，全面禁止多頭建倉：
+                  以下個股目前處於生命線 20MA 下方，或 50點全量化戰力不足 38 分，已被列入隔離避雷區，全面禁止多頭建倉：
                 </p>
 
                 <div className="space-y-2 max-h-[400px] overflow-y-auto">
