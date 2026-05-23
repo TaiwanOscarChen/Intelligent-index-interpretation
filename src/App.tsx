@@ -706,7 +706,8 @@ export default function App() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: updatedMessages,
+          // CRITICAL: Strip giant Base64 strings of previous messages to prevent 413 Payload Too Large!
+          messages: updatedMessages.map(m => ({ role: m.role, content: m.content })),
           stock_id: chatStockId || undefined,
           fileData: filePayload || undefined
         })
@@ -714,6 +715,9 @@ export default function App() {
 
       // Defensive checking of HTTP Status codes before parsing JSON to give rich UX debug details
       if (!response.ok) {
+        if (response.status === 413) {
+          throw new Error("資料體過大 (413 Payload Too Large)。Vercel 限制單次 Request Body 必須在 4.5MB 以內，大師已為您剔除歷史 Base64，請再次點擊發送！");
+        }
         if (response.status === 504) {
           throw new Error("執行超時 (504 Gateway Timeout)。由於 Vercel 免費版限制 Serverless 運行最長 10 秒，請縮減圖片寬度或減少文字內容後重試！");
         }
