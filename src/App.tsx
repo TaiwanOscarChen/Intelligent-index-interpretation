@@ -590,29 +590,66 @@ export default function App() {
     }
   };
 
-  // Handle file select (image/text)
+  // Handle file select (image/text) with client-side canvas compression
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, fileType: "image" | "text") => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check size limit (3MB limit for Vercel stability)
-    if (file.size > 3 * 1024 * 1024) {
-      alert("❌ 檔案尺寸超過 3MB 限制！為防範 Vercel 雲端傳輸溢出，請選擇小於 3MB 的檔案。");
-      return;
-    }
-
-    const reader = new FileReader();
     if (fileType === "image") {
+      const reader = new FileReader();
       reader.onload = (event) => {
-        setAttachedFile({
-          name: file.name,
-          type: "image",
-          data: event.target?.result as string,
-          mimeType: file.type
-        });
+        const img = new Image();
+        img.onload = () => {
+          // Compress using HTML5 Canvas
+          const canvas = document.createElement("canvas");
+          let width = img.width;
+          let height = img.height;
+          
+          // Max dimension 1000px maintains perfect OCR text quality while dropping footprint below 120KB
+          const MAX_DIM = 1000;
+          if (width > MAX_DIM || height > MAX_DIM) {
+            if (width > height) {
+              height = Math.round((height * MAX_DIM) / width);
+              width = MAX_DIM;
+            } else {
+              width = Math.round((width * MAX_DIM) / height);
+              height = MAX_DIM;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            // Compress to highly efficient JPEG at 0.75 quality
+            const compressedBase64 = canvas.toDataURL("image/jpeg", 0.75);
+            setAttachedFile({
+              name: file.name,
+              type: "image",
+              data: compressedBase64,
+              mimeType: "image/jpeg"
+            });
+          } else {
+            // Context fallback
+            setAttachedFile({
+              name: file.name,
+              type: "image",
+              data: event.target?.result as string,
+              mimeType: file.type
+            });
+          }
+        };
+        img.src = event.target?.result as string;
       };
       reader.readAsDataURL(file);
     } else {
+      // Limit text file size to 200KB to fit easily in LLM context window
+      if (file.size > 200 * 1024) {
+        alert("❌ 文字文件尺寸超過 200KB 限制！請選擇較小的純文字量化報表。");
+        return;
+      }
+      const reader = new FileReader();
       reader.onload = (event) => {
         setAttachedFile({
           name: file.name,
@@ -674,15 +711,34 @@ export default function App() {
           fileData: filePayload || undefined
         })
       });
+
+      // Defensive checking of HTTP Status codes before parsing JSON to give rich UX debug details
+      if (!response.ok) {
+        if (response.status === 504) {
+          throw new Error("執行超時 (504 Gateway Timeout)。由於 Vercel 免費版限制 Serverless 運行最長 10 秒，請縮減圖片寬度或減少文字內容後重試！");
+        }
+        if (response.status === 500) {
+          throw new Error("伺服器錯誤 (500 Internal Server Error)。可能是後端 GEMINI_API_KEY 金鑰配置失效，或 Google AI 服務過載。");
+        }
+        throw new Error(`HTTP 錯誤狀態碼: ${response.status}`);
+      }
+
       const resData = await response.json();
       if (resData.success && resData.reply) {
         setChatMessages([...updatedMessages, { role: "assistant" as const, content: resData.reply }]);
       } else {
         setChatMessages([...updatedMessages, { role: "assistant" as const, content: "⚠️ 訊號不穩定，大師正在喝茶，請重試。" }]);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Chat API error:", error);
-      setChatMessages([...updatedMessages, { role: "assistant" as const, content: "❌ 對接 AI 中樞超時，請檢查連線狀態或 API 金鑰配置。" }]);
+      const errMsg = error?.message || "網路連線異常";
+      setChatMessages([
+        ...updatedMessages, 
+        { 
+          role: "assistant" as const, 
+          content: `❌ 對接 AI 中樞失敗：${errMsg}。請稍後重試，或手動查驗 Vercel / Google AI 金鑰配置。` 
+        }
+      ]);
     } finally {
       setIsSendingChat(false);
     }

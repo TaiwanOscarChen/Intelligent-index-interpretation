@@ -1532,7 +1532,7 @@ ${fileData.data.substring(0, 4000)}
       let linkText = "";
       try {
         console.log(`📡 [Link Fetch] 正在抓取公開雲端檔案內容: ${fileData.data}...`);
-        const fetchResp = await fetch(fileData.data, { signal: AbortSignal.timeout(5000) });
+        const fetchResp = await fetch(fileData.data, { signal: AbortSignal.timeout(2000) });
         if (fetchResp.ok) {
           const rawText = await fetchResp.text();
           // Strip HTML tags and keep first 3000 chars safely
@@ -1614,7 +1614,7 @@ ${fileAnalysisContext}
       contents: formattedMessages,
       config: {
         systemInstruction: systemInstruction.trim(),
-        temperature: 0.8,
+        temperature: 0.7,
       }
     });
 
