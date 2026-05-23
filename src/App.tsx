@@ -1651,85 +1651,100 @@ export default function App() {
                               </div>
                             </div>
 
-                            {/* US ADR Counterpart / Insiders if has ADR */}
-                            {extendedDetails?.has_adr ? (
-                              <div className="space-y-4">
-                                {/* Insider Transactions */}
-                                <div className="bg-zinc-950 p-3.5 rounded-lg border border-zinc-850/80 space-y-2">
-                                  <div className="flex justify-between items-center">
-                                    <h4 className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider font-mono">
-                                      🇺🇸 美股 {extendedDetails.adr_symbol} 內線交易 (Insiders)
-                                    </h4>
-                                    <span className="text-[8px] bg-indigo-950 text-indigo-400 border border-indigo-500/30 px-1.5 py-0.5 rounded font-mono">ADR 對應</span>
-                                  </div>
-                                  
-                                  {extendedDetails.insiders && extendedDetails.insiders.length > 0 ? (
-                                    <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                                      {extendedDetails.insiders.map((item: any, idx: number) => {
-                                        const isBuy = item.type?.toLowerCase().includes("buy") || item.type?.toLowerCase().includes("purchase");
-                                        return (
-                                          <div key={idx} className="bg-zinc-900/50 p-2 rounded border border-zinc-900 text-[10px] flex justify-between items-start gap-1 font-mono">
-                                            <div className="truncate max-w-[140px]">
-                                              <div className="text-white font-bold truncate">{item.name}</div>
-                                              <div className="text-zinc-500 text-[9px] truncate">{item.position}</div>
-                                            </div>
-                                            <div className="text-right">
-                                              <div className={`font-bold ${isBuy ? "text-[#f43f5e]" : "text-[#10b881]"}`}>
-                                                {item.type}
-                                              </div>
-                                              <div className="text-zinc-400 text-[9px] mt-0.5">
-                                                {item.shares ? item.shares.toLocaleString() : "0"} 股 | ${item.value ? item.value.toLocaleString() : "0"}
-                                              </div>
-                                              <div className="text-zinc-500 text-[8px] mt-0.5">{item.date}</div>
-                                            </div>
-                                          </div>
-                                        );
-                                      })}
-                                    </div>
-                                  ) : (
-                                    <div className="text-center py-4 text-zinc-650 font-mono text-[9px]">
-                                      ⚠️ 暫無近期美股內線交易申報數據。
-                                    </div>
-                                  )}
-                                </div>
-
-                                {/* Institutional Holders */}
-                                <div className="bg-zinc-950 p-3.5 rounded-lg border border-zinc-850/80 space-y-2">
+                            {/* Insiders & Institutions (Dual-Mode: US ADR / Taiwan Local) */}
+                            <div className="space-y-4">
+                              {/* Insider Transactions */}
+                              <div className="bg-zinc-950 p-3.5 rounded-lg border border-zinc-850/80 space-y-2">
+                                <div className="flex justify-between items-center">
                                   <h4 className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider font-mono">
-                                    🏛️ 美股 {extendedDetails.adr_symbol} 大資金機構 (Institutions)
+                                    {extendedDetails.has_adr 
+                                      ? `🇺🇸 美股 ${extendedDetails.adr_symbol} 內線交易 (Insiders)` 
+                                      : `🇹🇼 台北董監事與大股東持股變動 (Insiders)`}
                                   </h4>
-                                  
-                                  {extendedDetails.institutions && extendedDetails.institutions.length > 0 ? (
-                                    <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                                      {extendedDetails.institutions.map((item: any, idx: number) => (
+                                  <span className={`text-[8px] border px-1.5 py-0.5 rounded font-mono ${
+                                    extendedDetails.has_adr 
+                                      ? "bg-indigo-950 text-indigo-400 border-indigo-500/30" 
+                                      : "bg-amber-950 text-amber-400 border-amber-500/30"
+                                  }`}>
+                                    {extendedDetails.has_adr ? "ADR 對應" : "董監交易"}
+                                  </span>
+                                </div>
+                                
+                                {extendedDetails.insiders && extendedDetails.insiders.length > 0 ? (
+                                  <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                                    {extendedDetails.insiders.map((item: any, idx: number) => {
+                                      const isBuy = item.type?.toLowerCase().includes("buy") || 
+                                                    item.type?.toLowerCase().includes("purchase") ||
+                                                    item.type?.includes("買進") ||
+                                                    item.type?.includes("配股");
+                                      return (
                                         <div key={idx} className="bg-zinc-900/50 p-2 rounded border border-zinc-900 text-[10px] flex justify-between items-start gap-1 font-mono">
-                                          <div className="truncate max-w-[150px]">
+                                          <div className="truncate max-w-[140px]">
                                             <div className="text-white font-bold truncate">{item.name}</div>
-                                            <div className="text-zinc-500 text-[9px]">持股比: {item.pct ? item.pct.toFixed(2) : "0.00"}%</div>
+                                            <div className="text-zinc-500 text-[9px] truncate">{item.position}</div>
                                           </div>
                                           <div className="text-right">
-                                            <div className="text-zinc-300 font-bold">
-                                              {item.shares ? item.shares.toLocaleString() : "0"} 股
+                                            <div className={`font-bold ${isBuy ? "text-[#f43f5e]" : "text-[#10b881]"}`}>
+                                              {item.type}
                                             </div>
-                                            <div className={`text-[9px] mt-0.5 font-bold ${item.pctChange >= 0 ? "text-[#f43f5e]" : "text-[#10b881]"}`}>
-                                              異動: {item.pctChange >= 0 ? `+${item.pctChange.toFixed(2)}%` : `${item.pctChange.toFixed(2)}%`}
+                                            <div className="text-zinc-400 text-[9px] mt-0.5">
+                                              {extendedDetails.has_adr 
+                                                ? `${item.shares ? item.shares.toLocaleString() : "0"} 股` 
+                                                : `${item.shares ? (item.shares / 1000).toFixed(0) : "0"} 張`}
+                                              {" | "}
+                                              {extendedDetails.has_adr 
+                                                ? `$${item.value ? item.value.toLocaleString() : "0"}` 
+                                                : `NT$ ${item.value ? item.value.toLocaleString() : "0"}`}
                                             </div>
+                                            <div className="text-zinc-500 text-[8px] mt-0.5">{item.date}</div>
                                           </div>
                                         </div>
-                                      ))}
-                                    </div>
-                                  ) : (
-                                    <div className="text-center py-4 text-zinc-650 font-mono text-[9px]">
-                                      ⚠️ 暫無大型法人持股變動申報。
-                                    </div>
-                                  )}
-                                </div>
+                                      );
+                                    })}
+                                  </div>
+                                ) : (
+                                  <div className="text-center py-4 text-zinc-650 font-mono text-[9px]">
+                                    ⚠️ 暫無近期申報數據。
+                                  </div>
+                                )}
                               </div>
-                            ) : (
-                              <div className="bg-zinc-950 p-3.5 rounded-lg border border-zinc-850/80 text-center py-6 text-zinc-550 font-mono text-[9px]">
-                                ℹ️ 本標的無美股 ADR/OTC 對應本體，未提供美股內線及大型機構申報數據。
+
+                              {/* Institutional Holders */}
+                              <div className="bg-zinc-950 p-3.5 rounded-lg border border-zinc-850/80 space-y-2">
+                                <h4 className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider font-mono">
+                                  {extendedDetails.has_adr 
+                                    ? `🏛️ 美股 ${extendedDetails.adr_symbol} 大資金機構 (Institutions)` 
+                                    : `🏛️ 台北法人與本地大型機構持股 (Institutions)`}
+                                </h4>
+                                
+                                {extendedDetails.institutions && extendedDetails.institutions.length > 0 ? (
+                                  <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                                    {extendedDetails.institutions.map((item: any, idx: number) => (
+                                      <div key={idx} className="bg-zinc-900/50 p-2 rounded border border-zinc-900 text-[10px] flex justify-between items-start gap-1 font-mono">
+                                        <div className="truncate max-w-[150px]">
+                                          <div className="text-white font-bold truncate">{item.name}</div>
+                                          <div className="text-zinc-500 text-[9px]">持股比: {item.pct ? item.pct.toFixed(2) : "0.00"}%</div>
+                                        </div>
+                                        <div className="text-right">
+                                          <div className="text-zinc-300 font-bold">
+                                            {extendedDetails.has_adr 
+                                              ? `${item.shares ? item.shares.toLocaleString() : "0"} 股` 
+                                              : `${item.shares ? (item.shares / 1000).toFixed(0) : "0"} 張`}
+                                          </div>
+                                          <div className={`text-[9px] mt-0.5 font-bold ${item.pctChange >= 0 ? "text-[#f43f5e]" : "text-[#10b881]"}`}>
+                                            異動: {item.pctChange >= 0 ? `+${item.pctChange.toFixed(2)}%` : `${item.pctChange.toFixed(2)}%`}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div className="text-center py-4 text-zinc-650 font-mono text-[9px]">
+                                    ⚠️ 暫無大型機構持股變動申報。
+                                  </div>
+                                )}
                               </div>
-                            )}
+                            </div>
                           </div>
                         )}
                       </div>
@@ -1746,41 +1761,39 @@ export default function App() {
                           </div>
                         ) : (
                           <div className="flex flex-col gap-4 text-xs">
-                            {/* SEC Filings Section - Only if has ADR */}
-                            {extendedDetails?.has_adr && (
-                              <div className="bg-zinc-950 p-3.5 rounded-lg border border-zinc-850/80 space-y-2">
-                                <h4 className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider font-mono flex items-center justify-between">
-                                  <span>📂 SEC 備案與揭露 (SEC Filings)</span>
-                                  <span className="text-[9px] text-[#FFB74D] font-mono">EDGAR</span>
-                                </h4>
-                                
-                                {extendedDetails.sec_filings && extendedDetails.sec_filings.length > 0 ? (
-                                  <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                                    {extendedDetails.sec_filings.map((filing: any, idx: number) => (
-                                      <a
-                                        key={idx}
-                                        href={filing.url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="block bg-zinc-900/50 hover:bg-zinc-900/80 p-2 rounded border border-zinc-900 text-[10px] font-mono transition group"
-                                      >
-                                        <div className="flex justify-between items-center text-zinc-400 group-hover:text-[#FFB74D] font-bold">
-                                          <span>{filing.type} - 申報檔案</span>
-                                          <span className="text-[8px] text-zinc-550">{filing.date}</span>
-                                        </div>
-                                        <div className="text-[9px] text-zinc-500 mt-1 truncate group-hover:text-zinc-300">
-                                          {filing.title}
-                                        </div>
-                                      </a>
-                                    ))}
-                                  </div>
-                                ) : (
-                                  <div className="text-center py-4 text-zinc-660 font-mono text-[9px]">
-                                    ⚠️ 暫無近期 SEC EDGAR 申報紀錄。
-                                  </div>
-                                )}
-                              </div>
-                            )}
+                            {/* SEC Filings / TWSE Disclosures (Dual-Mode) */}
+                            <div className="bg-zinc-950 p-3.5 rounded-lg border border-zinc-850/80 space-y-2">
+                              <h4 className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider font-mono flex items-center justify-between">
+                                <span>{extendedDetails.has_adr ? "📂 SEC 備案與揭露 (SEC Filings)" : "📂 TWSE / MOPs 交易所重大訊息 (Disclosures)"}</span>
+                                <span className="text-[9px] text-[#FFB74D] font-mono">{extendedDetails.has_adr ? "EDGAR" : "公開資訊觀測站"}</span>
+                              </h4>
+                              
+                              {extendedDetails.sec_filings && extendedDetails.sec_filings.length > 0 ? (
+                                <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                                  {extendedDetails.sec_filings.map((filing: any, idx: number) => (
+                                    <a
+                                      key={idx}
+                                      href={filing.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="block bg-zinc-900/50 hover:bg-zinc-900/80 p-2 rounded border border-zinc-900 text-[10px] font-mono transition group"
+                                    >
+                                      <div className="flex justify-between items-center text-zinc-400 group-hover:text-[#FFB74D] font-bold">
+                                        <span>{filing.type} - {extendedDetails.has_adr ? "申報檔案" : "公告公告"}</span>
+                                        <span className="text-[8px] text-zinc-550">{filing.date}</span>
+                                      </div>
+                                      <div className="text-[9px] text-zinc-500 mt-1 truncate group-hover:text-zinc-300">
+                                        {filing.title}
+                                      </div>
+                                    </a>
+                                  ))}
+                                </div>
+                              ) : (
+                                <div className="text-center py-4 text-zinc-660 font-mono text-[9px]">
+                                  ⚠️ 暫無近期申報紀錄。
+                                </div>
+                              )}
+                            </div>
 
                             {/* Market News Section */}
                             <div className="bg-zinc-950 p-3.5 rounded-lg border border-zinc-850/80 space-y-2">
