@@ -754,8 +754,8 @@ function generateHighFidelityDetails(stockId: string) {
   const stockName = stock ? stock.name : "核心個股";
   const industry = stock ? stock.industry : "半導體與科技";
   const category = stock ? stock.category : "AI與權值";
-  const notes = stock ? stock.notes : "產業龍頭標的，成長力道強大。";
-  const basePrice = stock ? stock.base_price : 100.0;
+  const notes = stock ? stock.fundamentalNotes : "產業龍頭標的，成長力道強大。";
+  const basePrice = stock ? stock.basePrice : 100.0;
 
   const sectorMap: Record<string, string> = {
     "AI與權值": "科技 (Technology)",
@@ -988,8 +988,7 @@ app.get("/api/stock-details/:id", async (req, res) => {
   const stockId = req.params.id;
   try {
     let details: any = null;
-    if (dbConnected && signalsCollection) {
-      const db = signalsCollection.database;
+    if (dbConnected && db) {
       const extendedCollection = db.collection("stock_extended_details");
       details = await extendedCollection.findOne({ stock_id: stockId });
       
