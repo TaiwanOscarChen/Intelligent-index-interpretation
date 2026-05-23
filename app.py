@@ -681,7 +681,9 @@ def run_v2026_full_sweep():
         except Exception as e:
             print(f"❌ [MongoDB] lion_signals bulk write error: {e}", file=sys.stderr)
 
-    return result\n\ndef run_streamlit_app():
+    return result
+
+def run_streamlit_app():
     st.set_page_config(
         page_title="🦁 獅王戰神 V2026.Max 觀盤決策儀表板",
         page_icon="🦁",

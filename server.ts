@@ -132,6 +132,7 @@ function seedInitialSignals() {
     const ma20_val = Math.round(stock.basePrice * 10) / 10;
     const ma10_val = Math.round(stock.basePrice * 0.99 * 10) / 10;
     const ma5_val = Math.round(stock.basePrice * 0.98 * 10) / 10;
+    const ma60_val = Math.round(stock.basePrice * 0.95 * 10) / 10;
     const yesterday_ma20 = Math.round(stock.basePrice * 0.998 * 10) / 10;
     
     const bias20 = Math.round(((close_price - ma20_val) / ma20_val) * 100 * 100) / 100;
@@ -341,6 +342,7 @@ function runInMemoryScanFallback(overrideTsmc?: 'green' | 'red') {
     const ma20_val = Math.round(newPrice * 0.985 * 10) / 10;
     const ma10_val = Math.round(newPrice * 0.99 * 10) / 10;
     const ma5_val = Math.round(newPrice * 0.995 * 10) / 10;
+    const ma60_val = Math.round(newPrice * 0.955 * 10) / 10;
     
     const finalScore = isTsmcQuarantine ? Math.max(10, stock.score - 12) : Math.min(50, Math.max(20, stock.score + Math.floor(Math.random() * 6) - 2));
     const vix_value = 16.5;
@@ -689,8 +691,8 @@ async function triggerCrawler() {
 
     try {
       let exists = false;
-      if (dbConnected && signalsCollection) {
-        const extendedCollection = signalsCollection.database.collection("stock_extended_details");
+      if (dbConnected && db) {
+        const extendedCollection = db.collection("stock_extended_details");
         const doc = await extendedCollection.findOne({ stock_id: stockId });
         if (doc) {
           exists = true;
@@ -719,9 +721,8 @@ async function triggerCrawler() {
 }
 
 async function prefetchMissingStocks() {
-  if (!dbConnected || !signalsCollection) return;
+  if (!dbConnected || !db) return;
   console.log("🔍 [Prefetch] Scanning for missing extended stock details in DB...");
-  const db = signalsCollection.database;
   const extendedCollection = db.collection("stock_extended_details");
   
   try {
