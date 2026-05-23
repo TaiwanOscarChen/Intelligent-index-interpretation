@@ -28,11 +28,25 @@ import {
   DollarSign,
   LineChart,
   Lock,
-  Sparkles
+  Sparkles,
+  Paperclip,
+  FileText,
+  Link,
+  Trash2
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { StockSignal, ScanResult, StockSignalOption, HoldingItem, ExitLogItem } from "./types.js";
 import { INITIAL_STOCKS } from "./initial_stocks.js";
+
+interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+  attachment?: {
+    name: string;
+    type: "image" | "text" | "link";
+    data: string;
+  };
+}
 
 interface InstitutionalFlow {
   date: string;
@@ -174,7 +188,7 @@ export default function App() {
   const [detailTab, setDetailTab] = useState<"notes" | "financials" | "insiders" | "filings">("notes");
 
   // Chat
-  const [chatMessages, setChatMessages] = useState<Array<{role: "user" | "assistant", content: string}>>([
+  const [chatMessages, setChatMessages] = useState<Array<ChatMessage>>([
     {
       role: "assistant",
       content: "歡迎來到獅王戰備解盤室。我是您的「對沖基金 AI 避險大師」。請選擇您想要深度探討的個股，我將立刻調用盤中最新的量化與籌碼指標，為您剖析實戰對沖與避雷防線！"
@@ -184,6 +198,17 @@ export default function App() {
   const [chatInput, setChatInput] = useState<string>("");
   const [isSendingChat, setIsSendingChat] = useState<boolean>(false);
   const chatBottomRef = useRef<HTMLDivElement>(null);
+
+  // Chat attachments states
+  const [attachedFile, setAttachedFile] = useState<{
+    name: string;
+    type: "image" | "text" | "link";
+    data: string;
+    mimeType?: string;
+  } | null>(null);
+  const [showAttachmentMenu, setShowAttachmentMenu] = useState<boolean>(false);
+  const [showLinkInput, setShowLinkInput] = useState<boolean>(false);
+  const [cloudUrlInput, setCloudUrlInput] = useState<string>("");
 
   // Global Configs
   const [overrideTsmcState, setOverrideTsmcState] = useState<string>("auto"); // auto, force_green, force_red
@@ -565,16 +590,79 @@ export default function App() {
     }
   };
 
+  // Handle file select (image/text)
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, fileType: "image" | "text") => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Check size limit (3MB limit for Vercel stability)
+    if (file.size > 3 * 1024 * 1024) {
+      alert("❌ 檔案尺寸超過 3MB 限制！為防範 Vercel 雲端傳輸溢出，請選擇小於 3MB 的檔案。");
+      return;
+    }
+
+    const reader = new FileReader();
+    if (fileType === "image") {
+      reader.onload = (event) => {
+        setAttachedFile({
+          name: file.name,
+          type: "image",
+          data: event.target?.result as string,
+          mimeType: file.type
+        });
+      };
+      reader.readAsDataURL(file);
+    } else {
+      reader.onload = (event) => {
+        setAttachedFile({
+          name: file.name,
+          type: "text",
+          data: event.target?.result as string
+        });
+      };
+      reader.readAsText(file);
+    }
+    setShowAttachmentMenu(false);
+  };
+
+  // Handle cloud URL ingestion
+  const handleCloudUrlSubmit = () => {
+    if (!cloudUrlInput.trim()) return;
+    setAttachedFile({
+      name: cloudUrlInput.trim(),
+      type: "link",
+      data: cloudUrlInput.trim()
+    });
+    setCloudUrlInput("");
+    setShowLinkInput(false);
+    setShowAttachmentMenu(false);
+  };
+
   // Send AI Chat message
   const handleSendChatMessage = async () => {
-    if (!chatInput.trim()) return;
+    if (!chatInput.trim() && !attachedFile) return;
     const userMsg = chatInput.trim();
     setChatInput("");
     
+    // Construct user message object with attachment
+    const userMessageObj = { 
+      role: "user" as const, 
+      content: userMsg || (attachedFile ? `[已匯入附件: ${attachedFile.name}]` : ""),
+      attachment: attachedFile ? {
+        name: attachedFile.name,
+        type: attachedFile.type,
+        data: attachedFile.data
+      } : undefined
+    };
+    
     // Add user message to UI
-    const updatedMessages = [...chatMessages, { role: "user" as const, content: userMsg }];
+    const updatedMessages = [...chatMessages, userMessageObj];
     setChatMessages(updatedMessages);
     setIsSendingChat(true);
+
+    // Save attached file ref for cleanup and payload
+    const filePayload = attachedFile;
+    setAttachedFile(null); // Clear attachment slot on UI
 
     try {
       const response = await fetch("/api/stocks/chat", {
@@ -582,7 +670,8 @@ export default function App() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: updatedMessages,
-          stock_id: chatStockId || undefined
+          stock_id: chatStockId || undefined,
+          fileData: filePayload || undefined
         })
       });
       const resData = await response.json();
@@ -3500,48 +3589,223 @@ export default function App() {
                     <div key={idx} className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
                       <div className={`max-w-[80%] rounded-xl p-3.5 text-xs shadow-md leading-relaxed ${
                         isUser 
-                          ? "bg-gradient-to-tr from-amber-600 to-yellow-600 text-black font-semibold rounded-br-none" 
-                          : "bg-zinc-900 border border-zinc-850 text-zinc-150 rounded-bl-none"
+                          ? "bg-gradient-to-tr from-amber-600 to-yellow-600 text-black font-semibold rounded-br-none animate-fade-in" 
+                          : "bg-zinc-900 border border-zinc-850 text-zinc-150 rounded-bl-none animate-fade-in"
                       }`}>
                         {!isUser && (
-                          <div className="text-[9px] text-[#FFB74D] font-mono tracking-wider uppercase font-bold mb-1">
+                          <div className="text-[9px] text-[#FFB74D] font-mono tracking-wider uppercase font-bold mb-1 flex items-center gap-1">
+                            <Sparkles className="w-3 h-3 text-[#FFB74D] animate-pulse" />
                             🦁 LION KING CO-PILOT
                           </div>
                         )}
                         <div className="whitespace-pre-wrap">{msg.content}</div>
+                        
+                        {/* Attachment bubble rendering */}
+                        {msg.attachment && msg.attachment.type === "image" && (
+                          <div className="mt-2.5 rounded-lg overflow-hidden border border-zinc-800 bg-zinc-950 p-1 max-w-[260px] shadow-lg group relative">
+                            <img src={msg.attachment.data} alt={msg.attachment.name} className="w-full h-auto object-cover rounded max-h-[160px]" />
+                            <div className="absolute bottom-1 right-1 bg-black/60 px-1 py-0.5 text-[7px] text-zinc-400 font-mono rounded">
+                              📷 {msg.attachment.name.substring(0, 15)}...
+                            </div>
+                          </div>
+                        )}
+                        {msg.attachment && msg.attachment.type === "text" && (
+                          <div className="mt-2.5 p-2 rounded bg-zinc-950/60 border border-zinc-850/80 text-[10px] text-zinc-350 font-mono flex items-center gap-1.5 shadow-inner">
+                            <FileText className="w-4 h-4 text-indigo-400 shrink-0" />
+                            <div className="truncate flex-1 text-left">
+                              <div className="font-bold text-[9px] truncate text-white">{msg.attachment.name}</div>
+                              <div className="text-[7px] text-zinc-550 uppercase">📄 導入文字文件 (分析就緒)</div>
+                            </div>
+                          </div>
+                        )}
+                        {msg.attachment && msg.attachment.type === "link" && (
+                          <div className="mt-2.5 p-2 rounded bg-zinc-950/60 border border-zinc-850/80 text-[10px] text-[#FFB74D] font-mono flex items-center gap-1.5 shadow-inner">
+                            <Link className="w-4 h-4 text-amber-500 shrink-0" />
+                            <div className="truncate flex-1 text-left">
+                              <div className="font-bold text-[9px] truncate text-white underline">{msg.attachment.name}</div>
+                              <div className="text-[7px] text-zinc-550 uppercase">☁️ 雲端檔案連結</div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
                 })}
                 {isSendingChat && (
                   <div className="flex justify-start">
-                    <div className="bg-zinc-900 border border-zinc-850 rounded-xl p-3.5 text-xs text-indigo-400 flex items-center gap-2">
+                    <div className="bg-zinc-900 border border-zinc-850 rounded-xl p-3.5 text-xs text-indigo-400 flex items-center gap-2 shadow-[0_4px_12px_rgba(0,0,0,0.3)] border-l-2 border-l-indigo-500">
                       <span className="w-4 h-4 border-2 border-indigo-500 border-t-transparent animate-spin rounded-full"></span>
-                      AI 大師正在調用台積電月線防線與籌碼比率算力中...
+                      AI 避險大師正在穿透分析文件並精算防割水準中...
                     </div>
                   </div>
                 )}
                 <div ref={chatBottomRef} />
               </div>
 
+              {/* Floating Attachment Preview */}
+              {attachedFile && (
+                <div className="px-4 py-2.5 bg-[#0b0c10] border-t border-zinc-850 flex items-center justify-between animate-fade-in relative z-20">
+                  <div className="flex items-center gap-2.5">
+                    {attachedFile.type === "image" ? (
+                      <div className="w-10 h-10 rounded border border-zinc-800 overflow-hidden bg-zinc-900 shrink-0 shadow">
+                        <img src={attachedFile.data} alt="attached-preview" className="w-full h-full object-cover" />
+                      </div>
+                    ) : attachedFile.type === "text" ? (
+                      <div className="w-9 h-9 rounded bg-indigo-950/40 flex items-center justify-center border border-indigo-900/60 text-indigo-400 shrink-0 shadow">
+                        <FileText className="w-4 h-4 animate-pulse" />
+                      </div>
+                    ) : (
+                      <div className="w-9 h-9 rounded bg-amber-950/40 flex items-center justify-center border border-amber-900/60 text-[#FFB74D] shrink-0 shadow">
+                        <Link className="w-4 h-4 animate-pulse" />
+                      </div>
+                    )}
+                    <div className="text-left">
+                      <div className="text-[10px] text-white font-bold font-mono truncate max-w-xs">{attachedFile.name}</div>
+                      <div className="text-[8px] text-zinc-500 font-mono uppercase font-bold tracking-wider">
+                        {attachedFile.type === "image" ? "📷 投顧/明牌對話截圖" : attachedFile.type === "text" ? "📄 合約/量化報表文字" : "☁️ 雲端檔案連結"}
+                      </div>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setAttachedFile(null)}
+                    className="p-1 rounded bg-zinc-950 hover:bg-zinc-900 border border-zinc-850 hover:border-zinc-700 text-zinc-400 hover:text-white transition active:scale-[0.96]"
+                    title="移除附件"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
+
               {/* Chat Input strip */}
-              <div className="p-4 bg-[#0e1117] border-t border-zinc-850 flex gap-2">
+              <div className="p-4 bg-[#0e1117] border-t border-zinc-850 flex gap-2 items-center relative">
+                {/* Hidden File Input Elements */}
+                <input 
+                  type="file" 
+                  id="chat-image-upload" 
+                  accept="image/*" 
+                  className="hidden" 
+                  onChange={(e) => handleFileChange(e, "image")} 
+                  onClick={(e) => { (e.target as any).value = null; }} 
+                />
+                <input 
+                  type="file" 
+                  id="chat-text-upload" 
+                  accept=".txt,.csv,.json" 
+                  className="hidden" 
+                  onChange={(e) => handleFileChange(e, "text")} 
+                  onClick={(e) => { (e.target as any).value = null; }}
+                />
+
+                {/* Attachment Selector Button */}
+                <div className="relative shrink-0">
+                  <button
+                    onClick={() => setShowAttachmentMenu(!showAttachmentMenu)}
+                    className={`w-9.5 h-9.5 rounded-lg flex items-center justify-center border transition-all ${
+                      attachedFile 
+                        ? "bg-amber-500/10 border-amber-500/40 text-[#FFB74D] shadow-[0_0_10px_rgba(245,158,11,0.2)] animate-pulse" 
+                        : "bg-zinc-950 border-zinc-850 text-zinc-450 hover:text-white hover:border-zinc-700"
+                    }`}
+                    title="匯入圖片/文件或雲端連結"
+                  >
+                    <Paperclip className="w-4.5 h-4.5" />
+                  </button>
+
+                  {/* Attachment Popover Menu */}
+                  {showAttachmentMenu && (
+                    <>
+                      <div className="fixed inset-0 z-30" onClick={() => setShowAttachmentMenu(false)}></div>
+                      <div className="absolute bottom-full left-0 mb-2 w-48 bg-[#090b10] border border-zinc-800 rounded-lg shadow-2xl p-1.5 z-40 space-y-0.5 animate-fade-in text-left">
+                        <label 
+                          htmlFor="chat-image-upload" 
+                          className="flex items-center gap-2 px-2.5 py-1.5 rounded text-xs font-semibold text-zinc-300 hover:bg-zinc-900 hover:text-white cursor-pointer transition"
+                        >
+                          <span>📷 上傳對話/明牌截圖</span>
+                        </label>
+                        <label 
+                          htmlFor="chat-text-upload" 
+                          className="flex items-center gap-2 px-2.5 py-1.5 rounded text-xs font-semibold text-zinc-300 hover:bg-zinc-900 hover:text-white cursor-pointer transition"
+                        >
+                          <span>📄 匯入合約/文字白皮書</span>
+                        </label>
+                        <button
+                          onClick={() => {
+                            setShowLinkInput(true);
+                            setShowAttachmentMenu(false);
+                          }}
+                          className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded text-xs font-semibold text-zinc-300 hover:bg-zinc-900 hover:text-white cursor-pointer transition text-left"
+                        >
+                          <span>☁️ 匯入雲端公開連結</span>
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+
                 <input
                   type="text"
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSendChatMessage()}
-                  placeholder={`輸入您的問題，例如：「請幫我分析 ${chatStockId} 目前適合進場嗎？」...`}
-                  className="flex-1 bg-zinc-950 border border-zinc-850 rounded-lg px-4 py-2.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-[#E5A823]"
+                  placeholder={
+                    attachedFile 
+                      ? `已匯入 [${attachedFile.name.substring(0, 12)}...]，請輸入詢問細節或直接發送...`
+                      : `輸入您的問題，例如：「請幫我分析 ${chatStockId} 目前適合進場嗎？」...`
+                  }
+                  className="flex-1 bg-zinc-950 border border-zinc-850 rounded-lg px-4 py-2.5 text-xs text-white placeholder-zinc-650 focus:outline-none focus:border-[#E5A823]"
                 />
                 <button
                   onClick={handleSendChatMessage}
-                  disabled={isSendingChat || !chatInput.trim()}
-                  className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-[#E5A823] to-[#FFB74D] text-black font-bold text-xs hover:opacity-90 active:scale-[0.98] transition"
+                  disabled={isSendingChat || (!chatInput.trim() && !attachedFile)}
+                  className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-[#E5A823] to-[#FFB74D] text-black font-bold text-xs hover:opacity-90 active:scale-[0.98] transition shadow"
                 >
                   發送
                 </button>
               </div>
+
+              {/* Cloud URL Ingestion Dialog */}
+              {showLinkInput && (
+                <div className="absolute inset-0 bg-[#090b10]/95 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                  <div className="bg-zinc-950 border border-zinc-800 rounded-xl p-5 w-full max-w-sm space-y-4 shadow-2xl relative text-left">
+                    <button 
+                      onClick={() => setShowLinkInput(false)}
+                      className="absolute top-3 right-3 p-1 rounded bg-zinc-900 border border-zinc-850 text-zinc-400 hover:text-white transition"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                    <div className="space-y-1">
+                      <h4 className="text-white text-xs font-bold font-mono uppercase flex items-center gap-1.5">
+                        <Link className="w-3.5 h-3.5 text-[#FFB74D]" />
+                        匯入雲端公開檔案連結
+                      </h4>
+                      <p className="text-[10px] text-zinc-550 leading-normal font-sans">
+                        請提供包含投顧方案、白皮書或對沖項目的公開網路 URL 連結。
+                      </p>
+                    </div>
+                    <input 
+                      type="url" 
+                      value={cloudUrlInput}
+                      onChange={(e) => setCloudUrlInput(e.target.value)}
+                      placeholder="https://example.com/report.txt"
+                      className="w-full bg-zinc-900 border border-zinc-800 rounded px-3 py-2.5 text-xs text-white placeholder-zinc-650 focus:outline-none focus:border-[#E5A823] font-mono"
+                    />
+                    <div className="flex gap-2 justify-end pt-1">
+                      <button
+                        onClick={() => setShowLinkInput(false)}
+                        className="px-3.5 py-1.5 rounded bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800 text-[10px] font-bold transition"
+                      >
+                        取消
+                      </button>
+                      <button
+                        onClick={handleCloudUrlSubmit}
+                        disabled={!cloudUrlInput.trim()}
+                        className="px-3.5 py-1.5 rounded bg-gradient-to-r from-[#E5A823] to-[#FFB74D] text-black text-[10px] font-black hover:opacity-90 transition shadow"
+                      >
+                        確認匯入
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
             </div>
 

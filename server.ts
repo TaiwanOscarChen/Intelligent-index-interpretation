@@ -1471,7 +1471,7 @@ app.post("/api/holdings/exit", async (req, res) => {
 // 💬 INTERACTIVE AI ADVISOR CHAT API
 // ==============================================================================
 app.post("/api/stocks/chat", async (req, res) => {
-  const { messages, stock_id } = req.body;
+  const { messages, stock_id, fileData } = req.body;
   if (!messages || !Array.isArray(messages)) {
     return res.status(400).json({ success: false, message: "Missing messages dialog array." });
   }
@@ -1499,40 +1499,122 @@ app.post("/api/stocks/chat", async (req, res) => {
     }
   }
 
+  // Handle uploaded files (Image / Text / Link) and build analysis context
+  let fileAnalysisContext = "";
+  let imagePart: any = null;
+
+  if (fileData) {
+    if (fileData.type === "image") {
+      const base64Data = fileData.data.split(",")[1] || fileData.data;
+      imagePart = {
+        inlineData: {
+          data: base64Data,
+          mimeType: fileData.mimeType || "image/png"
+        }
+      };
+      fileAnalysisContext = `
+[用戶已匯入一張投顧/對話明牌截圖]
+檔名為：${fileData.name}。請穿透解析此張圖片，重點識破是否有欺詐、割韭菜陷阱、高壓情緒話術、空氣標的推銷，並給出極限避雷可行性分析！
+`;
+      console.log(`📷 [Gemini Chat] 已附帶圖片附件: ${fileData.name} (Base64), MIME: ${fileData.mimeType}`);
+    } else if (fileData.type === "text") {
+      fileAnalysisContext = `
+[用戶已匯入合約/白皮書文字文件]
+檔名為：${fileData.name}
+文件文字內容如下：
+----------------------------------------------
+${fileData.data.substring(0, 4000)}
+----------------------------------------------
+請深度穿透此份文字，徹底解析是否有保證獲利詐騙、無量飆股推銷、割韭菜代操套路，判斷其可行性！
+`;
+      console.log(`📄 [Gemini Chat] 已匯入文字文件: ${fileData.name}, 長度: ${fileData.data.length} 字元`);
+    } else if (fileData.type === "link") {
+      let linkText = "";
+      try {
+        console.log(`📡 [Link Fetch] 正在抓取公開雲端檔案內容: ${fileData.data}...`);
+        const fetchResp = await fetch(fileData.data, { signal: AbortSignal.timeout(5000) });
+        if (fetchResp.ok) {
+          const rawText = await fetchResp.text();
+          // Strip HTML tags and keep first 3000 chars safely
+          linkText = rawText.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").substring(0, 3000);
+          console.log(`🟢 [Link Fetch] 雲端檔案內容抓取成功，長度: ${linkText.length} 字元`);
+        } else {
+          linkText = `(無法直接抓取，連結返回 HTTP 狀態碼 ${fetchResp.status})`;
+        }
+      } catch (err: any) {
+        console.error("🔴 [Link Fetch] 抓取連結失敗:", err.message);
+        linkText = `(無法連接該雲端連結，原因: ${err.message})`;
+      }
+
+      fileAnalysisContext = `
+[用戶已匯入雲端公開檔案連結]
+地址：${fileData.data}
+雲端網頁內容解析摘要如下：
+----------------------------------------------
+${linkText}
+----------------------------------------------
+請穿透該連結或方案內容，警示投顧詐騙、代操騙局與空氣項目，判斷可行性！
+`;
+    }
+  }
+
   if (!ai) {
     return res.json({
       success: true,
-      reply: "🦁 [備用沙盒回復] 由於本地未設定 GEMINI_API_KEY，獅王戰神 AI 目前正處於離線狀態。請遵守 V2026.Max 的量化鐵律：大盤生命線 (月線) 下方強制停買隔離，獲利 20% 強制本金回收一半鎖利！"
+      reply: "🦁 [備用沙盒回復] 由於本地未設定 GEMINI_API_KEY，獅王戰神 AI 目前正處於離線狀態。請遵守 V2026.Max 的量化鐵律：大盤生命線 (月線) 下方強制停買隔離，獲利 20% 強制本金回收一半鎖利！如果是投顧代操、宣稱「保證獲利」等資訊，100% 均為割韭菜詐騙，切勿相信！"
     });
   }
 
   try {
-    const formattedMessages = messages.map(m => {
+    const formattedMessages = messages.map((m, idx) => {
+      const parts: any[] = [{ text: m.content || "" }];
+      
+      // If it is the last message from user and we have a base64 image, inject it as inlineData part!
+      if (idx === messages.length - 1 && m.role === "user" && imagePart) {
+        parts.push(imagePart);
+      }
+
       return {
         role: m.role === "assistant" ? "model" as const : "user" as const,
-        parts: [{ text: m.content }]
+        parts
       };
     });
 
     const systemInstruction = `
 你是由對沖基金專家團隊打造的「獅王戰神 V2026.Max 終極大一統量化決策 AI 大師」。
 你將扮演一位精通台股高頻策略、籌碼量價、波動度模型的華爾街頂尖對沖基金自營部主管。
-你說繁體中文 (zh-TW)，語氣極其犀利、專業、自信，絕不拖泥帶水，多用「主力鎖碼」、「量縮回踩」、「均線生命線」、「物理隔離」等專業對沖術語，字字珠璣。
-請在對話中完美代入下述個股量化上下文對話分析：
+你說繁體中文 (zh-TW)，語氣極其犀利、專業、自信，絕不拖泥帶水，多用「主力鎖碼」、「量縮回踩」、「均線生命線」、「物理隔離」、「割韭菜」等專業對沖術語，字字珠璣。
+請在對話中完美代入下述個股量化上下文對話分析與匯入資料內容：
 ${stockContext}
+${fileAnalysisContext}
 
-針對操盤手的提問，請給出直切要害、無廢話、對沖戰略極強的解答。
-如果涉及進場，請具體點明是在「S級追價」、「A級右側點火」還是「B級左側試單」位階，並精準重申移動停利線與 20MA 防禦紀律！
+特別防割韭菜指令：
+如果用戶匯入或提及理財明牌、投顧對話、白皮書或合約連結，你必須化身為極度無情的「反詐騙量化風控主管」。
+你必須使用以下格式，輸出極顯眼的 Bloomberg 警報評估報告：
+
+🚨【避險防割韭菜報告 — 獅王戰神可行性評估】
+------------------------------------------------
+🛡️ 韭菜防禦指數: [0% ~ 100%] (低於 60% 屬於高危欺詐割韭菜，禁止進場)
+⚠️ 警報警告紅旗: [請標示警告，如：保證獲利 / 誘導代操 / 情緒操弄 / 空氣標的 / 無停損風控]
+
+🔎 【合約/明牌文字穿透解析】:
+[以最專業冷酷的文字，一針見血戳破明牌/白皮書的騙局與割韭菜手段]
+
+💡 【獅王戰神硬核避險避雷策略】:
+[給予具體的防身手段：例如，大盤生命線 MA20 下方物理停買隔離，或要求查證券商合法牌照，絕不入金私人代操盤！]
+------------------------------------------------
+
+針對操盤手的提問，請給出直切要害、無廢話、對沖戰略極強的解答。如果涉及進場，請具體點明是在「S級追價」、「A級右側點火」還是「B級左側試單」位階，並精準重申移動停利線與 20MA 防禦紀律！
     `;
 
-    console.log(`💬 [Gemini Chat] 呼叫 AI 大師進行對話解盤 (stock_id: ${stock_id || 'none'})...`);
+    console.log(`💬 [Gemini Chat] 呼叫 AI 大師進行對話解盤 (stock_id: ${stock_id || 'none'}, file: ${fileData ? fileData.name : 'none'})...`);
 
     const response = await ai.models.generateContent({
       model: "gemini-3.5-flash",
       contents: formattedMessages,
       config: {
         systemInstruction: systemInstruction.trim(),
-        temperature: 0.85,
+        temperature: 0.8,
       }
     });
 
