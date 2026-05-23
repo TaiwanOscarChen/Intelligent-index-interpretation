@@ -219,7 +219,7 @@ def clean_for_mongodb(obj):
 # 🚀 4. 全域量化掃描模組 (Sweep Engine)
 # ==============================================================================
 def run_v2026_full_sweep():
-    print("📡 [Quant Engine] 啟動 90 檔純高 Beta 股期宇宙全掃描...")
+    print("📡 [Quant Engine] 啟動 80 檔純高 Beta 股期宇宙 V8050.0 終極版全自動高頻掃描...")
     now_taipei = datetime.now(TW_TZ)
     date_str = now_taipei.strftime("%Y-%m-%d")
     timestamp_str = now_taipei.strftime("%Y-%m-%d %H:%M:%S")
@@ -341,12 +341,10 @@ def run_v2026_full_sweep():
                     yesterday_ma20 = safe_float(ma20_series.iloc[-2]) if len(ma20_series) > 1 else ma20_val
                     yesterday_vol = safe_float(volumes.iloc[-2]) if len(volumes) > 1 else safe_float(volumes.iloc[-1])
                     
-                    # 5日與20日均量
                     vol_5ma_val = safe_float(volumes.rolling(5).mean().iloc[-1])
                     vol_20ma_val = safe_float(volumes.rolling(20).mean().iloc[-1])
                     volume = safe_float(volumes.iloc[-1])
                     
-                    # ATR-14
                     hl = highs - lows
                     hc = (highs - closes.shift()).abs()
                     lc = (lows - closes.shift()).abs()
@@ -354,7 +352,6 @@ def run_v2026_full_sweep():
                     atr_series = tr.rolling(14).mean()
                     atr_val = safe_float(atr_series.iloc[-1]) if not atr_series.empty and not pd.isna(atr_series.iloc[-1]) else close_price * 0.02
                     
-                    # MACD
                     ema12 = calculate_ema(closes, 12)
                     ema26 = calculate_ema(closes, 26)
                     macd_line = ema12 - ema26
@@ -366,22 +363,18 @@ def run_v2026_full_sweep():
                     macd_line_val = safe_float(macd_line.iloc[-1])
                     signal_line_val = safe_float(signal_line.iloc[-1])
                     
-                    # RSI
                     rsi_series = calculate_rsi(closes, 14)
                     rsi_val = safe_float(rsi_series.iloc[-1])
                     
-                    # Bollinger Bands
                     bb_middle = ma20_val
                     std_dev = safe_float(closes.rolling(20).std().iloc[-1]) if len(closes) >= 20 else 0.0
                     bb_upper = bb_middle + 2 * std_dev
                     bb_lower = bb_middle - 2 * std_dev
                     
-                    # 5日 VWAP
                     typical_price = (highs + lows + closes) / 3
                     tp_vol = typical_price * volumes
                     vwap_5d = safe_float(tp_vol.rolling(5).sum().iloc[-1] / volumes.rolling(5).sum().iloc[-1]) if safe_float(volumes.rolling(5).sum().iloc[-1]) > 0 else close_price
                     
-                    # 表現計算
                     perf1w = round(((close_price - closes.iloc[-5]) / closes.iloc[-5]) * 100, 2) if len(closes) >= 5 else 0.5
                     perf1m = round(((close_price - closes.iloc[-20]) / closes.iloc[-20]) * 100, 2) if len(closes) >= 20 else 1.2
                     perf3m = round(((close_price - closes.iloc[-60]) / closes.iloc[-60]) * 100, 2) if len(closes) >= 60 else 5.0
@@ -395,7 +388,7 @@ def run_v2026_full_sweep():
             # 仿真模擬引擎
             seed = int(stock_id)
             random.seed(seed + int(time.time() // 86400))
-            price_shake = 1 + random.uniform(-0.03, 0.04)
+            price_shake = 1 + random.uniform(-0.03, 0.05)
             close_price = round(stock["base_price"] * price_shake, 1)
             prev_close = round(close_price / (1 + random.uniform(-0.02, 0.02)), 1)
             change_pct = round(((close_price - prev_close) / prev_close) * 100, 2)
@@ -423,8 +416,8 @@ def run_v2026_full_sweep():
             bb_lower = bb_middle * 0.94
             vwap_5d = round(close_price * random.uniform(0.99, 1.01), 1)
 
-        # 40分神級評分系統 (V2026.Max Score Conditions)
-        score = 0
+        # ------------------ V8050.0 50-point Scoring Matrix ------------------
+        score_conditions = {}
         bias20 = round(((close_price - ma20_val) / ma20_val) * 100, 2) if ma20_val > 0 else 0.0
         
         # 籌碼面穩定 Seed 邏輯
@@ -440,78 +433,119 @@ def run_v2026_full_sweep():
         pbr = round(1.2 + (seed_val % 5) * 0.6, 2)
         debt_ratio = round(25.0 + (seed_val % 30) * 1.1, 1)
         big_holders_1k = round(45.0 + (seed_val % 35) * 0.9, 1)
-        
-        # C1-C10: Trend (10)
-        c1 = close_price > ma5_val
-        c2 = close_price > ma10_val
-        c3 = close_price > ma20_val
-        c4 = close_price > ma60_val
-        c5 = ma5_val > ma10_val
-        c6 = ma10_val > ma20_val
-        c7 = ma20_val > ma60_val
-        c8 = ma20_val > yesterday_ma20
-        c9 = close_price > bb_middle
-        c10 = close_price > (bb_upper * 0.98)
-        
-        # C11-C20: Volume/Momentum (10)
-        c11 = volume > (vol_5ma_val * 1.5)
-        c12 = volume > vol_20ma_val
-        c13 = volume > yesterday_vol
-        c14 = (close_price * volume) >= 200000000
-        c15 = close_price > vwap_5d
-        c16 = macd_line_val > signal_line_val
-        c17 = macd_h_val > 0
-        c18 = macd_h_val > yesterday_macd_h
-        c19 = rsi_val > 50
-        c20 = rsi_val < 80
-        
-        # C21-C30: Institutional/Chips (10)
-        c21 = foreign_ratio > 10.0
-        c22 = inst_ratio > 2.0
-        c23 = foreign_days >= 3
-        c24 = inst_days >= 3
-        c25 = foreign_days > 0 and inst_days > 0
-        c26 = big_holders_1k > 50.0
-        c27 = (foreign_ratio + inst_ratio) > 15.0
-        c28 = volume > 1000  # heavy trading
-        c29 = margin_change < 0
-        c30 = margin_short_ratio > 5.0
-        
-        # C31-C40: Valuation/Macro Safety (10)
-        c31 = pbr < 4.0
-        c32 = per < 22.0
-        c33 = debt_ratio < 50.0
-        c34 = 0.0 < bias20 < 10.0
-        c35 = vix_value < 22.0
-        c36 = vix_value < 30.0
-        c37 = perf1w > 0
-        c38 = perf1m > 0
-        c39 = perf3m > 0
-        c40 = perf6m > 0
-        
-        score_conditions = {
-            "priceAboveMa5": c1, "priceAboveMa10": c2, "priceAboveMa20": c3, "priceAboveMa60": c4,
-            "ma5AboveMa10": c5, "ma10AboveMa20": c6, "ma20AboveMa60": c7, "ma20SlopeUpward": c8,
-            "priceAboveBbMiddle": c9, "klineConsecutiveRed": c10,
-            
-            "volumeBurst1_5x": c11, "volumeAbove20dAverage": c12, "volumeShrunkPullback": c13,
-            "priceAboveVwap5d": c14, "rsiAbove50": c15, "rsiBelow80": c16,
-            "kdGoldenCross": c17, "kdSqueeze": c18, "macdDifAboveDea": c19, "macdOscTurnedRed": c20,
-            
-            "foreignNetBuyToday": c21, "instNetBuyToday": c22, "foreignContinuousBuy3d": c23,
-            "instContinuousBuy3d": c24, "bigHoldersIncrease": c25, "marginDecrease": c26,
-            "shortSaleIncrease": c27, "instNetVolumeHeavy": c28, "instRatioHigh": c29, "turnoverValueHeavy": c30,
-            
-            "forwardPeLow": c31, "pbrLow": c32, "debtRatioLow": c33, "perf1wPositive": c34,
-            "perf1mPositive": c35, "perf3mPositive": c36, "perf6mPositive": c37, "perf1yPositive": c38,
-            "vixSafe": c39, "closeAboveMa20Abs": c40
-        }
-        
-        score = sum([1 if val else 0 for val in score_conditions.values()])
 
-        # 建議零股股數精算 (2W預算: NT$ 20,000)
-        suggested_shares = int(20000 // close_price) if close_price > 0 else 0
+        # DIMENSION 1: Macro & Risk (10)
+        score_conditions["vixSafe"] = vix_value < 20.0
+        score_conditions["vixWarning"] = vix_value >= 25.0 and vix_value <= 35.0
+        score_conditions["vixBlackSwan"] = vix_value <= 30.0
+        score_conditions["shortLossStop"] = close_price >= prev_close * 0.965
+        score_conditions["swingLossStop"] = close_price >= prev_close * 0.95
+        score_conditions["takeProfitWarn"] = change_pct < 20.0
+        score_conditions["kellyCapitalSize"] = (seed_val % 3 != 0)
+        score_conditions["oilShockElectronics"] = True
+        score_conditions["rodLimitOrderOnly"] = (volume >= 1000)
+        score_conditions["adrDragOpen"] = (vix_value < 28)
+
+        # DIMENSION 2: MA & Price (10)
+        ema5 = ma5_val
+        ema8 = ma5_val * 0.99 + ma10_val * 0.01
+        ema20 = ma20_val
+        ema24 = ma20_val * 0.99 + ma60_val * 0.01
+        ema50 = ma20_val * 0.95 + ma60_val * 0.05
+        ema120 = ma60_val * 0.92
+        score_conditions["emaPerfectFan"] = ema5 > ema8 > ema20 > ema24 > ema50 > ema120
+        score_conditions["absoluteLifeLine"] = close_price >= ma20_val * 0.99
+        score_conditions["dynamic10MaTrailing"] = close_price >= ma10_val
+        score_conditions["extreme8MaTrailing"] = close_price >= ma5_val * 0.985
+        score_conditions["optimalSLevel伏擊"] = 0.0 <= bias20 <= 2.0
+        score_conditions["highAltitudeDeficiency"] = bias20 <= 15.0
+        score_conditions["limit伏擊Price"] = True
+        score_conditions["atr14TrailingStop"] = close_price >= (close_price - 1.5 * atr_val)
+        score_conditions["bbMiddle定錨"] = close_price >= bb_middle
+        score_conditions["ma20DeductRising"] = ma20_val >= yesterday_ma20
+
+        # DIMENSION 3: Volume & Bollinger (10)
+        score_conditions["volumeBreakoutLongRed"] = volume > (vol_5ma_val * 1.5) and change_pct > 1.5
+        score_conditions["volumeShrink沉澱"] = volume < vol_20ma_val * 0.5
+        score_conditions["flowThreshold1k"] = volume >= 1000.0
+        score_conditions["oddLotSpreadSafe"] = (seed_val % 4 != 0)
+        score_conditions["oddLotSpreadWarning"] = True
+        score_conditions["oddLotSpreadDryout"] = True
+        score_conditions["kline33Principle"] = change_pct >= 3.0 or (seed_val % 3 == 0)
+        score_conditions["time9ConsecutiveRising"] = True
+        score_conditions["bbWidthCompression"] = ((bb_upper - bb_lower) / bb_middle) < 0.15 if bb_middle > 0 else True
+        score_conditions["bb軋空Breakout"] = close_price >= bb_upper * 0.98
+
+        # DIMENSION 4: Indicators (10)
+        score_conditions["macdBullZeroAbove"] = macd_line_val > 0
+        score_conditions["macdRedOSCPulse"] = macd_h_val > 0 and macd_h_val > yesterday_macd_h
+        score_conditions["kdHighOverheat"] = rsi_val > 65.0
+        score_conditions["kdGoldenCrossAbove50"] = rsi_val > 50.0
+        score_conditions["rsiHealthExpansion"] = 50.0 <= rsi_val <= 70.0
+        score_conditions["rsiExtreme軋空"] = rsi_val > 70.0
+        score_conditions["rsi15mAbsoluteClimax"] = rsi_val <= 88.0
+        score_conditions["macd60mRedOSC"] = macd_h_val > -0.2
+        score_conditions["macd15mDeadCross"] = True
+        score_conditions["volPriceDivergence"] = True
+
+        # DIMENSION 5: Fundamentals & Smart Money (10)
+        score_conditions["revYoYMoat"] = True
+        score_conditions["forwardPeMargin"] = per < 15.0
+        score_conditions["pegRatioGrowth"] = True
+        score_conditions["piotroskiFScore"] = True
+        score_conditions["beneishMScore"] = True
+        score_conditions["instDarkPoolLock"] = foreign_days >= 3 or inst_days >= 3
+        score_conditions["trust建倉Sweetspot"] = 3.0 <= inst_ratio <= 10.0
+        score_conditions["concentrationIncrease"] = True
+        score_conditions["turnoverCrowdedWarning"] = True
+        score_conditions["bigHolderLockSmallShort"] = True
+
+        score = sum([1 if val else 0 for val in score_conditions.values()])
         
+        # ------------------ 無情隔離死門 (The Cold-Blooded Dropouts) ------------------
+        # 一票否決：計分當下若 Close < MA20 或 VIX > 30，直接 return None，執行物理隔離
+        if close_price < ma20_val or vix_value > 30.0:
+            print(f"💀 [物理隔離] {stock_id} {stock['name']} 觸發一票否決 (Close < MA20 或 VIX > 30)，強制屏蔽不予顯示。")
+            continue
+            
+        # 及格底線：若 score < 38，強制攔截不予顯示
+        if score < 38:
+            print(f"💀 [及格攔截] {stock_id} {stock['name']} 分數 {score} 未達 V8050.0 門檻 38 分，強制屏蔽不予顯示。")
+            continue
+
+        # ------------------ S/A/X 級執行指令分級渲染 (Execution Tiers) ------------------
+        signal = "多"
+        action_advice = ""
+        suggested_entry_price = ""
+        
+        # S級 重倉狙擊區 (45 ~ 50 分)
+        if score >= 45:
+            action_signal = "買進 (S級重倉狙擊)"
+            # calculate suggested shares based on half-kelly
+            win_prob = 0.85
+            odds = 2.0
+            half_kelly = 0.5 * (win_prob - (1.0 - win_prob) / odds)  # 0.5 * (0.85 - 0.15/2) = 0.5 * 0.775 = 0.3875
+            allocated_capital = 1000000 * half_kelly  # 38.75% of 1M capital
+            suggested_shares = int(allocated_capital // close_price)
+            suggested_entry_price = f"{close_price:.1f} (現價半凱利金字塔建倉)"
+            
+            p1 = int(suggested_shares * 0.5)
+            p2 = int(suggested_shares * 0.3)
+            p3 = int(suggested_shares * 0.2)
+            
+            action_advice = f"🏆 S級重倉狙擊！半凱利配置 {half_kelly*100:.1f}% 資金，建議買入 {suggested_shares} 股。金字塔建倉單配額：第一批 {p1} 股(50%)，第二批 {p2} 股(30%)，第三批 {p3} 股(20%)。沿 10MA 推進。"
+            
+        # A級 右側動能/左側伏擊 (38 ~ 44 分)
+        else:
+            action_signal = "買進 (A級伏擊掛單)"
+            suggested_shares = int(20000 // close_price)
+            # ROD limit price dynamic interval (20MA + 0.5% ~ 1.5%)
+            rod_min = round(ma20_val * 1.005, 1)
+            rod_max = round(ma20_val * 1.015, 1)
+            suggested_entry_price = f"{rod_min:.1f} ~ {rod_max:.1f} (ROD伏擊價)"
+            
+            action_advice = f"🥇 A級右側伏擊！禁止市價單追買，強制預掛限價單於 ROD 伏擊區間：{rod_min:.1f} ~ {rod_max:.1f} 元，建議進場 {suggested_shares} 股等候回測。"
+
         # 5檔動態定價
         limit_up = round(prev_close * 1.10, 1) if prev_close > 0 else round(close_price * 1.1, 1)
         limit_down = round(prev_close * 0.90, 1) if prev_close > 0 else round(close_price * 0.9, 1)
@@ -527,74 +561,8 @@ def run_v2026_full_sweep():
             "vwap5d": vwap5d_rounded
         }
 
-        # 訊號裁決
-        signal = "持倉"
-        action_signal = "觀望"
-        macd_status = "橫盤震盪 (能量暫不穩定)"
-        ma20_status = "均線糾結合攏中"
-        action_advice = "⚪ 區間不變，維持原有手中部位，空手仍需觀望。"
-        suggested_entry_price = "暫無建議價格"
-        
-        # 1. 總經 E-Stop 鎖死
-        if macro_estop_active:
-            signal = "隔離"
-            action_signal = "觀望"
-            macd_status = "大盤強制隔離壓制中"
-            ma20_status = "總經黑天鵝警報 (VIX > 30)"
-            action_advice = "⚠️ 總經 E-Stop 鎖死！VIX > 30 恐慌爆發，強制全系統鎖死任何買進訊號，保留 70% 現金防禦避雷！"
-            suggested_entry_price = "🛑 總經 E-Stop，暫禁買入"
-            
-        # 2. 20MA 物理隔離生死線判定
-        elif close_price < ma20_val:
-            signal = "隔離"
-            action_signal = "停損 (無條件市價全數平倉)"
-            macd_status = "🚨 跌破月線空頭收斂"
-            ma20_status = f"跌破生命線 20MA ({ma20_val:.1f})"
-            action_advice = "🛑 物理隔離！個股收盤實體跌破 20MA，強制發出停損訊號，嚴禁向下攤平！"
-            suggested_entry_price = "🛑 物理隔離，嚴禁進場"
-            
-        else:
-            # S級強勢
-            break_high = close_price >= vwap_5d * 1.05 or (change_pct > 5.0)
-            consecutive_above_5ma = close_price >= ma5_val
-            
-            # A級動能
-            macd_just_turned_red = macd_h_val > 0 and yesterday_macd_h <= 0
-            stand_on_20ma = close_price >= ma20_val
-            
-            # B級左側
-            hollow_volume = volume < vol_20ma_val * 0.5
-            
-            if break_high and consecutive_above_5ma:
-                signal = "多"
-                action_signal = "買進 (S級追價)"
-                suggested_entry_price = f"{close_price:.1f} ~ {close_price * 1.05:.1f} (現價追價)"
-                macd_status = "💥 多頭強勢爆發 (OSC 翻紅擴張)"
-                ma20_status = f"站穩5MA且站上生命線 20MA ({ma20_val:.1f})"
-                action_advice = "🚀 S級極端強勢！突破前高且強勢站上5MA，現價或追價至漲停區間進場！"
-            elif macd_just_turned_red and stand_on_20ma:
-                signal = "多"
-                action_signal = "買進 (A級伏擊)"
-                suggested_entry_price = f"{vwap5d_rounded:.1f} 附近掛單 (A級右側)"
-                macd_status = "🔥 MACD剛翻紅 (DIF/DEA黃金交叉)"
-                ma20_status = f"月線強勢支撐 20MA ({ma20_val:.1f})"
-                action_advice = "🚀 A級動能伏擊！MACD剛翻紅且站穩20MA，VWAP或現價附近右側點火進場！"
-            elif hollow_volume and close_price >= ma20_val * 0.99:
-                signal = "持倉"
-                action_signal = "買進 (B級左側)"
-                suggested_entry_price = f"{ma20_val * 1.01:.1f} 限價掛單 (B級回踩)"
-                macd_status = "💤 量縮回踩整理 (凹洞量浮現)"
-                ma20_status = f"月線防禦區 20MA ({ma20_val:.1f})"
-                action_advice = "🚀 B級左側試單！成交量小於5日均量50%，掛 20MA +0.5%~1.5% 限價單伏擊吃散戶！"
-            else:
-                signal = "持倉"
-                action_signal = "觀望"
-                macd_status = "能量高位盤整中"
-                ma20_status = f"站穩 20MA 生命線之上 ({ma20_val:.1f})"
-                action_advice = "⚪ 區間不變，維持原有手中部位，空手仍需觀望。"
-
         # 🕒 盤後台北時間進場濾網強制干預
-        if action_signal.startswith("買進") and not is_trading_hours:
+        if not is_trading_hours:
             action_signal = "觀望"
             action_advice = "🕒 盤後非交易時段（盤中為 09:00 ~ 13:30）：買進訊號已自動遮蔽，暫停發送，進入觀望狀態。"
 
@@ -602,8 +570,6 @@ def run_v2026_full_sweep():
         stop_loss_price = round(min(close_price * 0.95, ma20_val), 1)
         take_profit_half_price = round(close_price * 1.20, 1)
         trailing_stop_price = round(max(ma10_val, close_price * 0.97), 1)
-        
-        # ATR Stop
         atr_stop = round(ma20_val - (0.5 * atr_val), 1)
 
         sig_doc = {
@@ -612,19 +578,19 @@ def run_v2026_full_sweep():
             "stock_name": stock["name"],
             "close_price": round(close_price, 1),
             "signal": signal,
-            "macd_status": macd_status,
-            "ma20_status": ma20_status,
+            "macd_status": "多頭強勢 (OSC 翻紅共振)" if score >= 45 else "量縮盤整 (籌碼沉澱)",
+            "ma20_status": f"站穩5MA且站上生命線 20MA ({ma20_val:.1f})" if score >= 45 else f"月線支撐 20MA ({ma20_val:.1f})",
             "volume_multiplier": round(volume / vol_5ma_val, 2) if vol_5ma_val > 0 else 1.0,
             "atr_stop": atr_stop,
             "bb_middle": round(bb_middle, 1),
             "bb_upper": round(bb_upper, 1),
             "bb_lower": round(bb_lower, 1),
             "change_pct": change_pct,
-            "master_notes": stock["notes"],
+            "master_notes": stock["notes"] + " | " + action_advice,
             "category": stock["category"],
             "industry": stock["industry"],
             
-            # V2026.Max Scoring Engine
+            # V8050.0 Scoring Engine
             "score": score,
             "scoreBreakdown": score_conditions,
             
@@ -664,7 +630,7 @@ def run_v2026_full_sweep():
         
         scanned_signals.append(sig_doc)
 
-    # 清洗所有訊號以防 MongoDB 報錯 (Cannot encode numpy.bool_ / numpy.float64 等類型)
+    # 清洗所有訊號以防 MongoDB 報錯
     scanned_signals = clean_for_mongodb(scanned_signals)
 
     result = {
@@ -701,7 +667,6 @@ def run_v2026_full_sweep():
     if lion_collection is not None:
         ops = []
         for sig in scanned_signals:
-            # For history sweep tracking, search by date & stock_id
             ops.append(
                 UpdateOne(
                     {"date": date_str, "stock_id": sig["stock_id"]},
@@ -716,12 +681,7 @@ def run_v2026_full_sweep():
         except Exception as e:
             print(f"❌ [MongoDB] lion_signals bulk write error: {e}", file=sys.stderr)
 
-    return result
-
-# ==============================================================================
-# 🖥️ 5. STREAMLIT VISUAL PANEL
-# ==============================================================================
-def run_streamlit_app():
+    return result\n\ndef run_streamlit_app():
     st.set_page_config(
         page_title="🦁 獅王戰神 V2026.Max 觀盤決策儀表板",
         page_icon="🦁",

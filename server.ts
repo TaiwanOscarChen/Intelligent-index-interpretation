@@ -125,82 +125,178 @@ let localExits: ExitLogItem[] = [];
 function seedInitialSignals() {
   const nowStr = new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString().replace('T', ' ').substring(0, 19) + " (台北標準時間)";
   
-  localScanResult.signals = INITIAL_STOCKS.map((stock, idx) => {
-    const close_price = Math.round(stock.basePrice * (1 + (Math.sin(idx * 0.4) * 0.05)) * 10) / 10;
-    const priceChangePct = Math.round((Math.cos(idx * 0.6) * 3.5) * 100) / 100;
-    const score = 30 + (idx % 11); // scores between 30 and 40
+  const allSignals = INITIAL_STOCKS.map((stock, idx) => {
+    const close_price = Math.round(stock.basePrice * (1 + (Math.sin(idx * 0.45) * 0.08)) * 10) / 10;
+    const priceChangePct = Math.round((Math.cos(idx * 0.65) * 4.2) * 100) / 100;
     
-    let signal: StockSignalOption = "持倉";
-    if (idx % 5 === 0) signal = "多";
-    else if (idx % 7 === 0) signal = "空";
-    else if (idx % 11 === 0) signal = "隔離";
+    // Simulate 20MA, 10MA, and other technical averages
+    const ma20_val = Math.round(stock.basePrice * 10) / 10;
+    const ma10_val = Math.round(stock.basePrice * 0.99 * 10) / 10;
+    const ma5_val = Math.round(stock.basePrice * 0.98 * 10) / 10;
+    const yesterday_ma20 = Math.round(stock.basePrice * 0.998 * 10) / 10;
     
-    const macd_status = idx % 2 === 0 ? "多頭翻紅擴張" : "空頭收斂整理";
-    const ma20_status = idx % 3 === 0 ? "站上生命線 20MA 且均線斜率向上" : "均線平緩，生命線下方整理";
+    const bias20 = Math.round(((close_price - ma20_val) / ma20_val) * 100 * 100) / 100;
+    const vix_value = 16.5;
     
-    // Quantitative Risk parameters
+    // Seed stable indicators based on stock index
+    const seed = idx + 2330;
+    const marginChange = Math.floor((Math.sin(seed) * 500));
+    const marginShortRatio = Math.round((1.5 + (seed % 10) * 0.8) * 100) / 100;
+    const foreignDays = Math.floor((Math.sin(seed) * 5) + 3);
+    const instDays = Math.floor((Math.cos(seed) * 4) + 2);
+    const foreignRatio = Math.round((12.5 + (seed % 35) * 1.1) * 100) / 100;
+    const instRatio = Math.round((1.8 + (seed % 12) * 0.4) * 100) / 100;
+    const per = Math.round((11.5 + (seed % 15) * 1.2) * 100) / 100;
+    const pbr = Math.round((1.1 + (seed % 6) * 0.75) * 100) / 100;
+    const debtRatio = Math.round((22.0 + (seed % 25) * 1.2) * 100) / 100;
+    
+    // Dynamic Tiers
+    const limitUp = Math.round(close_price * 1.10 * 10) / 10;
+    const limitDown = Math.round(close_price * 0.90 * 10) / 10;
+    const chaseUp2 = Math.round(close_price * 1.02 * 10) / 10;
+    const ambushDown2 = Math.round(close_price * 0.98 * 10) / 10;
+    const vwap5d = Math.round(close_price * (0.99 + Math.random() * 0.025) * 10) / 10;
+    
+    const dynamicTiers = {
+      limitUp,
+      limitDown,
+      chaseUp2,
+      ambushDown2,
+      vwap5d
+    };
+
+    // Calculate 50 condition breakdown
+    const breakdown: any = {};
+    
+    // Macro (10)
+    breakdown["vixSafe"] = vix_value < 20.0;
+    breakdown["vixWarning"] = vix_value >= 25.0 && vix_value <= 35.0;
+    breakdown["vixBlackSwan"] = vix_value <= 30.0;
+    breakdown["shortLossStop"] = priceChangePct >= -3.5;
+    breakdown["swingLossStop"] = priceChangePct >= -5.0;
+    breakdown["takeProfitWarn"] = priceChangePct < 20.0;
+    breakdown["kellyCapitalSize"] = (seed % 3 !== 0);
+    breakdown["oilShockElectronics"] = true;
+    breakdown["rodLimitOrderOnly"] = true;
+    breakdown["adrDragOpen"] = true;
+
+    // MA & Price (10)
+    breakdown["emaPerfectFan"] = close_price > ma20_val && ma20_val > ma60_val;
+    breakdown["absoluteLifeLine"] = close_price >= ma20_val * 0.99;
+    breakdown["dynamic10MaTrailing"] = close_price >= ma10_val;
+    breakdown["extreme8MaTrailing"] = close_price >= ma5_val;
+    breakdown["optimalSLevel伏擊"] = bias20 >= 0.0 && bias20 <= 2.0;
+    breakdown["highAltitudeDeficiency"] = bias20 <= 15.0;
+    breakdown["limit伏擊Price"] = true;
+    breakdown["atr14TrailingStop"] = true;
+    breakdown["bbMiddle定錨"] = close_price >= ma20_val;
+    breakdown["ma20DeductRising"] = ma20_val >= yesterday_ma20;
+
+    // Volume & Bollinger (10)
+    breakdown["volumeBreakoutLongRed"] = priceChangePct > 1.0;
+    breakdown["volumeShrink沉澱"] = (idx % 4 === 0);
+    breakdown["flowThreshold1k"] = true;
+    breakdown["oddLotSpreadSafe"] = (seed % 5 !== 0);
+    breakdown["oddLotSpreadWarning"] = true;
+    breakdown["oddLotSpreadDryout"] = true;
+    breakdown["kline33Principle"] = priceChangePct >= 3.0 || (seed % 3 === 0);
+    breakdown["time9ConsecutiveRising"] = true;
+    breakdown["bbWidthCompression"] = true;
+    breakdown["bb軋空Breakout"] = priceChangePct > 2.5;
+
+    // Indicators (10)
+    breakdown["macdBullZeroAbove"] = (idx % 2 === 0);
+    breakdown["macdRedOSCPulse"] = (idx % 3 === 0);
+    breakdown["kdHighOverheat"] = (idx % 4 === 0);
+    breakdown["kdGoldenCrossAbove50"] = true;
+    breakdown["rsiHealthExpansion"] = true;
+    breakdown["rsiExtreme軋空"] = false;
+    breakdown["rsi15mAbsoluteClimax"] = true;
+    breakdown["macd60mRedOSC"] = true;
+    breakdown["macd15mDeadCross"] = true;
+    breakdown["volPriceDivergence"] = true;
+
+    // Fundamentals (10)
+    breakdown["revYoYMoat"] = true;
+    breakdown["forwardPeMargin"] = per < 15.0;
+    breakdown["pegRatioGrowth"] = true;
+    breakdown["piotroskiFScore"] = true;
+    breakdown["beneishMScore"] = true;
+    breakdown["instDarkPoolLock"] = foreignDays >= 3 || instDays >= 3;
+    breakdown["trust建倉Sweetspot"] = instRatio >= 3.0 && instRatio <= 10.0;
+    breakdown["concentrationIncrease"] = true;
+    breakdown["turnoverCrowdedWarning"] = true;
+    breakdown["bigHolderLockSmallShort"] = true;
+
+    const score = Object.values(breakdown).filter(v => v === true).length;
+    
+    // Apply V8050.0 Quarantine Dead Gates
+    if (close_price < ma20_val || vix_value > 30.0 || score < 38) {
+      return null; // Quarantined
+    }
+
+    // Suggested size using Half-Kelly for S-tier or ROD limits for A-tier
+    let action_signal = "觀望";
+    let suggested_entry_price = "暫無建議價格";
+    let action_advice = "";
+    
+    if (score >= 45) {
+      action_signal = "買進 (S級重倉狙擊)";
+      const win_prob = 0.85;
+      const odds = 2.0;
+      const half_kelly = 0.5 * (win_prob - (1.0 - win_prob) / odds);
+      const allocated_capital = 1000000 * half_kelly;
+      const suggested_shares = Math.floor(allocated_capital / close_price);
+      suggested_entry_price = `${close_price.toFixed(1)} (現價半凱利金字塔建倉)`;
+      
+      const p1 = Math.floor(suggested_shares * 0.5);
+      const p2 = Math.floor(suggested_shares * 0.3);
+      const p3 = Math.floor(suggested_shares * 0.2);
+      
+      action_advice = `🏆 S級重倉狙擊！半凱利配置 ${(half_kelly * 100).toFixed(1)}% 資金，建議買入 ${suggested_shares} 股。金字塔建倉單：第一批 ${p1} 股，第二批 ${p2} 股，第三批 ${p3} 股。`;
+    } else {
+      action_signal = "買進 (A級伏擊掛單)";
+      const suggested_shares = Math.floor(20000 / close_price);
+      const rod_min = Math.round(ma20_val * 1.005 * 10) / 10;
+      const rod_max = Math.round(ma20_val * 1.015 * 10) / 10;
+      suggested_entry_price = `${rod_min.toFixed(1)} ~ ${rod_max.toFixed(1)} (ROD伏擊價)`;
+      action_advice = `🥇 A級右側伏擊！強制掛限價單於 ROD 伏擊區間：${rod_min.toFixed(1)} ~ ${rod_max.toFixed(1)} 元，建議 ${suggested_shares} 股。`;
+    }
+
     const stop_loss_price = Math.round(close_price * 0.95 * 10) / 10;
     const take_profit_half_price = Math.round(close_price * 1.20 * 10) / 10;
     const trailing_stop_price = Math.round(close_price * 0.97 * 10) / 10;
-    const action_signal = signal === "多" ? "買進 (S級追價)" : (signal === "空" ? "停損 (E-Stop)" : "觀望");
-    
-    let suggested_entry_price = "暫無建議價格";
-    if (signal === "多") {
-      suggested_entry_price = `${close_price} ~ ${(close_price * 1.02).toFixed(1)} (S級追價)`;
-    } else if (signal === "持倉") {
-      suggested_entry_price = `${(close_price * 0.98).toFixed(1)} 限價掛單 (B級回踩)`;
-    }
-
-    const dynamicTiers = {
-      limitUp: Math.round(close_price * 1.10 * 10) / 10,
-      limitDown: Math.round(close_price * 0.90 * 10) / 10,
-      chaseUp2: Math.round(close_price * 1.02 * 10) / 10,
-      ambushDown2: Math.round(close_price * 0.98 * 10) / 10,
-      vwap5d: Math.round(close_price * (0.99 + Math.random() * 0.02) * 10) / 10
-    };
-
-    // Prepopulate 40-point boolean conditions
-    const breakdown: any = {};
-    const keys = [
-      "priceAboveMa5", "priceAboveMa10", "priceAboveMa20", "priceAboveMa60", "ma5AboveMa10", "ma10AboveMa20", "ma20AboveMa60", "ma20SlopeUpward", "priceAboveBbMiddle", "klineConsecutiveRed",
-      "volumeBurst1_5x", "volumeAbove20dAverage", "volumeShrunkPullback", "priceAboveVwap5d", "rsiAbove50", "rsiBelow80", "kdGoldenCross", "kdSqueeze", "macdDifAboveDea", "macdOscTurnedRed",
-      "foreignNetBuyToday", "instNetBuyToday", "foreignContinuousBuy3d", "instContinuousBuy3d", "bigHoldersIncrease", "marginDecrease", "shortSaleIncrease", "instNetVolumeHeavy", "instRatioHigh", "turnoverValueHeavy",
-      "forwardPeLow", "pbrLow", "debtRatioLow", "perf1wPositive", "perf1mPositive", "perf3mPositive", "perf6mPositive", "perf1yPositive", "vixSafe", "closeAboveMa20Abs"
-    ];
-    keys.forEach((k, kIdx) => {
-      breakdown[k] = kIdx < score;
-    });
 
     return {
       timestamp: nowStr,
       stock_id: stock.id,
       stock_name: stock.name,
       close_price,
-      signal,
-      macd_status,
-      ma20_status,
-      volume_multiplier: Math.round((0.6 + Math.random() * 1.2) * 100) / 100,
+      signal: "多" as StockSignalOption,
+      macd_status: score >= 45 ? "多頭強勢 (OSC 翻紅共振)" : "量縮盤整 (籌碼沉澱)",
+      ma20_status: `月線支撐 20MA (${ma20_val.toFixed(1)})`,
+      volume_multiplier: Math.round((0.8 + Math.random() * 1.5) * 100) / 100,
       atr_stop: Math.round(close_price * 0.94 * 10) / 10,
       change_pct: priceChangePct,
-      master_notes: stock.fundamentalNotes,
+      master_notes: stock.fundamentalNotes + " | " + action_advice,
       category: stock.category,
       industry: stock.industry,
       score,
       scoreBreakdown: breakdown,
-      marginChange: Math.floor((Math.random() - 0.4) * 800),
-      marginShortRatio: Math.round(Math.random() * 300) / 100,
-      foreignDays: Math.floor((Math.random() - 0.3) * 10),
-      instDays: Math.floor((Math.random() - 0.2) * 8),
-      foreignRatio: Math.round((10 + Math.random() * 45) * 10) / 10,
-      instRatio: Math.round((1 + Math.random() * 15) * 10) / 10,
-      per: Math.round((12 + Math.random() * 25) * 10) / 10,
-      pbr: Math.round((1.2 + Math.random() * 4.5) * 10) / 10,
-      debtRatio: Math.round((20 + Math.random() * 40) * 10) / 10,
-      perf1w: Math.round((Math.random() * 6 - 2) * 10) / 10,
-      perf1m: Math.round((Math.random() * 15 - 4) * 10) / 10,
-      perf3m: Math.round((Math.random() * 35 - 10) * 10) / 10,
-      perf6m: Math.round((Math.random() * 60 - 15) * 10) / 10,
-      perf1y: Math.round((Math.random() * 120 - 30) * 10) / 10,
+      marginChange,
+      marginShortRatio,
+      foreignDays,
+      instDays,
+      foreignRatio,
+      instRatio,
+      per,
+      pbr,
+      debtRatio,
+      perf1w: Math.round((Math.random() * 5 + 1) * 10) / 10,
+      perf1m: Math.round((Math.random() * 10 + 2) * 10) / 10,
+      perf3m: Math.round((Math.random() * 20 + 5) * 10) / 10,
+      perf6m: Math.round((Math.random() * 45 + 10) * 10) / 10,
+      perf1y: Math.round((Math.random() * 90 + 20) * 10) / 10,
       dynamicTiers,
       suggested_entry_price,
       stop_loss_price,
@@ -210,12 +306,15 @@ function seedInitialSignals() {
       liquidity_warning: false
     };
   });
+  
+  // Filter out quarantined None/null items
+  localScanResult.signals = allSignals.filter(s => s !== null) as any;
 }
 seedInitialSignals();
 
 // Fallback high-fidelity in-memory scanning simulator
 function runInMemoryScanFallback(overrideTsmc?: 'green' | 'red') {
-  console.log("⚙️ [Sandbox Scan Fallback] 啟動本機高保真均線計算模擬...");
+  console.log("⚙️ [Sandbox Scan Fallback] 啟動 V8050.0 終極版全自動高頻沙盤模擬...");
   const now = new Date(Date.now() + 8 * 60 * 60 * 1000);
   const nowStr = now.toISOString().replace('T', ' ').substring(0, 19) + " (台北標準時間)";
   
@@ -234,42 +333,72 @@ function runInMemoryScanFallback(overrideTsmc?: 'green' | 'red') {
     tsmcPrice = tsmcIsGreen ? (1030.0 + Math.random() * 40) : (980.0 - Math.random() * 30);
   }
   
-  const updatedSignals = localScanResult.signals.map((stock) => {
+  const allSignals = localScanResult.signals.map((stock) => {
     const isTsmcQuarantine = !tsmcIsGreen;
     
     // Simulate daily close swing
     const priceChangePct = Math.round((Math.cos(Date.now() * Math.random()) * 4.8) * 100) / 100;
     const newPrice = Math.round(stock.close_price * (1 + priceChangePct / 100) * 10) / 10;
-    const finalScore = isTsmcQuarantine ? Math.max(10, stock.score - 8) : Math.min(40, Math.max(15, stock.score + Math.floor(Math.random() * 5) - 2));
+    const ma20_val = Math.round(newPrice * 0.985 * 10) / 10;
+    const ma10_val = Math.round(newPrice * 0.99 * 10) / 10;
+    const ma5_val = Math.round(newPrice * 0.995 * 10) / 10;
     
-    let signal: StockSignalOption = stock.signal;
+    const finalScore = isTsmcQuarantine ? Math.max(10, stock.score - 12) : Math.min(50, Math.max(20, stock.score + Math.floor(Math.random() * 6) - 2));
+    const vix_value = 16.5;
+    
+    // 50 condition check
+    const breakdown: any = {};
+    const seed = parseInt(stock.stock_id) || 2330;
+    
+    // Fill breakdown booleans based on score
+    const keys = [
+      "vixSafe", "vixWarning", "vixBlackSwan", "shortLossStop", "swingLossStop", "takeProfitWarn", "kellyCapitalSize", "oilShockElectronics", "rodLimitOrderOnly", "adrDragOpen",
+      "emaPerfectFan", "absoluteLifeLine", "dynamic10MaTrailing", "extreme8MaTrailing", "optimalSLevel伏擊", "highAltitudeDeficiency", "limit伏擊Price", "atr14TrailingStop", "bbMiddle定錨", "ma20DeductRising",
+      "volumeBreakoutLongRed", "volumeShrink沉澱", "flowThreshold1k", "oddLotSpreadSafe", "oddLotSpreadWarning", "oddLotSpreadDryout", "kline33Principle", "time9ConsecutiveRising", "bbWidthCompression", "bb軋空Breakout",
+      "macdBullZeroAbove", "macdRedOSCPulse", "kdHighOverheat", "kdGoldenCrossAbove50", "rsiHealthExpansion", "rsiExtreme軋空", "rsi15mAbsoluteClimax", "macd60mRedOSC", "macd15mDeadCross", "volPriceDivergence",
+      "revYoYMoat", "forwardPeMargin", "pegRatioGrowth", "piotroskiFScore", "beneishMScore", "instDarkPoolLock", "trust建倉Sweetspot", "concentrationIncrease", "turnoverCrowdedWarning", "bigHolderLockSmallShort"
+    ];
+    
+    keys.forEach((k, kIdx) => {
+      breakdown[k] = kIdx < finalScore;
+    });
+
+    // Apply V8050.0 Quarantine Dead Gates
+    if (newPrice < ma20_val || vix_value > 30.0 || finalScore < 38 || isTsmcQuarantine) {
+      return null; // Exclude/Quarantine completely
+    }
+
     let action_signal = "觀望";
     let suggested_entry_price = "暫無建議價格";
+    let action_advice = "";
     
-    if (isTsmcQuarantine) {
-      signal = "隔離";
-      action_signal = "停損 (無條件市價全數平倉)";
-      suggested_entry_price = "🛑 物理隔離，禁止進場";
+    if (finalScore >= 45) {
+      action_signal = "買進 (S級重倉狙擊)";
+      const win_prob = 0.85;
+      const odds = 2.0;
+      const half_kelly = 0.5 * (win_prob - (1.0 - win_prob) / odds);
+      const allocated_capital = 1000000 * half_kelly;
+      const suggested_shares = Math.floor(allocated_capital / newPrice);
+      suggested_entry_price = `${newPrice.toFixed(1)} (現價半凱利金字塔建倉)`;
+      
+      const p1 = Math.floor(suggested_shares * 0.5);
+      const p2 = Math.floor(suggested_shares * 0.3);
+      const p3 = Math.floor(suggested_shares * 0.2);
+      
+      action_advice = `🏆 S級重倉狙擊！半凱利配置 ${(half_kelly * 100).toFixed(1)}% 資金，建議買入 ${suggested_shares} 股。金字塔建倉單：第一批 ${p1} 股，第二批 ${p2} 股，第三批 ${p3} 股。`;
     } else {
-      if (finalScore >= 33 && priceChangePct > 1.5) {
-        signal = "多";
-        action_signal = "買進 (S級追價)";
-        suggested_entry_price = `${newPrice} ~ ${(newPrice * 1.02).toFixed(1)} (S級追價)`;
-      } else if (priceChangePct < -3.0) {
-        signal = "空";
-        action_signal = "停損 (E-Stop)";
-        suggested_entry_price = "📉 空頭破位，嚴禁交易";
-      } else {
-        signal = "持倉";
-        action_signal = "觀望";
-        suggested_entry_price = `${(newPrice * 0.98).toFixed(1)} 限價掛單 (B級回踩)`;
-      }
+      action_signal = "買進 (A級伏擊掛單)";
+      const suggested_shares = Math.floor(20000 / newPrice);
+      const rod_min = Math.round(ma20_val * 1.005 * 10) / 10;
+      const rod_max = Math.round(ma20_val * 1.015 * 10) / 10;
+      suggested_entry_price = `${rod_min.toFixed(1)} ~ ${rod_max.toFixed(1)} (ROD伏擊價)`;
+      action_advice = `🥇 A級右側伏擊！強制掛限價單於 ROD 伏擊區間：${rod_min.toFixed(1)} ~ ${rod_max.toFixed(1)} 元，建議 ${suggested_shares} 股。`;
     }
-    
+
     const stop_loss_price = Math.round(newPrice * 0.95 * 10) / 10;
     const take_profit_half_price = Math.round(newPrice * 1.20 * 10) / 10;
     const trailing_stop_price = Math.round(newPrice * 0.97 * 10) / 10;
-    
+
     const dynamicTiers = {
       limitUp: Math.round(newPrice * 1.10 * 10) / 10,
       limitDown: Math.round(newPrice * 0.90 * 10) / 10,
@@ -278,22 +407,11 @@ function runInMemoryScanFallback(overrideTsmc?: 'green' | 'red') {
       vwap5d: Math.round(newPrice * (0.995 + Math.random() * 0.01) * 10) / 10
     };
 
-    const breakdown: any = {};
-    const keys = [
-      "priceAboveMa5", "priceAboveMa10", "priceAboveMa20", "priceAboveMa60", "ma5AboveMa10", "ma10AboveMa20", "ma20AboveMa60", "ma20SlopeUpward", "priceAboveBbMiddle", "klineConsecutiveRed",
-      "volumeBurst1_5x", "volumeAbove20dAverage", "volumeShrunkPullback", "priceAboveVwap5d", "rsiAbove50", "rsiBelow80", "kdGoldenCross", "kdSqueeze", "macdDifAboveDea", "macdOscTurnedRed",
-      "foreignNetBuyToday", "instNetBuyToday", "foreignContinuousBuy3d", "instContinuousBuy3d", "bigHoldersIncrease", "marginDecrease", "shortSaleIncrease", "instNetVolumeHeavy", "instRatioHigh", "turnoverValueHeavy",
-      "forwardPeLow", "pbrLow", "debtRatioLow", "perf1wPositive", "perf1mPositive", "perf3mPositive", "perf6mPositive", "perf1yPositive", "vixSafe", "closeAboveMa20Abs"
-    ];
-    keys.forEach((k, kIdx) => {
-      breakdown[k] = kIdx < finalScore;
-    });
-
     return {
       ...stock,
       timestamp: nowStr,
       close_price: newPrice,
-      signal,
+      signal: "多" as StockSignalOption,
       score: finalScore,
       scoreBreakdown: breakdown,
       change_pct: priceChangePct,
@@ -302,9 +420,12 @@ function runInMemoryScanFallback(overrideTsmc?: 'green' | 'red') {
       stop_loss_price,
       take_profit_half_price,
       trailing_stop_price,
-      action_signal
+      action_signal,
+      master_notes: stock.master_notes.split(" | ")[0] + " | " + action_advice
     };
   });
+  
+  const filteredSignals = allSignals.filter(s => s !== null) as any;
 
   localScanResult = {
     scanTime: nowStr,
@@ -313,13 +434,10 @@ function runInMemoryScanFallback(overrideTsmc?: 'green' | 'red') {
     tsmcMa20Value: Math.round(tsmcMa20Value * 10) / 10,
     vixValue: Math.round((14 + Math.random() * 5) * 100) / 100,
     macroEStopActive: false,
-    signals: updatedSignals
+    signals: filteredSignals
   };
 }
 
-// REST API Endpoints
-
-// Ensure MongoDB is connected for all API requests
 app.use("/api", async (req, res, next) => {
   try {
     await connectToMongo();

@@ -99,7 +99,7 @@ const getStockQuantIndicators = (stock: StockSignal): QuantIndicators => {
   ];
   
   let patternIdx = seed % patterns.length;
-  if (stock.score >= 33) {
+  if (stock.score >= 38) {
     patternIdx = seed % 2;
   } else if (stock.score <= 20) {
     patternIdx = 2 + (seed % 3);
@@ -139,7 +139,7 @@ export default function App() {
   // Screener Tab States
   const [screenerCategories, setScreenerCategories] = useState<string[]>([]);
   const [selectedScreenerCategories, setSelectedScreenerCategories] = useState<string[]>([]);
-  const [screenerMinScore, setScreenerMinScore] = useState<number>(33); // 預設 Score >= 33 精英模式
+  const [screenerMinScore, setScreenerMinScore] = useState<number>(38); // 預設 Score >= 38 精英模式
   const [screenerMaxPer, setScreenerMaxPer] = useState<number>(100); // PER limit
   const [screenerMinForeignDays, setScreenerMinForeignDays] = useState<number>(0);
   const [screenerMinInstDays, setScreenerMinInstDays] = useState<number>(0);
@@ -187,7 +187,7 @@ export default function App() {
 
   // Global Configs
   const [overrideTsmcState, setOverrideTsmcState] = useState<string>("auto"); // auto, force_green, force_red
-  const [eliteOnly, setEliteOnly] = useState<boolean>(true); // Default filter out Score < 33
+  const [eliteOnly, setEliteOnly] = useState<boolean>(true); // Default filter out Score < 38
   const [viewMode, setViewMode] = useState<"table" | "cards">("table");
   const [utcTime, setUtcTime] = useState<string>("");
 
@@ -614,9 +614,9 @@ export default function App() {
     
     let result = [...data.signals];
 
-    // Elite threshold check (default: score >= 33)
+    // Elite threshold check (default: score >= 38)
     if (eliteOnly) {
-      result = result.filter(s => s.score >= 33);
+      result = result.filter(s => s.score >= 38);
     }
 
     // Search Query
@@ -654,10 +654,10 @@ export default function App() {
   const holdCount = data?.signals?.filter(s => s.signal === "持倉").length || 0;
   const quarantinedCount = data?.signals?.filter(s => s.signal === "隔離").length || 0;
 
-  // Blacklisted stocks (Below 20MA or Score < 33)
+  // Blacklisted stocks (Below 20MA or Score < 38)
   const getBlacklistedStocks = () => {
     if (!data || !data.signals) return [];
-    return data.signals.filter(s => s.close_price < s.stop_loss_price || s.score < 33);
+    return data.signals.filter(s => s.close_price < s.stop_loss_price || s.score < 38);
   };
 
   // Taiwan Stock Colors
@@ -1384,7 +1384,7 @@ export default function App() {
                               </td>
                               <td className="py-2 px-2 text-center">
                                 <span className={`px-2 py-0.5 rounded font-mono font-bold text-xs ${
-                                  stock.score >= 33 
+                                  stock.score >= 38 
                                     ? "bg-yellow-950 text-[#FFB74D] border border-yellow-500/40" 
                                     : "bg-zinc-800/80 text-zinc-450"
                                 }`}>
@@ -1448,12 +1448,40 @@ export default function App() {
                       processedSignals.map(stock => {
                         const isSelected = selectedStock?.stock_id === stock.stock_id;
                         const rsiVal = stock.scoreBreakdown?.rsiAbove50 ? 65 : 42;
-                        const statusText = stock.score >= 33 ? "🔥 過熱" : "✅ 正常";
-                        const momentumText = (stock.scoreBreakdown?.macdOscTurnedRed || stock.scoreBreakdown?.priceAboveMa5) ? "🚀 極強" : "📉 偏弱";
+                        const statusText = stock.score >= 45 ? "🔥 過熱" : "✅ 正常";
+                        const momentumText = stock.score >= 45 ? "🚀 極強" : "📈 偏多";
                         const volumeRatio = stock.volume_multiplier ? stock.volume_multiplier.toFixed(1) + "x" : "1.2x";
                         
-                        const orderShares = Math.floor(20000 / stock.close_price);
+                        // S-Class or A-Class determination
+                        const isSClass = stock.score >= 45;
+                        const actionTier = isSClass ? "🏆 S級重倉狙擊" : "🥇 A級右側/左側伏擊";
+                        
+                        // 20% Profit take warning flash
+                        const isTakeProfitWarning = stock.close_price >= (stock.take_profit_half_price || stock.close_price * 1.20);
+                        
+                        // Half-Kelly calculation (base 1M capital)
+                        const winRate = stock.score >= 45 ? 85 : 68;
+                        const win_prob = winRate / 100;
+                        const odds = 2.0;
+                        const half_kelly = 0.5 * (win_prob - (1.0 - win_prob) / odds);
+                        const allocated_capital = 1000000 * half_kelly;
+                        const orderShares = isSClass ? Math.floor(allocated_capital / stock.close_price) : Math.floor(20000 / stock.close_price);
                         const orderAmount = orderShares * stock.close_price;
+                        
+                        // Pyramid tranches
+                        const p1 = Math.floor(orderShares * 0.5);
+                        const p2 = Math.floor(orderShares * 0.3);
+                        const p3 = Math.floor(orderShares * 0.2);
+                        
+                        // Card Neon/Breathing border styling
+                        let borderStyle = "border-zinc-850 bg-zinc-950/80 hover:border-zinc-700 hover:bg-zinc-900/30";
+                        if (isSelected) {
+                          borderStyle = "border-2 border-[#E5A823] bg-zinc-900/90 shadow-[0_0_25px_rgba(229,168,35,0.22)] scale-[1.01]";
+                        } else if (isTakeProfitWarning) {
+                          borderStyle = "border border-[#FFB74D] bg-yellow-950/20 shadow-[0_0_18px_rgba(245,158,11,0.18)] animate-pulse-yellow";
+                        } else if (isSClass) {
+                          borderStyle = "border border-amber-500/60 bg-zinc-950/80 hover:border-amber-400 shadow-[0_0_15px_rgba(229,168,35,0.08)] hover:shadow-[0_0_22px_rgba(229,168,35,0.18)]";
+                        }
                         
                         return (
                           <div
@@ -1462,56 +1490,55 @@ export default function App() {
                               setSelectedStock(stock);
                               setNotesText(stock.master_notes || "");
                             }}
-                            className={`premium-card rounded-xl p-4 shadow-xl transition-all duration-300 relative overflow-hidden group cursor-pointer flex flex-col justify-between gap-3 ${
-                              isSelected 
-                                ? "border-2 border-[#E5A823] bg-zinc-900/90 shadow-[0_0_20px_rgba(229,168,35,0.15)]" 
-                                : "border border-zinc-850 bg-zinc-950/80 hover:border-zinc-700 hover:bg-zinc-900/30"
-                            }`}
+                            className={`premium-card rounded-xl p-4 shadow-xl transition-all duration-300 relative overflow-hidden group cursor-pointer flex flex-col justify-between gap-3 ${borderStyle}`}
                           >
-                            {/* Top row */}
+                            {/* Card Top Row */}
                             <div className="flex items-start justify-between">
                               <div>
                                 <div className="flex items-center gap-1.5">
                                   <span className="text-base font-mono font-black text-white">{stock.stock_id}</span>
-                                  <span className="text-xs font-bold text-zinc-450">{stock.stock_name}</span>
+                                  <span className="text-xs font-bold text-zinc-400">{stock.stock_name}</span>
                                 </div>
                                 <div className="flex flex-wrap gap-1 mt-1 text-[8px] font-mono">
-                                  <span className="bg-zinc-900 text-zinc-455 px-1 py-0.5 rounded border border-zinc-800">
+                                  <span className="bg-zinc-900 text-zinc-450 px-1 py-0.5 rounded border border-zinc-800">
                                     {stock.category || "AI與權值"}
                                   </span>
-                                  <span className="bg-zinc-900 text-zinc-455 px-1 py-0.5 rounded border border-zinc-800">
-                                    短中期波段
+                                  <span className="bg-zinc-900 text-zinc-450 px-1 py-0.5 rounded border border-zinc-800">
+                                    {actionTier}
                                   </span>
-                                  <span className="bg-rose-950 text-[#f43f5e] px-1 py-0.5 rounded border border-rose-800/40 font-bold">
-                                    建置/買進
-                                  </span>
+                                  {isTakeProfitWarning && (
+                                    <span className="bg-amber-950 text-[#FFB74D] px-1 py-0.5 rounded border border-amber-600/40 font-bold animate-pulse">
+                                      ⚠️ 獲利20%減碼
+                                    </span>
+                                  )}
                                 </div>
                               </div>
+                              
                               <div className="text-right">
-                                <div className="text-[8px] font-mono text-zinc-550">戰力評分</div>
+                                <div className="text-[8px] font-mono text-zinc-550">全域檢核</div>
                                 <span className={`px-2 py-0.5 rounded font-mono font-black text-[9px] ${
-                                  stock.score >= 33 
+                                  isSClass 
                                     ? "bg-yellow-950 text-[#FFB74D] border border-yellow-500/40" 
                                     : "bg-zinc-800/80 text-zinc-400 border border-zinc-700"
                                 }`}>
-                                  SCORE {stock.score}
+                                  {stock.score} / 50 分
                                 </span>
                               </div>
                             </div>
                             
-                            {/* Technics Grid (Bloomberg style 2x2 chips) */}
-                            <div className="grid grid-cols-4 gap-1 text-center font-mono text-[8px] bg-zinc-950 p-1 rounded-lg border border-zinc-900">
+                            {/* Technical Grid (Bloomberg style 2x2 chips) */}
+                            <div className="grid grid-cols-4 gap-1 text-center font-mono text-[8px] bg-zinc-950 p-1.5 rounded-lg border border-zinc-900">
                               <div className="flex flex-col p-1 rounded bg-zinc-900/60">
                                 <span className="text-zinc-550 text-[7px]">RSI</span>
                                 <span className="text-white font-bold">{rsiVal}</span>
                               </div>
                               <div className="flex flex-col p-1 rounded bg-zinc-900/60">
                                 <span className="text-zinc-550 text-[7px]">狀態</span>
-                                <span className={`font-bold ${statusText.includes("過熱") ? "text-[#f43f5e]" : "text-[#10b881]"}`}>{statusText}</span>
+                                <span className={`font-bold ${isSClass ? "text-[#f43f5e]" : "text-[#10b881]"}`}>{statusText}</span>
                               </div>
                               <div className="flex flex-col p-1 rounded bg-zinc-900/60">
                                 <span className="text-zinc-550 text-[7px]">動能</span>
-                                <span className={`font-bold ${momentumText.includes("極強") ? "text-[#f43f5e]" : "text-[#10b881]"}`}>{momentumText}</span>
+                                <span className={`font-bold ${isSClass ? "text-[#f43f5e]" : "text-[#10b881]"}`}>{momentumText}</span>
                               </div>
                               <div className="flex flex-col p-1 rounded bg-zinc-900/60">
                                 <span className="text-zinc-550 text-[7px]">量比</span>
@@ -1521,31 +1548,12 @@ export default function App() {
                             
                             {/* Live Headline/Notes */}
                             {stock.master_notes && (
-                              <div className="border-l-2 border-amber-400 pl-2 py-0.5 text-[9px] font-sans text-amber-300 italic truncate" title={stock.master_notes}>
-                                📰 {stock.master_notes}
+                              <div className="border-l-2 border-amber-400 pl-2 py-0.5 text-[9px] font-sans text-amber-300 italic truncate" title={stock.master_notes.split(" | ")[0]}>
+                                📰 {stock.master_notes.split(" | ")[0]}
                               </div>
                             )}
                             
-                            {/* Performance and Tactics */}
-                            <div className="grid grid-cols-2 gap-2 text-[8px] font-mono">
-                              <div className="bg-zinc-900/40 p-1.5 rounded border border-zinc-900">
-                                <span className="text-zinc-550 block mb-0.5">【今日表現】</span>
-                                <span className={`font-extrabold ${stock.change_pct >= 0 ? "text-[#f43f5e]" : "text-[#10b881]"}`}>
-                                  {stock.change_pct >= 0 ? `+${stock.change_pct.toFixed(2)}` : stock.change_pct.toFixed(2)}%
-                                </span>
-                                <span className="text-zinc-450 ml-1">
-                                  {stock.change_pct >= 4.0 ? "🚀 跳空" : stock.change_pct >= 0 ? "📈 強勢" : "📉 回檔"}
-                                </span>
-                              </div>
-                              <div className="bg-zinc-900/40 p-1.5 rounded border border-zinc-900">
-                                <span className="text-zinc-550 block mb-0.5">【籌碼戰略】</span>
-                                <span className="text-white font-bold">
-                                  {stock.score >= 33 ? "🔥 趨勢多頭" : "🟢 震盪盤整"}
-                                </span>
-                              </div>
-                            </div>
-                            
-                            {/* Three price zones */}
+                            {/* Pricing Zones */}
                             <div className="grid grid-cols-3 gap-1 text-center font-mono text-[8px] pt-1">
                               <div className="bg-zinc-900/60 p-1 rounded border border-zinc-850">
                                 <span className="text-zinc-550 text-[7px] block mb-0.5">現價建倉</span>
@@ -1561,23 +1569,46 @@ export default function App() {
                               </div>
                             </div>
                             
-                            {/* Pending Orders Action Card */}
-                            <div className="bg-zinc-950 p-2 rounded-lg border border-zinc-900 text-[8px] font-mono space-y-1">
-                              <div className="flex justify-between items-center text-zinc-450">
-                                <span>🎯 明日開盤掛單 (Pending)</span>
-                                <span className="text-white font-bold">約 NT$ {orderAmount.toLocaleString()}</span>
+                            {/* Execution Orders (Half-Kelly Pyramid or ROD limits) */}
+                            {isSClass ? (
+                              <div className="bg-zinc-950 p-2 rounded-lg border border-amber-500/20 text-[8px] font-mono space-y-1">
+                                <div className="flex justify-between items-center text-zinc-450">
+                                  <span className="text-[#FFB74D] font-bold">🏆 S級 半凱利金字塔建倉 (5-3-2)</span>
+                                  <span className="text-white font-bold">約 NT$ {orderAmount.toLocaleString()}</span>
+                                </div>
+                                <div className="grid grid-cols-3 gap-1 text-center text-[7px] pt-1 border-t border-zinc-900">
+                                  <div className="bg-zinc-900/40 p-0.5 rounded">
+                                    <span className="text-zinc-500 block">首批(50%)</span>
+                                    <span className="text-[#f43f5e] font-bold">{p1} 股</span>
+                                  </div>
+                                  <div className="bg-zinc-900/40 p-0.5 rounded">
+                                    <span className="text-zinc-500 block">二批(30%)</span>
+                                    <span className="text-[#f43f5e] font-bold">{p2} 股</span>
+                                  </div>
+                                  <div className="bg-zinc-900/40 p-0.5 rounded">
+                                    <span className="text-zinc-550 block">三批(20%)</span>
+                                    <span className="text-[#f43f5e] font-bold">{p3} 股</span>
+                                  </div>
+                                </div>
                               </div>
-                              <div className="flex justify-between items-center">
-                                <span className="text-zinc-550">建議數量:</span>
-                                <span className="text-[#FFB74D] font-extrabold">{orderShares} 股</span>
+                            ) : (
+                              <div className="bg-zinc-950 p-2 rounded-lg border border-zinc-900 text-[8px] font-mono space-y-1">
+                                <div className="flex justify-between items-center text-zinc-450">
+                                  <span className="text-[#FFB74D]">🎯 A級 ROD限價伏擊單 (20MA)</span>
+                                  <span className="text-white font-bold">約 NT$ {orderAmount.toLocaleString()}</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <span className="text-zinc-550">伏擊價格區間:</span>
+                                  <span className="text-[#10b881] font-extrabold">{(stock.close_price * 0.985).toFixed(1)} ~ {(stock.close_price * 0.995).toFixed(1)}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-[7px] pt-1 border-t border-zinc-900 text-zinc-500">
+                                  <span>建議買入: <span className="text-[#FFB74D] font-bold">{orderShares} 股</span></span>
+                                  <span>防呆停損: <span className="text-[#10b881] font-bold">{stock.stop_loss_price ? stock.stop_loss_price.toFixed(1) : "-"}</span></span>
+                                </div>
                               </div>
-                              <div className="flex justify-between items-center text-[7px] pt-1 border-t border-zinc-900 text-zinc-500">
-                                <span>停利減碼: <span className="text-[#f43f5e] font-bold">{stock.take_profit_half_price ? stock.take_profit_half_price.toFixed(1) : "-"}</span></span>
-                                <span>防呆停損: <span className="text-[#10b881] font-bold">{stock.stop_loss_price ? stock.stop_loss_price.toFixed(1) : "-"}</span></span>
-                              </div>
-                            </div>
+                            )}
                             
-                            {/* Buy Action Buttons */}
+                            {/* Action Buttons */}
                             <div className="flex items-center gap-1.5 justify-end pt-1" onClick={e => e.stopPropagation()}>
                               <button
                                 onClick={() => openBuyModalForStock(stock)}
@@ -1602,7 +1633,7 @@ export default function App() {
                             </div>
                             
                             {/* Bottom metadata shadow */}
-                            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#f43f5e] via-[#FFB74D] to-[#10b881] opacity-60"></div>
+                            <div className={`absolute bottom-0 left-0 right-0 h-1 opacity-70 bg-gradient-to-r ${isSClass ? "from-amber-500 to-[#FFB74D]" : "from-[#f43f5e] via-[#FFB74D] to-[#10b881]"}`}></div>
                           </div>
                         );
                       })
@@ -2614,7 +2645,7 @@ export default function App() {
                 <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-900">
                   <div className="text-[#FFD54F] text-[10px] font-bold">精英比率 (⭐&ge;33)</div>
                   <div className="text-lg font-bold text-[#FFD54F] mt-1 font-mono">
-                    {data && data.signals ? Math.round((data.signals.filter(s => s.score >= 33).length / data.signals.length) * 100) : 0}%
+                    {data && data.signals ? Math.round((data.signals.filter(s => s.score >= 38).length / data.signals.length) * 100) : 0}%
                   </div>
                 </div>
               </div>
@@ -2923,7 +2954,7 @@ export default function App() {
                               </td>
                               <td className="py-2 px-2 text-center">
                                 <span className={`px-2 py-0.5 rounded font-mono font-bold text-xs ${
-                                  stock.score >= 33 
+                                  stock.score >= 38 
                                     ? "bg-yellow-950 text-[#FFB74D] border border-yellow-500/40 shadow-[0_0_6px_rgba(245,158,11,0.1)]" 
                                     : "bg-zinc-800/80 text-zinc-450"
                                 }`}>

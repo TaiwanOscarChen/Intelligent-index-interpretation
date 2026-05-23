@@ -6,53 +6,7 @@
 export type StockSignalOption = '多' | '空' | '持倉' | '隔離';
 
 export interface ScoreConditions {
-  // Trend (10)
-  priceAboveMa5: boolean;
-  priceAboveMa10: boolean;
-  priceAboveMa20: boolean;
-  priceAboveMa60: boolean;
-  ma5AboveMa10: boolean;
-  ma10AboveMa20: boolean;
-  ma20AboveMa60: boolean;
-  ma20SlopeUpward: boolean;
-  priceAboveBbMiddle: boolean;
-  klineConsecutiveRed: boolean;
-
-  // Volume/Momentum (10)
-  volumeBurst1_5x: boolean;
-  volumeAbove20dAverage: boolean;
-  volumeShrunkPullback: boolean;
-  priceAboveVwap5d: boolean;
-  rsiAbove50: boolean;
-  rsiBelow80: boolean;
-  kdGoldenCross: boolean;
-  kdSqueeze: boolean;
-  macdDifAboveDea: boolean;
-  macdOscTurnedRed: boolean;
-
-  // Institutional/Chips (10)
-  foreignNetBuyToday: boolean;
-  instNetBuyToday: boolean;
-  foreignContinuousBuy3d: boolean;
-  instContinuousBuy3d: boolean;
-  bigHoldersIncrease: boolean;
-  marginDecrease: boolean;
-  shortSaleIncrease: boolean;
-  instNetVolumeHeavy: boolean;
-  instRatioHigh: boolean;
-  turnoverValueHeavy: boolean;
-
-  // Valuation/Macro Safety (10)
-  forwardPeLow: boolean;
-  pbrLow: boolean;
-  debtRatioLow: boolean;
-  perf1wPositive: boolean;
-  perf1mPositive: boolean;
-  perf3mPositive: boolean;
-  perf6mPositive: boolean;
-  perf1yPositive: boolean;
-  vixSafe: boolean;
-  closeAboveMa20Abs: boolean;
+  [key: string]: boolean;
 }
 
 export interface DynamicPricingTiers {
