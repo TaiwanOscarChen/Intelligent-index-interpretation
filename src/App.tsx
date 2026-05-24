@@ -3872,6 +3872,31 @@ export default function App() {
                       </button>
                     </div>
 
+                    {/* Modal KPI Summary */}
+                    {(() => {
+                      const sectorStocks = (data?.signals || INITIAL_STOCKS).filter((s: any) => s.category === selectedCategory);
+                      const avgScore = sectorStocks.length > 0 ? (sectorStocks.reduce((s: any, x: any) => s + x.score, 0) / sectorStocks.length).toFixed(1) : '0';
+                      const bullCount = sectorStocks.filter((s: any) => s.signal === '多').length;
+                      const bearCount = sectorStocks.filter((s: any) => s.signal === '隔離' || s.signal === '空').length;
+                      const avgChangePct = sectorStocks.length > 0 ? (sectorStocks.reduce((s: any, x: any) => s + (x.change_pct || 0), 0) / sectorStocks.length) : 0;
+                      const elite = sectorStocks.filter((s: any) => s.score >= 38).length;
+                      return (
+                        <div className="px-4 pt-3 pb-0 grid grid-cols-4 gap-3">
+                          {[
+                            ['板塊總檔', `${sectorStocks.length} 檔`, 'text-white'],
+                            ['平均戰力', `${avgScore}分`, 'text-[#FFB74D]'],
+                            ['今日均漲跌', avgChangePct >= 0 ? `▲ +${avgChangePct.toFixed(2)}%` : `▼ ${avgChangePct.toFixed(2)}%`, avgChangePct >= 0 ? 'text-rose-400' : 'text-emerald-400'],
+                            ['精英/多頭', `${elite}/${bullCount}`, 'text-amber-300'],
+                          ].map(([label, val, color]) => (
+                            <div key={label} className="bg-zinc-950/60 rounded-lg border border-zinc-800 p-2.5 text-center">
+                              <div className="text-[9px] text-zinc-500 font-mono">{label}</div>
+                              <div className={`text-sm font-bold font-mono mt-0.5 ${color}`}>{val}</div>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })()}
+
                     {/* Modal Content Table */}
                     <div className="p-4 overflow-y-auto flex-1 bg-zinc-950/20">
                       <div className="overflow-x-auto">
@@ -3880,15 +3905,18 @@ export default function App() {
                             <tr className="border-b border-zinc-850 text-zinc-550 font-sans text-[10px] uppercase font-bold tracking-wider pb-2">
                               <th className="py-2 px-3">股票代號</th>
                               <th className="py-2 px-3">公司名稱</th>
-                              <th className="py-2 px-3 text-right">當前現價</th>
+                              <th className="py-2 px-3 text-right">現價</th>
                               <th className="py-2 px-3 text-right">今日漲跌</th>
                               <th className="py-2 px-3 text-center">評分</th>
+                              <th className="py-2 px-3 text-right">外資天</th>
+                              <th className="py-2 px-3 text-right">PER</th>
                               <th className="py-2 px-3 text-right">建議指令</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-zinc-900/60">
                             {(data?.signals || INITIAL_STOCKS)
                               .filter((s: any) => s.category === selectedCategory)
+                              .sort((a: any, b: any) => b.score - a.score)
                               .map((stock: any) => {
                                 const isUp = stock.change_pct >= 0;
                                 let scoreColor = "text-zinc-400";
@@ -3904,14 +3932,18 @@ export default function App() {
                                     }}
                                     className="hover:bg-zinc-900/40 cursor-pointer transition-colors"
                                   >
-                                    <td className="py-3 px-3 font-bold text-sky-400 underline">{stock.stock_id}</td>
-                                    <td className="py-3 px-3 text-white font-sans font-medium">{stock.stock_name}</td>
-                                    <td className="py-3 px-3 text-right text-white font-bold">{stock.close_price?.toFixed(1)}元</td>
-                                    <td className={`py-3 px-3 text-right font-bold ${isUp ? "text-[#f43f5e]" : "text-[#10b881]"}`}>
+                                    <td className="py-2.5 px-3 font-bold text-sky-400 underline">{stock.stock_id}</td>
+                                    <td className="py-2.5 px-3 text-white font-sans font-medium">{stock.stock_name}</td>
+                                    <td className="py-2.5 px-3 text-right text-white font-bold">{stock.close_price?.toFixed(1)}元</td>
+                                    <td className={`py-2.5 px-3 text-right font-bold ${isUp ? "text-[#f43f5e]" : "text-[#10b881]"}`}>
                                       {isUp ? `▲ +${stock.change_pct?.toFixed(2)}%` : `▼ ${stock.change_pct?.toFixed(2)}%`}
                                     </td>
-                                    <td className={`py-3 px-3 text-center ${scoreColor}`}>{stock.score} 分</td>
-                                    <td className="py-3 px-3 text-right font-sans">
+                                    <td className={`py-2.5 px-3 text-center ${scoreColor}`}>{stock.score} 分</td>
+                                    <td className={`py-2.5 px-3 text-right font-bold ${stock.foreignDays > 0 ? 'text-rose-400' : stock.foreignDays < 0 ? 'text-emerald-400' : 'text-zinc-500'}`}>
+                                      {stock.foreignDays > 0 ? `+${stock.foreignDays}` : stock.foreignDays} 天
+                                    </td>
+                                    <td className="py-2.5 px-3 text-right text-zinc-400">{stock.per?.toFixed(1) || '-'}x</td>
+                                    <td className="py-2.5 px-3 text-right font-sans">
                                       <span className={`text-[10px] px-2 py-0.5 rounded font-bold border ${
                                         stock.action_signal?.includes("買進") || stock.action_signal?.includes("多")
                                           ? "bg-rose-950/60 border-rose-500/30 text-rose-400"
