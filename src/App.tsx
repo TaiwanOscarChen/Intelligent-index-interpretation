@@ -4767,6 +4767,34 @@ export default function App() {
               <p className="text-xs text-zinc-450 mt-1">
                 記錄您所有歷史模擬持倉的清倉記錄，並包含 <code>Gemini 3.5-Flash</code> 為您客製化產生的精闢操盤回顧與改進方向。
               </p>
+
+              {/* Category performance breakdown */}
+              {exits.length > 0 && (() => {
+                const catStats: Record<string, { wins: number; total: number; pnl: number }> = {};
+                exits.forEach(e => {
+                  const cat = e.category || '未分類';
+                  if (!catStats[cat]) catStats[cat] = { wins: 0, total: 0, pnl: 0 };
+                  catStats[cat].total++;
+                  catStats[cat].pnl += e.pnl_value || 0;
+                  if ((e.pnl_value || 0) >= 0) catStats[cat].wins++;
+                });
+                const cats = Object.entries(catStats).sort((a, b) => b[1].pnl - a[1].pnl);
+                return (
+                  <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                    {cats.map(([cat, stat]) => (
+                      <div key={cat} className="bg-zinc-950/60 rounded-lg border border-zinc-900 p-3 text-[10px] font-mono">
+                        <div className="text-zinc-400 font-bold truncate text-[9px] mb-1">{cat}</div>
+                        <div className={`text-base font-black font-mono ${stat.pnl >= 0 ? 'text-rose-400' : 'text-emerald-400'}`}>
+                          {stat.pnl >= 0 ? '+' : ''}{Math.round(stat.pnl).toLocaleString()}
+                        </div>
+                        <div className="text-zinc-500 text-[8px] mt-0.5">
+                          {stat.total}筆 · 勝率 <span className={`font-bold ${Math.round((stat.wins/stat.total)*100) >= 60 ? 'text-rose-400' : 'text-amber-400'}`}>{Math.round((stat.wins/stat.total)*100)}%</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
             </div>
 
             <div className="grid grid-cols-1 gap-6">

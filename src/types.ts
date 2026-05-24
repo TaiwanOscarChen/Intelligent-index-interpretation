@@ -100,6 +100,8 @@ export interface ExitLogItem {
   pnl_value: number;
   exit_reason: string;                // 出場原因 (E-Stop / 移動停利 / 手動 / 大盤壓制)
   review_summary: string;             // 大師實戰檢討與改正方向
+  category?: string;                  // 板塊分類 (optional, for analytics)
+  holding_days?: number;              // 持倉天數
 }
 
 export interface ScanResult {
