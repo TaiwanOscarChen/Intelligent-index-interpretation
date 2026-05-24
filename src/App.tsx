@@ -3225,6 +3225,54 @@ export default function App() {
         {/* ======================= TAB: STRATEGY ======================= */}
         {activeTab === "strategy" && summary && (
           <div className="space-y-6 animate-fade-in select-none">
+
+            {/* Real-time macro data bar */}
+            {marketData && (
+              <div className="premium-card rounded-xl px-5 py-3 shadow-lg">
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[10px] font-mono">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-zinc-500">📡 台指VIX:</span>
+                    <span className={`font-bold ${(marketData.twVix||16)<20?'text-emerald-400':(marketData.twVix||16)<30?'text-amber-400':'text-rose-400'}`}>
+                      {(marketData.twVix||16).toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-zinc-500">😱 CNN恐懼貪婪:</span>
+                    <span className={`font-bold ${(marketData.cnnFearGreed||55)<40?'text-emerald-400':(marketData.cnnFearGreed||55)<60?'text-amber-400':'text-rose-400'}`}>
+                      {marketData.cnnFearGreed||55} ({(marketData.cnnFearGreed||55)<25?'極恐':(marketData.cnnFearGreed||55)<45?'恐懼':(marketData.cnnFearGreed||55)<55?'中立':(marketData.cnnFearGreed||55)<75?'貪婪':'極貪'})
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-zinc-500">🏦 三大法人:</span>
+                    <span className={`font-bold ${(marketData.threePartyNet||0)>0?'text-rose-400':'text-emerald-400'}`}>
+                      {(marketData.threePartyNet||0)>0?'+':''}{(marketData.threePartyNet||120).toLocaleString()} 億
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-zinc-500">💱 M1B/M2叉:</span>
+                    <span className={`font-bold ${marketData.mScissor?'text-rose-400':'text-emerald-400'}`}>
+                      {marketData.mScissor?'▲ 多頭黃金叉':'▼ 死叉防守'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-zinc-500">🔴 景氣燈:</span>
+                    <span className={`font-bold ${(marketData.businessCycleLight||'黃燈').includes('紅')?'text-rose-400':(marketData.businessCycleLight||'黃燈').includes('藍')?'text-sky-400':'text-amber-400'}`}>
+                      {marketData.businessCycleLight||'黃燈'} ({marketData.businessCycleScore||25}分)
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-zinc-500">📊 外資期指:</span>
+                    <span className={`font-bold ${(marketData.foreignFuturesNet||0)>0?'text-rose-400':'text-emerald-400'}`}>
+                      {(marketData.foreignFuturesNet||-18450).toLocaleString()} 口
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 ml-auto">
+                    <span className="text-zinc-600">🕐 {marketData.lastUpdate?.substring(0,16)||'--:--'}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Top Market Dashboard */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Market Sentiment Gauge */}
