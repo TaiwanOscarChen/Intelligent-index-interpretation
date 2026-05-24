@@ -82,6 +82,8 @@ export interface HoldingItem {
   take_profit_triggered: boolean;     // 是否已觸發減碼 50% 鎖利
   stop_loss_price: number;            // 動態停損價
   trailing_stop_price: number;        // 移動停利價
+  take_profit_price?: number;         // 預期鎖利點 (目標價)
+  buy_reason?: string;                // 進場根據 (選股依據)
   suggested_action: string;           // 建議操作 (續抱 / 減碼鎖利 / 清倉 / 停損)
 }
 
