@@ -1847,7 +1847,7 @@ export default function App() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="font-display font-black text-xl text-white tracking-tight">獅王戰神 V2026.Max</h1>
+                <h1 className="font-display font-black text-xl text-white tracking-tight">智能判讀指數_大一統</h1>
                 <span className="text-[10px] bg-gradient-to-r from-yellow-500 to-amber-600 text-black font-black px-2 py-0.5 rounded shadow">
                   終極大一統版
                 </span>
@@ -1931,10 +1931,10 @@ export default function App() {
       {/* Navigation tabs */}
       <div className="bg-[#0b0c10] border-b border-zinc-850 relative lg:sticky lg:top-[77px] z-30 shadow-md">
         <div className="w-full max-w-[1700px] mx-auto px-4 md:px-6 flex items-center justify-between overflow-x-auto no-scrollbar">
-          <div className="flex gap-1.5 md:gap-4 py-1 shrink-0">
+          <div className="flex gap-0.5 sm:gap-1.5 md:gap-2.5 py-1 shrink-0">
             <button
               onClick={() => setActiveTab("radar")}
-              className={`py-2.5 px-3 text-[11px] md:text-xs lg:text-sm font-bold flex items-center gap-1.5 md:gap-2 border-b-2 transition-all relative whitespace-nowrap ${
+              className={`py-2 px-1 sm:px-1.5 md:px-2 lg:px-2.5 text-[9px] sm:text-[10px] md:text-xs lg:text-[13px] font-bold flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
                 activeTab === "radar"
                   ? "border-[#E5A823] text-white"
                   : "border-transparent text-zinc-400 hover:text-white"
@@ -1949,7 +1949,7 @@ export default function App() {
 
             <button
               onClick={() => setActiveTab("strategy")}
-              className={`py-2.5 px-3 text-[11px] md:text-xs lg:text-sm font-bold flex items-center gap-1.5 md:gap-2 border-b-2 transition-all relative whitespace-nowrap ${
+              className={`py-2 px-1 sm:px-1.5 md:px-2 lg:px-2.5 text-[9px] sm:text-[10px] md:text-xs lg:text-[13px] font-bold flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
                 activeTab === "strategy"
                   ? "border-[#E5A823] text-white"
                   : "border-transparent text-zinc-400 hover:text-white"
@@ -1964,7 +1964,7 @@ export default function App() {
 
             <button
               onClick={() => setActiveTab("screener")}
-              className={`py-2.5 px-3 text-[11px] md:text-xs lg:text-sm font-bold flex items-center gap-1.5 md:gap-2 border-b-2 transition-all relative whitespace-nowrap ${
+              className={`py-2 px-1 sm:px-1.5 md:px-2 lg:px-2.5 text-[9px] sm:text-[10px] md:text-xs lg:text-[13px] font-bold flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
                 activeTab === "screener"
                   ? "border-[#E5A823] text-white"
                   : "border-transparent text-zinc-400 hover:text-white"
@@ -1979,7 +1979,7 @@ export default function App() {
 
             <button
               onClick={() => setActiveTab("holdings")}
-              className={`py-2.5 px-3 text-[11px] md:text-xs lg:text-sm font-bold flex items-center gap-1.5 md:gap-2 border-b-2 transition-all relative whitespace-nowrap ${
+              className={`py-2 px-1 sm:px-1.5 md:px-2 lg:px-2.5 text-[9px] sm:text-[10px] md:text-xs lg:text-[13px] font-bold flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
                 activeTab === "holdings"
                   ? "border-[#E5A823] text-white"
                   : "border-transparent text-zinc-400 hover:text-white"
@@ -1994,7 +1994,7 @@ export default function App() {
 
             <button
               onClick={() => setActiveTab("exits")}
-              className={`py-2.5 px-3 text-[11px] md:text-xs lg:text-sm font-bold flex items-center gap-1.5 md:gap-2 border-b-2 transition-all relative whitespace-nowrap ${
+              className={`py-2 px-1 sm:px-1.5 md:px-2 lg:px-2.5 text-[9px] sm:text-[10px] md:text-xs lg:text-[13px] font-bold flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
                 activeTab === "exits"
                   ? "border-[#E5A823] text-white"
                   : "border-transparent text-zinc-400 hover:text-white"
@@ -2009,7 +2009,7 @@ export default function App() {
 
             <button
               onClick={() => setActiveTab("chat")}
-              className={`py-2.5 px-3 text-[11px] md:text-xs lg:text-sm font-bold flex items-center gap-1.5 md:gap-2 border-b-2 transition-all relative whitespace-nowrap ${
+              className={`py-2 px-1 sm:px-1.5 md:px-2 lg:px-2.5 text-[9px] sm:text-[10px] md:text-xs lg:text-[13px] font-bold flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
                 activeTab === "chat"
                   ? "border-[#E5A823] text-white"
                   : "border-transparent text-zinc-400 hover:text-white"
@@ -2024,7 +2024,7 @@ export default function App() {
 
             <button
               onClick={() => setActiveTab("sop")}
-              className={`py-2.5 px-3 text-[11px] md:text-xs lg:text-sm font-bold flex items-center gap-1.5 md:gap-2 border-b-2 transition-all relative whitespace-nowrap ${
+              className={`py-2 px-1 sm:px-1.5 md:px-2 lg:px-2.5 text-[9px] sm:text-[10px] md:text-xs lg:text-[13px] font-bold flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
                 activeTab === "sop"
                   ? "border-[#E5A823] text-white"
                   : "border-transparent text-zinc-400 hover:text-white"
