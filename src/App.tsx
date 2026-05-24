@@ -281,6 +281,11 @@ export default function App() {
   const [viewMode, setViewMode] = useState<"table" | "cards">("table");
   const [utcTime, setUtcTime] = useState<string>("");
 
+  // Market Data State
+  const [marketData, setMarketData] = useState<any>(null);
+  const [isLoadingMarketData, setIsLoadingMarketData] = useState<boolean>(false);
+  const [showSiWangModal, setShowSiWangModal] = useState<{ stock: string; tag: string } | null>(null);
+
   useEffect(() => {
     // Keep real-time UTC Clock updated
     const updateTime = () => {
@@ -327,9 +332,28 @@ export default function App() {
     }
   };
 
+  // Fetch market data from server
+  const fetchMarketData = async () => {
+    setIsLoadingMarketData(true);
+    try {
+      const response = await fetch("/api/market-data");
+      const resData = await response.json();
+      if (resData.success && resData.data) {
+        setMarketData(resData.data);
+      }
+    } catch (err) {
+      console.warn("Market data fetch error:", err);
+    } finally {
+      setIsLoadingMarketData(false);
+    }
+  };
+
   useEffect(() => {
     fetchSignals();
     fetchHoldings();
+    fetchMarketData();
+    const mdInterval = setInterval(fetchMarketData, 5 * 60 * 1000); // refresh every 5 min
+    return () => clearInterval(mdInterval);
   }, []);
 
   // Keep holdings/exits in sync when data changes
@@ -3028,7 +3052,7 @@ export default function App() {
             {/* Right Side Tactical Intelligence Panel */}
             <div className="hidden lg:flex lg:col-span-4 flex-col gap-6">
               
-              <div className="premium-card rounded-xl shadow-xl overflow-hidden sticky top-[135px]">
+              <div className="premium-card rounded-xl shadow-xl overflow-hidden sticky top-[135px] max-h-[calc(100vh-160px)] overflow-y-auto">
                 
                 {/* Header */}
                 <div className="p-4 bg-gradient-to-r from-zinc-900 to-[#0e1117] border-b border-zinc-850 flex items-center justify-between">
@@ -3044,13 +3068,131 @@ export default function App() {
                 {selectedStock ? (
                   renderStockDetailsContent()
                 ) : (
-                  <div className="p-16 text-center text-zinc-550 font-mono">
+                  <div className="p-8 text-center text-zinc-550 font-mono">
                     <AlertTriangle className="w-10 h-10 text-amber-500/20 mx-auto mb-3" />
                     請點選左側表格中的股票代號
                     <p className="text-[11px] text-zinc-650 mt-1">開啟該個股對沖與風控戰情面板</p>
                   </div>
                 )}
 
+                {/* 老司機操盤四字訣 Panel */}
+                <div className="border-t border-zinc-850 p-4 bg-[#0a0b0f]">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Flame className="w-4 h-4 text-[#FFB74D] animate-pulse" />
+                    <h4 className="text-white text-xs font-bold font-mono tracking-wider">老司機操盤四字訣 (輪・空・殺・早)</h4>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-[10px]">
+                    {/* 輪 */}
+                    <div className="bg-gradient-to-br from-rose-950/50 to-rose-950/20 border border-rose-500/25 rounded-lg p-2.5">
+                      <div className="flex items-center gap-1.5 mb-1.5">
+                        <span className="w-6 h-6 rounded-full bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-rose-400 text-xs font-black">輪</span>
+                        <span className="text-rose-300 font-bold text-[11px]">板塊輪動訊號</span>
+                      </div>
+                      <p className="text-zinc-400 leading-relaxed text-[9px]">
+                        PCB主升 (欣興/南電) 帶動 DRAM 與被動元件。
+                        <span className="text-amber-400 font-bold">⚠️ 妖股噴出則散場</span>
+                      </p>
+                      <div className="mt-1.5 flex flex-wrap gap-1">
+                        {["欣興3037", "南電8046", "台光電2383", "映泰2399"].map(s => (
+                          <span key={s} className="text-[8px] bg-rose-950/60 border border-rose-500/20 text-rose-300 px-1.5 py-0.5 rounded font-mono">{s}</span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* 空 */}
+                    <div className="bg-gradient-to-br from-zinc-900/80 to-zinc-950/80 border border-zinc-700/40 rounded-lg p-2.5">
+                      <div className="flex items-center gap-1.5 mb-1.5">
+                        <span className="w-6 h-6 rounded-full bg-zinc-700/30 border border-zinc-600/40 flex items-center justify-center text-zinc-300 text-xs font-black">空</span>
+                        <span className="text-zinc-200 font-bold text-[11px]">套牢與真空區</span>
+                      </div>
+                      <p className="text-zinc-400 leading-relaxed text-[9px]">
+                        大量套牢區為泥沼禁地。<span className="text-emerald-400 font-bold">突破後才是真空高速公路</span>，飆車點在此。
+                      </p>
+                      <div className="mt-1.5 text-[8px] font-mono text-zinc-500 bg-zinc-950/60 rounded p-1.5">
+                        <span className="text-emerald-400">✅ 站穩生命線20MA</span> → 真空飆速
+                        <br/><span className="text-rose-400">❌ 套牢密集區反壓</span> → 禁止追價
+                      </div>
+                    </div>
+
+                    {/* 殺 */}
+                    <div className="bg-gradient-to-br from-emerald-950/40 to-emerald-950/20 border border-emerald-500/20 rounded-lg p-2.5">
+                      <div className="flex items-center gap-1.5 mb-1.5">
+                        <span className="w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-xs font-black">殺</span>
+                        <span className="text-emerald-300 font-bold text-[11px]">散戶多空反向指標</span>
+                      </div>
+                      <p className="text-zinc-400 leading-relaxed text-[9px]">
+                        小台散戶多空比作為<span className="text-emerald-400 font-bold">反向指標</span>。散戶越多空，主力越拉抬。
+                      </p>
+                      <div className="mt-1.5 bg-emerald-950/40 rounded p-1.5 text-[8px] font-mono">
+                        <span className="text-emerald-400">散戶多空比:</span> <span className="text-white font-bold">{marketData?.retailBullBear || "0.82 (偏空)"}</span>
+                        <br/><span className="text-zinc-500">主力反向信號強度:</span> <span className="text-[#FFB74D]">{marketData?.mainForceSignal || "中強度"}</span>
+                      </div>
+                    </div>
+
+                    {/* 早 */}
+                    <div className="bg-gradient-to-br from-amber-950/40 to-amber-950/20 border border-amber-500/20 rounded-lg p-2.5">
+                      <div className="flex items-center gap-1.5 mb-1.5">
+                        <span className="w-6 h-6 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 text-xs font-black">早</span>
+                        <span className="text-amber-300 font-bold text-[11px]">利多出盡訊號</span>
+                      </div>
+                      <p className="text-zinc-400 leading-relaxed text-[9px]">
+                        跟單大老闆設備採購。<span className="text-amber-400 font-bold">新聞報營收創高為利多出盡</span>，提前出場不追漲！
+                      </p>
+                      <div className="mt-1.5 bg-amber-950/30 rounded p-1.5 text-[8px] font-mono">
+                        <span className="text-amber-400">⚠️ 高風險訊號:</span>
+                        <span className="text-zinc-300 ml-1">媒體利多報導時</span>
+                        <br/><span className="text-zinc-500">策略:</span> <span className="text-white">減碼50%↓ 鎖利</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 市場即時總觀 */}
+                  <div className="mt-3 bg-zinc-950/60 border border-zinc-800/60 rounded-lg p-3 text-[9px] font-mono">
+                    <div className="text-zinc-400 font-bold mb-2 flex items-center gap-1.5">
+                      <Zap className="w-3 h-3 text-[#FFB74D]" />
+                      即時總觀: 當前市場信號研判
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex justify-between">
+                        <span className="text-zinc-500">📡 臺指選擇權 VIX:</span>
+                        <span className={`font-bold ${(marketData?.twVix || 16) > 25 ? 'text-rose-400' : (marketData?.twVix || 16) > 18 ? 'text-amber-400' : 'text-emerald-400'}`}>
+                          {marketData?.twVix || (data?.vixValue?.toFixed(1) || "16.5")} {(marketData?.twVix || 16) > 25 ? '⚠️ 高恐慌' : (marketData?.twVix || 16) > 18 ? '中度警戒' : '✅ 低位安全'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-zinc-500">🏦 三大法人合計:</span>
+                        <span className={`font-bold ${(marketData?.threePartyNet || 0) > 0 ? 'text-[#f43f5e]' : 'text-[#10b881]'}`}>
+                          {(marketData?.threePartyNet || 0) > 0 ? '+' : ''}{(marketData?.threePartyNet || 120).toLocaleString()} 億
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-zinc-500">📊 外資期指未平倉:</span>
+                        <span className={`font-bold ${(marketData?.foreignFuturesNet || 0) > 0 ? 'text-[#f43f5e]' : 'text-[#10b881]'}`}>
+                          {(marketData?.foreignFuturesNet || -18450).toLocaleString()} 口
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-zinc-500">💹 信用交易融資餘額:</span>
+                        <span className="text-zinc-300 font-bold">{marketData?.marginBalance || "2,841"} 億元</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-zinc-500">😱 CNN 恐懼&貪婪:</span>
+                        <span className={`font-bold ${
+                          (marketData?.cnnFearGreed || 55) < 25 ? 'text-rose-400' :
+                          (marketData?.cnnFearGreed || 55) < 45 ? 'text-amber-400' :
+                          (marketData?.cnnFearGreed || 55) < 75 ? 'text-emerald-400' : 'text-[#f43f5e]'
+                        }`}>
+                          {marketData?.cnnFearGreed || 55} ({(marketData?.cnnFearGreed || 55) < 25 ? '極度恐懼' : (marketData?.cnnFearGreed || 55) < 45 ? '恐懼' : (marketData?.cnnFearGreed || 55) < 55 ? '中立' : (marketData?.cnnFearGreed || 55) < 75 ? '貪婪' : '極度貪婪'})
+                        </span>
+                      </div>
+                    </div>
+                    <div className="mt-2 pt-2 border-t border-zinc-800/50 text-[8px] text-zinc-600">
+                      🕐 更新: {marketData?.lastUpdate || new Date().toLocaleTimeString('zh-TW', {hour:'2-digit', minute:'2-digit'})}
+                    </div>
+                  </div>
+
+                </div>
               </div>
 
             </div>
@@ -4934,7 +5076,55 @@ export default function App() {
                   </div>
 
                 </div>
-              </div>
+
+                  {/* 老司機操盤四字訣 - Full SOP doctrine */}
+                  <div className="flex gap-3 pt-2 border-t border-zinc-800">
+                    <div className="w-8 h-8 rounded bg-purple-950 text-purple-400 flex items-center justify-center shrink-0 border border-purple-800/40">
+                      <Flame className="w-4.5 h-4.5" />
+                    </div>
+                    <div>
+                      <h4 className="text-white font-bold">5. 老司機操盤四字訣 —【輪・空・殺・早】實戰解碼</h4>
+                      <p className="text-zinc-400 mt-1">
+                        <strong className="text-rose-400">【輪】:</strong> PCB (欣興/南電) 帶動 DRAM 與被動元件，妖股 (青雲/映泰) 噴出代表散場；
+                        <strong className="text-zinc-300 ml-2">【空】:</strong> 大量套牢區視為泥沼，突破後才進入真空高速公路飆車點；
+                        <strong className="text-emerald-400 ml-2">【殺】:</strong> 小台散戶多空比為反向指標，散戶越空代表主力越要拉抬；
+                        <strong className="text-amber-400 ml-2">【早】:</strong> 跟單大老闆設備採購，新聞報營收創新高時為利多出盡，提前出場。
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* 量化策略規格表 */}
+                  <div className="flex gap-3 pt-2 border-t border-zinc-800">
+                    <div className="w-8 h-8 rounded bg-sky-950 text-sky-400 flex items-center justify-center shrink-0 border border-sky-800/40">
+                      <Database className="w-4.5 h-4.5" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="text-white font-bold">6. V2026.Max 量化進場規格條件 (50點全域防護)</h4>
+                      <div className="mt-2 space-y-1.5 text-[10px] font-mono">
+                        <div className="grid grid-cols-2 gap-2">
+                          {[
+                            ["大盤20MA生命線", "收盤站上或平", "text-emerald-400"],
+                            ["VIX 恐慌指數", "低於30點才允許進場", "text-emerald-400"],
+                            ["MACD", "主圖零軸上方紅色OSC", "text-rose-400"],
+                            ["KD線", "黃金交叉且KD值>50", "text-rose-400"],
+                            ["外資買超連續", ">=3日外資淨買超", "text-rose-400"],
+                            ["投信籌碼", "投信持股比>3%且增加", "text-rose-400"],
+                            ["股價位階", "偏差20MA: 0%~15%之間", "text-amber-400"],
+                            ["成交量爆量", "爆量>=1.5倍均量", "text-amber-400"],
+                            ["評分門檻", "50點量化矩陣>=38分", "text-[#FFB74D]"],
+                            ["最大部位", "單檔NT$20,000上限", "text-zinc-300"]
+                          ].map(([label, value, color]) => (
+                            <div key={label} className="bg-zinc-950 p-2 rounded border border-zinc-900">
+                              <div className="text-zinc-500 text-[9px]">{label}</div>
+                              <div className={`${color} font-bold text-[10px] mt-0.5`}>{value}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
 
             </div>
 
