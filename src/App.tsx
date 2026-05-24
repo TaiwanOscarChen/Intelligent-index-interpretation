@@ -2967,9 +2967,10 @@ export default function App() {
                     />
                   </div>
                 </div>
-                <p className="text-[10px] text-zinc-500 mt-3.5 leading-normal font-medium">
-                  基於 90 檔高 Beta 標的評分分佈與今日平均漲跌幅的動態情緒矩陣。
-                </p>
+                <div className="mt-4 p-2 rounded bg-zinc-950/40 border border-zinc-900/60 flex items-center gap-2 text-[10px] text-zinc-400 font-sans leading-relaxed">
+                  <Cpu className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+                  <span>基於 90 檔高 Beta 標的評分分佈與今日平均漲跌幅的動態情緒矩陣。</span>
+                </div>
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-yellow-500 to-rose-500"></div>
               </div>
 
@@ -3012,9 +3013,10 @@ export default function App() {
                     />
                   </div>
                 </div>
-                <p className="text-[10px] text-zinc-500 mt-3.5 leading-normal font-medium">
-                  {summary.overall.vix > 30 ? "⚠️ 已觸發 Macro E-Stop，暫停一切買進操作！" : "🟢 宏觀安全閥門處於正常開啟水位，開放多頭運作。"}
-                </p>
+                <div className="mt-4 p-2 rounded bg-zinc-950/40 border border-zinc-900/60 flex items-center gap-2 text-[10px] text-zinc-400 font-sans leading-relaxed">
+                  <ShieldAlert className="w-3.5 h-3.5 text-[#FFB74D] shrink-0" />
+                  <span>{summary.overall.vix > 30 ? "已觸發 Macro E-Stop 緊急避險，暫停一切買進！" : "宏觀安全閥門正常，低波動水位，多頭策略解鎖中。"}</span>
+                </div>
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-emerald-500 to-amber-500"></div>
               </div>
 
@@ -3051,11 +3053,12 @@ export default function App() {
                     />
                   </div>
                 </div>
-                <p className="text-[10px] text-zinc-500 mt-3.5 leading-normal font-medium">
-                  {data && data.tsmcPrice >= data.tsmcMa20Value 
-                    ? "🔴 大盤站上月線生命線，策略全面解除買進限制！" 
-                    : "🟢 大盤跌破月線生命線，啟動物理隔離，暫停任何多頭信號。"}
-                </p>
+                <div className="mt-4 p-2 rounded bg-zinc-950/40 border border-zinc-900/60 flex items-center gap-2 text-[10px] text-zinc-400 font-sans leading-relaxed">
+                  <Zap className="w-3.5 h-3.5 text-amber-400 shrink-0 animate-pulse" />
+                  <span>{data && data.tsmcPrice >= data.tsmcMa20Value 
+                    ? "台積電生命線買點開放，全面解除大盤多頭限制。" 
+                    : "台積電跌破生命線，啟動避險物理解離，暫停多頭信號。"}</span>
+                </div>
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
               </div>
             </div>
@@ -3345,8 +3348,9 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-zinc-850/60 text-[10px] text-zinc-500 leading-relaxed font-sans">
-                  💡 外資及投信呈雙星匯聚買超鎖碼狀態，自營商進行選擇權等權利金對沖，籌碼架構極其健康穩定。
+                <div className="mt-4 p-2.5 rounded bg-zinc-950/70 border border-zinc-900/80 flex items-start gap-2 text-[10px] text-zinc-400 font-sans leading-relaxed">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
+                  <span>外資及投信雙星匯聚買超鎖碼，自營商進行權利金對沖，籌碼結構健康度高，有利多頭波段拉升。</span>
                 </div>
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-rose-500 to-amber-500"></div>
               </div>
@@ -3391,8 +3395,9 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="mt-3.5 pt-2 text-[10px] text-zinc-500 leading-relaxed font-sans">
-                  💡 台北月線防守點位處於 1030 元上方（台積電生命線安全），波動率穩定，系統建議採取半凱利積極建倉策略。
+                <div className="mt-4 p-2.5 rounded bg-zinc-950/70 border border-zinc-900/80 flex items-start gap-2 text-[10px] text-zinc-400 font-sans leading-relaxed">
+                  <ShieldAlert className="w-3.5 h-3.5 text-[#FFB74D] shrink-0 mt-0.5" />
+                  <span>生命線支撐於 1030 元上方（台積電安全水位），系統建議採取半凱利金字塔防守對沖建倉策略。</span>
                 </div>
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-500 to-indigo-500"></div>
               </div>
@@ -3444,8 +3449,9 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="mt-3.5 pt-2 text-[10px] text-zinc-500 leading-relaxed font-sans">
-                  💡 嚴格遵循半凱利公式防禦，核心仓位35%以內，當戰力分數大於38時，才啟用第二與第三梯隊加碼，確保極致穩定。
+                <div className="mt-4 p-2.5 rounded bg-zinc-950/70 border border-zinc-900/80 flex items-start gap-2 text-[10px] text-zinc-400 font-sans leading-relaxed">
+                  <Award className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
+                  <span>遵循半凱利資金配比，核心倉位控制於35%以內，當個股戰力達38分以上時啟動梯隊加碼防線。</span>
                 </div>
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#10b881] to-[#E5A823]"></div>
               </div>
