@@ -3602,24 +3602,34 @@ export default function App() {
                   {/* Trust Institutional Flow */}
                   <div>
                     <div className="flex justify-between items-center mb-1 text-[11px]">
-                      <span className="text-zinc-400 font-sans">投信累計鎖碼量 (全月)</span>
-                      <span className="text-[#f43f5e] font-bold">+412.3 億元</span>
+                      <span className="text-zinc-400 font-sans">投信累計鎖碼量 (當日)</span>
+                      <span className={`font-bold ${(marketData?.trustNet || 45) > 0 ? 'text-[#f43f5e]' : 'text-[#10b881]'}`}>
+                        {(marketData?.trustNet || 45) > 0 ? '+' : ''}{(marketData?.trustNet || 45).toFixed(1)} 億元
+                      </span>
                     </div>
                     <div className="w-full h-2 bg-zinc-950 rounded-full overflow-hidden border border-zinc-900 flex">
                       <div className="w-1/2 h-full bg-zinc-950 border-r border-zinc-900"></div>
-                      <div className="w-[20%] h-full bg-rose-500 shadow-[0_0_8px_#f43f5e]"></div>
+                      <div 
+                        className={`h-full ${(marketData?.trustNet || 45) > 0 ? 'bg-rose-500 shadow-[0_0_8px_#f43f5e]' : 'bg-emerald-500 shadow-[0_0_8px_#10b881]'}`}
+                        style={{ width: `${Math.min(40, Math.abs(marketData?.trustNet || 45) / 500 * 40)}%` }}
+                      ></div>
                     </div>
                   </div>
 
                   {/* Dealer Flow */}
                   <div>
                     <div className="flex justify-between items-center mb-1 text-[11px]">
-                      <span className="text-zinc-400 font-sans">自營商對沖避險 (全月)</span>
-                      <span className="text-[#10b881] font-bold">-185.6 億元</span>
+                      <span className="text-zinc-400 font-sans">自營商對沖避險 (當日)</span>
+                      <span className={`font-bold ${(marketData?.dealerNet || -12) > 0 ? 'text-[#f43f5e]' : 'text-[#10b881]'}`}>
+                        {(marketData?.dealerNet || -12) > 0 ? '+' : ''}{(marketData?.dealerNet || -12).toFixed(1)} 億元
+                      </span>
                     </div>
                     <div className="w-full h-2 bg-zinc-950 rounded-full overflow-hidden border border-zinc-900 flex">
-                      <div className="w-[35%] h-full ml-[15%] bg-[#10b881] shadow-[0_0_8px_#10b881]"></div>
-                      <div className="w-1/2 h-full bg-zinc-950 border-l border-zinc-900"></div>
+                      <div 
+                        className={`h-full ml-[15%] ${(marketData?.dealerNet || -12) > 0 ? 'bg-rose-500 shadow-[0_0_8px_#f43f5e]' : 'bg-emerald-500 shadow-[0_0_8px_#10b881]'}`}
+                        style={{ width: `${Math.min(35, Math.abs(marketData?.dealerNet || 12) / 200 * 35)}%` }}
+                      ></div>
+                      <div className="flex-1 h-full bg-zinc-950 border-l border-zinc-900"></div>
                     </div>
                   </div>
                 </div>
@@ -3657,7 +3667,9 @@ export default function App() {
 
                   <div className="flex justify-between items-center bg-zinc-950/60 p-2 rounded border border-zinc-900">
                     <span className="text-zinc-550 font-sans">波動率風險敞口 VIX</span>
-                    <span className="text-[#10b881] font-extrabold">🟢 低曝險 (16.70)</span>
+                    <span className={`font-extrabold ${(marketData?.twVix || summary.overall.vix || 16.7) < 20 ? 'text-[#10b881]' : (marketData?.twVix || summary.overall.vix || 16.7) < 30 ? 'text-amber-400' : 'text-rose-400'}`}>
+                      {(marketData?.twVix || summary.overall.vix || 16.7) < 20 ? '🟢 低曝險' : (marketData?.twVix || summary.overall.vix || 16.7) < 30 ? '⚠️ 中度風險' : '🚨 高恐慌'} ({(marketData?.twVix || summary.overall.vix || 16.70).toFixed(2)})
+                    </span>
                   </div>
 
                   <div className="flex justify-between items-center bg-zinc-950/60 p-2 rounded border border-zinc-900">
