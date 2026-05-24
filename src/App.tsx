@@ -2167,7 +2167,7 @@ export default function App() {
                       <RefreshCw className={`w-5 h-5 ${isScanning ? "animate-spin" : ""}`} />
                     </div>
                     <div>
-                      <h4 className="text-white font-bold text-sm">🦁 獅王戰神 V2026.Max 90 檔純高 Beta 股期洗價掃描器</h4>
+                      <h4 className="text-white font-bold text-sm">獅王戰神 V2026.Max 90 檔純高 Beta 股期洗價掃描器</h4>
                       <p className="text-xs text-zinc-400 mt-1">配備自動重試指數退避、防空值裝甲，一鍵批次同步洗盤</p>
                     </div>
                   </div>
@@ -2638,7 +2638,7 @@ export default function App() {
                 <div className="p-4 bg-gradient-to-r from-zinc-900 to-[#0e1117] border-b border-zinc-850 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Award className="w-5 h-5 text-[#FFB74D]" />
-                    <h3 className="font-bold text-white text-sm">🦁 獅王戰神實戰解盤與註記</h3>
+                    <h3 className="font-bold text-white text-sm">獅王戰神實戰解盤與註記</h3>
                   </div>
                   <span className="text-[10px] font-mono tracking-widest text-[#FFB74D] uppercase font-bold">
                     V2026.Max
@@ -3417,7 +3417,7 @@ export default function App() {
             {/* Holdings Head card */}
             <div className="premium-card rounded-xl p-6 shadow flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
               <div>
-                <h3 className="text-white text-lg font-bold">📦 實時模擬對沖持倉管理區</h3>
+                <h3 className="text-white text-lg font-bold">實時模擬對沖持倉管理區</h3>
                 <p className="text-xs text-zinc-450 mt-1">
                   依據 NT$ 20,000 單檔預算上限建倉。系統盤中自動拉取收盤現價，計算即時盈虧與動態減碼出場點。
                 </p>
@@ -3541,7 +3541,7 @@ export default function App() {
           <div className="space-y-6 animate-fade-in">
             
             <div className="premium-card rounded-xl p-6 shadow">
-              <h3 className="text-white text-lg font-bold">🚪 歷史出場操盤檢討日誌</h3>
+              <h3 className="text-white text-lg font-bold">歷史出場操盤檢討日誌</h3>
               <p className="text-xs text-zinc-450 mt-1">
                 記錄您所有歷史模擬持倉的清倉記錄，並包含 <code>Gemini 3.5-Flash</code> 為您客製化產生的精闢操盤回顧與改進方向。
               </p>
@@ -3601,7 +3601,7 @@ export default function App() {
                       <div className="flex-1 flex flex-col justify-center">
                         <h4 className="text-[11px] text-zinc-500 font-bold font-mono uppercase tracking-wider flex items-center gap-1.5 mb-1.5">
                           <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-                          🦁 避險基金大師實戰檢討與改正方向:
+                          避險基金大師實戰檢討與改正方向:
                         </h4>
                         <div className="bg-indigo-950/20 border border-indigo-900/40 p-4 rounded-lg text-zinc-300 text-xs leading-relaxed italic font-sans">
                           {item.review_summary}
@@ -3631,7 +3631,7 @@ export default function App() {
                     <Sparkles className="w-4.5 h-4.5 animate-pulse" />
                   </div>
                   <div>
-                    <h3 className="text-white font-bold text-sm">🦁 避險大師量化實戰研討會</h3>
+                    <h3 className="text-white font-bold text-sm">避險大師量化實戰研討會</h3>
                     <p className="text-[10px] text-zinc-500">Gemini 3.5-Flash 自營部首席解盤大師在線</p>
                   </div>
                 </div>
@@ -4341,7 +4341,7 @@ export default function App() {
                 <div className="w-full flex items-center justify-between px-3">
                   <div className="flex items-center gap-2">
                     <Award className="w-4.5 h-4.5 text-[#FFB74D]" />
-                    <h3 className="font-bold text-white text-xs md:text-sm">🦁 獅王戰神實戰解盤 (行動終端)</h3>
+                    <h3 className="font-bold text-white text-xs md:text-sm">獅王戰神實戰解盤 (行動終端)</h3>
                   </div>
                   <button 
                     onClick={() => setSelectedStock(null)}
