@@ -3187,6 +3187,28 @@ export default function App() {
                         </span>
                       </div>
                     </div>
+                    <div className="mt-2 grid grid-cols-2 gap-1.5 text-[9px] font-mono">
+                      <div className="bg-zinc-950/60 rounded p-1.5 border border-zinc-900">
+                        <div className="text-zinc-500">景氣信號燈</div>
+                        <div className={`font-bold mt-0.5 ${(marketData?.businessCycleLight||'黃燈').includes('紅') ? 'text-rose-400' : (marketData?.businessCycleLight||'黃燈').includes('藍') ? 'text-sky-400' : 'text-amber-400'}`}>
+                          {marketData?.businessCycleLight || '黃燈'} ({marketData?.businessCycleScore || 25})
+                        </div>
+                      </div>
+                      <div className="bg-zinc-950/60 rounded p-1.5 border border-zinc-900">
+                        <div className="text-zinc-500">M1B/M2 剪刀</div>
+                        <div className={`font-bold mt-0.5 ${marketData?.mScissor ? 'text-rose-400' : 'text-emerald-400'}`}>
+                          {marketData?.mScissor ? '🔴 黃金叉 多頭' : '🟢 死叉 空頭'}
+                        </div>
+                      </div>
+                      <div className="bg-zinc-950/60 rounded p-1.5 border border-zinc-900">
+                        <div className="text-zinc-500">融券餘額</div>
+                        <div className="text-zinc-300 font-bold mt-0.5">{marketData?.shortBalance || '182'} 億</div>
+                      </div>
+                      <div className="bg-zinc-950/60 rounded p-1.5 border border-zinc-900">
+                        <div className="text-zinc-500">板塊輪動</div>
+                        <div className="text-emerald-300 font-bold mt-0.5 truncate">{(marketData?.rotationStage || 'PCB主升').split('→')[0].trim()}</div>
+                      </div>
+                    </div>
                     <div className="mt-2 pt-2 border-t border-zinc-800/50 text-[8px] text-zinc-600">
                       🕐 更新: {marketData?.lastUpdate || new Date().toLocaleTimeString('zh-TW', {hour:'2-digit', minute:'2-digit'})}
                     </div>
