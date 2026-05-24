@@ -4027,8 +4027,8 @@ export default function App() {
                     >
                       清除
                     </button>
-                  </div>
-                </div>
+                   </div>
+                 </div>
 
                 {/* Score slider */}
                 <div className="space-y-2">
@@ -4183,6 +4183,95 @@ export default function App() {
                   );
                 })()}
               </div>
+
+              {/* Market Calendar & Macro Panel */}
+              <div className="premium-card rounded-xl p-5 shadow-lg space-y-4">
+                <div className="flex items-center gap-2 border-b border-zinc-850 pb-3">
+                  <Zap className="w-5 h-5 text-amber-400" />
+                  <h4 className="text-white text-xs font-bold font-mono uppercase">全球總經暨曆法追蹤</h4>
+                </div>
+
+                {/* Business Cycle Light */}
+                <div className="flex items-center justify-between bg-zinc-950/60 rounded-lg p-3 border border-zinc-800">
+                  <div>
+                    <div className="text-[9px] font-mono text-zinc-500">國發會景氣對策信號</div>
+                    <div className="text-sm font-bold font-mono text-white mt-0.5">
+                      {marketData?.businessCycleLight || '黃燈'}
+                      <span className="text-[10px] text-zinc-500 ml-1.5">({marketData?.businessCycleScore || 25}分)</span>
+                    </div>
+                  </div>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-lg shadow-lg ${
+                    (marketData?.businessCycleLight || '黃燈').includes('紅') ? 'bg-rose-500/20 border-2 border-rose-500' :
+                    (marketData?.businessCycleLight || '黃燈').includes('藍') ? 'bg-sky-500/20 border-2 border-sky-500' :
+                    'bg-amber-500/20 border-2 border-amber-500'
+                  }`}>
+                    {(marketData?.businessCycleLight || '黃燈').includes('紅') ? '🔴' : (marketData?.businessCycleLight || '黃燈').includes('藍') ? '🔵' : '🟡'}
+                  </div>
+                </div>
+
+                {/* M1B/M2 Scissor */}
+                <div className="bg-zinc-950/60 rounded-lg p-3 border border-zinc-800 space-y-1.5">
+                  <div className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider">貨幣M1B/M2剪刀叉</div>
+                  <div className="flex justify-between text-[10px] font-mono">
+                    <span className="text-zinc-400">M1B 年增率</span>
+                    <span className={`font-bold ${(marketData?.m1bGrowth || 8.5) > (marketData?.m2Growth || 4.2) ? 'text-rose-400' : 'text-emerald-400'}`}>
+                      {(marketData?.m1bGrowth || 8.5).toFixed(2)}%
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-[10px] font-mono">
+                    <span className="text-zinc-400">M2 年增率</span>
+                    <span className="text-zinc-300 font-bold">{(marketData?.m2Growth || 4.2).toFixed(2)}%</span>
+                  </div>
+                  <div className={`text-[9px] font-bold mt-1 px-2 py-1 rounded ${
+                    marketData?.mScissor ? 'bg-rose-950/50 text-rose-400 border border-rose-500/20' : 'bg-emerald-950/50 text-emerald-400 border border-emerald-500/20'
+                  }`}>
+                    {marketData?.mScissor ? '✨ M1B > M2 黃金交叉 — 資金活水充沛多頭' : '⚠️ M1B < M2 死叉 — 空頭防守'}
+                  </div>
+                </div>
+
+                {/* Board Rotation Stage (輪字訣) */}
+                <div className="bg-zinc-950/60 rounded-lg p-3 border border-zinc-800">
+                  <div className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider mb-1.5">【輪】板塊輪動階段</div>
+                  <div className={`text-[10px] font-bold font-mono ${(marketData?.rotationWarning) ? 'text-amber-400' : 'text-emerald-300'}`}>
+                    {marketData?.rotationStage || 'PCB主升 → DRAM醞釀'}
+                  </div>
+                  {marketData?.rotationWarning && (
+                    <div className="text-[9px] text-amber-400 mt-1">⚠️ 妖股噴出訊號！謹慎散場風險！</div>
+                  )}
+                </div>
+
+                {/* Market Calendar */}
+                <div>
+                  <div className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider mb-2">近期大事曆記</div>
+                  <div className="space-y-1.5">
+                    {(marketData?.marketCalendar || [
+                      { date: '2026-05-26', event: '5月外資持股統計公告' },
+                      { date: '2026-05-30', event: '美國PCE物價指數公告' },
+                      { date: '2026-06-10', event: '美FOMC利率決策會議' },
+                    ]).slice(0, 5).map((ev: any, i: number) => (
+                      <div key={i} className="flex gap-2 items-start text-[9px] font-mono">
+                        <span className="text-[#FFB74D] font-bold shrink-0">{ev.date.substring(5)}</span>
+                        <span className="text-zinc-400">{ev.event}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 早 字訣 - Early Exit Warning */}
+                {marketData?.hasEarlyExitWarning && (
+                  <div className="bg-amber-950/40 border border-amber-500/30 rounded-lg p-3">
+                    <div className="text-[9px] font-bold text-amber-400 flex items-center gap-1.5 mb-1.5">
+                      <Flame className="w-3 h-3 animate-pulse" />
+                      【早】字訣 — 利多出盡警報
+                    </div>
+                    {(marketData?.earlyExitSignals || []).filter((s: any) => s.active).map((s: any, i: number) => (
+                      <div key={i} className="text-[9px] text-amber-300 font-mono">⚠️ {s.type}: {s.desc}</div>
+                    ))}
+                  </div>
+                )}
+
+              </div>
+
             </div>
 
             {/* Right: Screener Filtered Results Table */}
@@ -4513,6 +4602,96 @@ export default function App() {
                     )}
                   </tbody>
                 </table>
+              </div>
+            </div>
+
+            {/* Portfolio Analytics Row */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              {/* Position Concentration */}
+              <div className="premium-card rounded-xl p-4 shadow-lg">
+                <div className="text-[10px] font-mono text-zinc-500 font-bold uppercase tracking-wider mb-3">🎯 持倉集中度分析</div>
+                {holdings.length === 0 ? (
+                  <p className="text-zinc-600 text-xs font-mono">持倉空白</p>
+                ) : (() => {
+                  const categoryCounts: Record<string, number> = {};
+                  holdings.forEach(h => {
+                    const sig = data?.signals?.find((s: any) => s.stock_id === h.stock_id);
+                    const cat = sig?.category || '未分類';
+                    categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
+                  });
+                  return (
+                    <div className="space-y-1.5">
+                      {Object.entries(categoryCounts).map(([cat, count]) => (
+                        <div key={cat} className="flex items-center gap-2 text-[10px] font-mono">
+                          <div className="flex-1 bg-zinc-950 rounded-full h-1.5 overflow-hidden border border-zinc-900">
+                            <div className="h-full bg-gradient-to-r from-amber-600 to-amber-400" style={{ width: `${(count / holdings.length) * 100}%` }} />
+                          </div>
+                          <span className="text-zinc-400 w-24 truncate">{cat}</span>
+                          <span className="text-[#FFB74D] font-bold w-6 text-right">{count}</span>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* P&L Breakdown */}
+              <div className="premium-card rounded-xl p-4 shadow-lg">
+                <div className="text-[10px] font-mono text-zinc-500 font-bold uppercase tracking-wider mb-3">📊 未實現損益分布</div>
+                {holdings.length === 0 ? (
+                  <p className="text-zinc-600 text-xs font-mono">持倉空白</p>
+                ) : (() => {
+                  const profits = holdings.filter(h => h.current_pnl_value >= 0);
+                  const losses = holdings.filter(h => h.current_pnl_value < 0);
+                  const totalVal = holdings.reduce((s, h) => s + h.current_price * h.shares, 0);
+                  const totalCost = holdings.reduce((s, h) => s + h.buy_price * h.shares, 0);
+                  return (
+                    <div className="space-y-2 text-[10px] font-mono">
+                      <div className="flex justify-between">
+                        <span className="text-zinc-500">盈利持倉</span>
+                        <span className="text-rose-400 font-bold">{profits.length} 檔</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-zinc-500">號捐持倉</span>
+                        <span className="text-emerald-400 font-bold">{losses.length} 檔</span>
+                      </div>
+                      <div className="flex justify-between border-t border-zinc-800/60 pt-2">
+                        <span className="text-zinc-500">總成本</span>
+                        <span className="text-zinc-300 font-bold">{totalCost.toLocaleString()} 元</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-zinc-500">總市値</span>
+                        <span className="text-zinc-300 font-bold">{totalVal.toLocaleString()} 元</span>
+                      </div>
+                      <div className={`flex justify-between font-bold pt-1 border-t border-zinc-800/60 ${ (totalVal-totalCost) >= 0 ? 'text-rose-400' : 'text-emerald-400'}`}>
+                        <span>結算合計</span>
+                        <span>{(totalVal-totalCost) >= 0 ? '+' : ''}{Math.round(totalVal-totalCost).toLocaleString()} 元</span>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* Kelly Position Sizing */}
+              <div className="premium-card rounded-xl p-4 shadow-lg">
+                <div className="text-[10px] font-mono text-zinc-500 font-bold uppercase tracking-wider mb-3">🤟 半凱利動態投入建議</div>
+                <div className="space-y-2 text-[10px] font-mono">
+                  {['第一梁隊 (50%)', '第二梃隊 (30%)', '第三梃隊 (20%)'].map((tier, i) => {
+                    const amounts = [10000, 6000, 4000];
+                    const pcts = holdings.length === 0 ? ['0', '0', '0'] : [
+                      ((holdings.reduce((s,h) => s + h.buy_price * h.shares, 0) * 0.5 / 10000)).toFixed(1),
+                      ((holdings.reduce((s,h) => s + h.buy_price * h.shares, 0) * 0.3 / 10000)).toFixed(1),
+                      ((holdings.reduce((s,h) => s + h.buy_price * h.shares, 0) * 0.2 / 10000)).toFixed(1),
+                    ];
+                    return (
+                      <div key={tier} className="flex items-center justify-between bg-zinc-950/60 p-2 rounded border border-zinc-900">
+                        <span className="text-zinc-400">{tier}</span>
+                        <span className="text-[#FFB74D] font-bold">NT$ {amounts[i].toLocaleString()}</span>
+                      </div>
+                    );
+                  })}
+                  <div className="text-[8px] text-zinc-600 font-sans mt-1">單檔上限 NT$20,000 ・ 持倉總上限 10檔</div>
+                </div>
               </div>
             </div>
 
