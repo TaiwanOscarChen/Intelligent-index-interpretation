@@ -1003,819 +1003,11 @@ export default function App() {
 
   const vixStatus = getVixStatusText();
 
-  return (
-    <div className="min-h-screen bg-[#08090c] text-[#d1d4dc] selection:bg-[#E5A823]/30 selection:text-white flex flex-col antialiased">
-      
-      {/* Cyberpunk Glassmorphism Header */}
-      <header className="border-b border-zinc-850 bg-[#0d0f14]/85 backdrop-blur-md py-4 px-6 sticky top-0 z-40 shadow-xl">
-        <div className="w-full max-w-[1700px] mx-auto flex flex-col lg:flex-row items-center justify-between gap-4">
-          
-          {/* Logo & Subhead */}
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-[#E5A823] to-[#FFD54F] flex items-center justify-center text-[#08090c] font-black text-lg shadow-[0_0_20px_rgba(229,168,35,0.35)]">
-              🦁
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="font-display font-black text-xl text-white tracking-tight">獅王戰神 V2026.Max</h1>
-                <span className="text-[10px] bg-gradient-to-r from-yellow-500 to-amber-600 text-black font-black px-2 py-0.5 rounded shadow">
-                  終極大一統版
-                </span>
-              </div>
-              <p className="text-[10px] text-zinc-500 font-mono tracking-wider mt-0.5">
-                WALL STREET ELITE QUANT DECISION SYSTEM & SIMULATOR
-              </p>
-            </div>
-          </div>
 
-          {/* VIX Macro Radar banner */}
-          <div className={`px-4 py-2 rounded-lg border text-xs font-semibold ${vixStatus.bg} ${vixStatus.color} flex items-center gap-2 shadow`}>
-            <ShieldAlert className="w-4 h-4 shrink-0 animate-bounce" />
-            <span>{vixStatus.text}</span>
-          </div>
-
-          {/* Time & DB indicators */}
-          <div className="flex flex-wrap items-center gap-3 text-[11px] font-mono">
-            <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded-md px-3 py-1.5 shadow">
-              <span className="w-1.5 h-1.5 bg-sky-400 rounded-full animate-ping"></span>
-              <span className="text-zinc-500">TAIPEI:</span>
-              <span className="text-[#FFB74D] font-bold">{utcTime || "2026-05-22 14:00:00"}</span>
-            </div>
-
-            <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded-md px-3 py-1.5 shadow">
-              <Database className={`w-3.5 h-3.5 ${dbSync ? "text-emerald-400" : "text-amber-500"}`} />
-              <span className="text-zinc-500">MONGO:</span>
-              <span className={`font-bold ${dbSync ? "text-emerald-400" : "text-amber-500"}`}>
-                {dbSync ? "LionKing_DB" : "Memory Sandbox"}
-              </span>
-            </div>
-
-            <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded-md px-3 py-1.5 shadow">
-              <Cpu className="w-3.5 h-3.5 text-indigo-400" />
-              <span className="text-zinc-500">CO-PILOT:</span>
-              <span className="text-indigo-300 font-bold">Gemini 3.5-Flash</span>
-            </div>
-          </div>
-
-        </div>
-      </header>
-
-      {/* Global Macro Bloomberg-style Banner */}
-      <div className="bg-[#0c0e12] border-b border-zinc-850 py-2.5 px-6">
-        <div className="w-full max-w-[1700px] mx-auto flex flex-wrap items-center justify-between gap-4 font-mono text-xs font-bold">
-          <div className="flex items-center gap-6 overflow-x-auto py-1">
-            <span className="text-zinc-500 text-[10px] tracking-wider uppercase font-bold">🌐 全球總經避險監控:</span>
-            
-            <div className="flex items-center gap-1.5 bg-zinc-950/60 border border-zinc-850 rounded px-2.5 py-1 text-sky-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse"></span>
-              <span>VIX 恐慌指數:</span>
-              <span className="text-white font-extrabold text-[13px]">{data ? data.vixValue?.toFixed(2) : "16.70"}</span>
-            </div>
-
-            <div className="flex items-center gap-1.5 bg-zinc-950/60 border border-zinc-850 rounded px-2.5 py-1 text-[#f43f5e]">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#f43f5e] animate-pulse"></span>
-              <span>SOX 費半指數:</span>
-              <span className="text-white font-extrabold text-[13px]">12202.54</span>
-            </div>
-
-            <div className="flex items-center gap-1.5 bg-zinc-950/60 border border-zinc-850 rounded px-2.5 py-1 text-[#f43f5e]">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#f43f5e] animate-pulse"></span>
-              <span>WTI 原油價格:</span>
-              <span className="text-white font-extrabold text-[13px]">$97.00</span>
-            </div>
-
-            <div className="flex items-center gap-1.5 bg-zinc-950/60 border border-zinc-850 rounded px-2.5 py-1 text-[#10b881]">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#10b881]"></span>
-              <span>現金水位持籌:</span>
-              <span className="text-white font-extrabold text-[13px]">30%</span>
-            </div>
-          </div>
-          
-          <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-[#10b881] animate-ping"></span>
-            <span>主力大資金盤中安全預警</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Navigation tabs */}
-      <div className="bg-[#0b0c10] border-b border-zinc-850 sticky top-[77px] z-30 shadow-md">
-        <div className="w-full max-w-[1700px] mx-auto px-6 flex items-center justify-between overflow-x-auto">
-          <div className="flex gap-1 md:gap-4 py-1">
-            <button
-              onClick={() => setActiveTab("radar")}
-              className={`py-3 px-3 text-xs md:text-sm font-bold flex items-center gap-2 border-b-2 transition-all relative ${
-                activeTab === "radar"
-                  ? "border-[#E5A823] text-white"
-                  : "border-transparent text-zinc-400 hover:text-white"
-              }`}
-            >
-              <LineChart className="w-4 h-4 text-[#FFB74D]" />
-              📊 獅王大一統監控 (Master Radar)
-              {activeTab === "radar" && (
-                <motion.div layoutId="tab-active-pill" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E5A823]" />
-              )}
-            </button>
-
-            <button
-              onClick={() => setActiveTab("strategy")}
-              className={`py-3 px-3 text-xs md:text-sm font-bold flex items-center gap-2 border-b-2 transition-all relative ${
-                activeTab === "strategy"
-                  ? "border-[#E5A823] text-white"
-                  : "border-transparent text-zinc-400 hover:text-white"
-              }`}
-            >
-              <LineChart className="w-4 h-4 text-[#FFB74D]" />
-              📈 財經策略分析
-              {activeTab === "strategy" && (
-                <motion.div layoutId="tab-active-pill" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E5A823]" />
-              )}
-            </button>
-
-            <button
-              onClick={() => setActiveTab("screener")}
-              className={`py-3 px-3 text-xs md:text-sm font-bold flex items-center gap-2 border-b-2 transition-all relative ${
-                activeTab === "screener"
-                  ? "border-[#E5A823] text-white"
-                  : "border-transparent text-zinc-400 hover:text-white"
-              }`}
-            >
-              <Search className="w-4 h-4 text-[#FFB74D]" />
-              🔍 智能選股雷達
-              {activeTab === "screener" && (
-                <motion.div layoutId="tab-active-pill" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E5A823]" />
-              )}
-            </button>
-
-            <button
-              onClick={() => setActiveTab("holdings")}
-              className={`py-3 px-3 text-xs md:text-sm font-bold flex items-center gap-2 border-b-2 transition-all relative ${
-                activeTab === "holdings"
-                  ? "border-[#E5A823] text-white"
-                  : "border-transparent text-zinc-400 hover:text-white"
-              }`}
-            >
-              <Briefcase className="w-4 h-4 text-[#FFB74D]" />
-              📦 模擬持倉 ({holdings.length})
-              {activeTab === "holdings" && (
-                <motion.div layoutId="tab-active-pill" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E5A823]" />
-              )}
-            </button>
-
-            <button
-              onClick={() => setActiveTab("exits")}
-              className={`py-3 px-3 text-xs md:text-sm font-bold flex items-center gap-2 border-b-2 transition-all relative ${
-                activeTab === "exits"
-                  ? "border-[#E5A823] text-white"
-                  : "border-transparent text-zinc-400 hover:text-white"
-              }`}
-            >
-              <History className="w-4 h-4 text-[#FFB74D]" />
-              🚪 已出場檢討記錄 ({exits.length})
-              {activeTab === "exits" && (
-                <motion.div layoutId="tab-active-pill" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E5A823]" />
-              )}
-            </button>
-
-            <button
-              onClick={() => setActiveTab("chat")}
-              className={`py-3 px-3 text-xs md:text-sm font-bold flex items-center gap-2 border-b-2 transition-all relative ${
-                activeTab === "chat"
-                  ? "border-[#E5A823] text-white"
-                  : "border-transparent text-zinc-400 hover:text-white"
-              }`}
-            >
-              <MessageSquare className="w-4 h-4 text-[#FFB74D]" />
-              💬 AI 避險大師對話
-              {activeTab === "chat" && (
-                <motion.div layoutId="tab-active-pill" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E5A823]" />
-              )}
-            </button>
-
-            <button
-              onClick={() => setActiveTab("sop")}
-              className={`py-3 px-3 text-xs md:text-sm font-bold flex items-center gap-2 border-b-2 transition-all relative ${
-                activeTab === "sop"
-                  ? "border-[#E5A823] text-white"
-                  : "border-transparent text-zinc-400 hover:text-white"
-              }`}
-            >
-              <BookOpen className="w-4 h-4 text-[#FFB74D]" />
-              🛡️ 量化鐵律 SOP
-              {activeTab === "sop" && (
-                <motion.div layoutId="tab-active-pill" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E5A823]" />
-              )}
-            </button>
-          </div>
-
-          <div className="hidden lg:flex items-center gap-2 text-xs font-mono">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span className="text-zinc-550">V2026.Max ENGINE ACTIVE</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Body */}
-      <main className="flex-1 w-full max-w-[1700px] mx-auto p-4 md:p-6">
-        
-        {/* ======================= TAB 1: RADAR ======================= */}
-        {activeTab === "radar" && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-fade-in">
-            
-            {/* Left and Mid Content Table Area */}
-            <div className="lg:col-span-8 flex flex-col gap-6">
-              
-              {/* Top Tactical Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                
-                {/* TSMC 生命線 */}
-                <div className="premium-card rounded-xl p-4 shadow relative overflow-hidden group">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="text-[10px] text-zinc-500 font-black tracking-wider uppercase font-mono">台積電生命線 (20MA)</h3>
-                      <div className="text-2xl font-mono font-bold text-white mt-1.5 flex items-baseline gap-1">
-                        {data ? data.tsmcPrice : 1045.0} <span className="text-xs text-zinc-500">元</span>
-                      </div>
-                    </div>
-                    <div className={`p-2 rounded-lg ${data && data.tsmcPrice >= data.tsmcMa20Value ? "bg-rose-950/70 border border-rose-500/30 text-rose-400" : "bg-emerald-950/80 border border-emerald-500/30 text-emerald-400"}`}>
-                      <Zap className="w-4 h-4 animate-pulse" />
-                    </div>
-                  </div>
-                  <div className="mt-3.5 text-[11px] text-zinc-400 flex items-center justify-between">
-                    <span>月線水位: {data ? data.tsmcMa20Value : 1030.0} 元</span>
-                    <span className={`font-bold font-mono ${data && data.tsmcPrice >= data.tsmcMa20Value ? "text-rose-400" : "text-emerald-400"}`}>
-                      {data && data.tsmcPrice >= data.tsmcMa20Value ? "🔴 買點開放" : "🟢 全面停買隔離"}
-                    </span>
-                  </div>
-                  <div className={`absolute bottom-0 left-0 right-0 h-0.5 ${data && data.tsmcPrice >= data.tsmcMa20Value ? "bg-rose-500" : "bg-emerald-500"}`}></div>
-                </div>
-
-                {/* 大盤隔離狀態 */}
-                <div className="premium-card rounded-xl p-4 shadow relative overflow-hidden group">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="text-[10px] text-zinc-500 font-black tracking-wider uppercase font-mono">台北交易時間防線</h3>
-                      <div className="mt-2.5">
-                        <span className="px-2.5 py-1 text-xs font-bold rounded-md bg-zinc-900 border border-zinc-800 text-[#FFB74D] inline-flex items-center gap-1.5">
-                          <Sliders className="w-3.5 h-3.5" />
-                          台北時間盤中濾網
-                        </span>
-                      </div>
-                    </div>
-                    <div className="p-2 rounded-lg bg-zinc-900 border border-zinc-850 text-zinc-400">
-                      <ShieldAlert className="w-4 h-4" />
-                    </div>
-                  </div>
-                  <div className="mt-3 text-[11px] text-zinc-500 leading-tight">
-                    僅限台北時間 09:00 - 13:30 允許觸發買進，其餘自動觀望。
-                  </div>
-                </div>
-
-                {/* Score Stats */}
-                <div className="premium-card rounded-xl p-4 shadow relative overflow-hidden group">
-                  <h3 className="text-[10px] text-zinc-500 font-black tracking-wider uppercase font-mono mb-2">90 檔純高 Beta 分佈</h3>
-                  <div className="grid grid-cols-4 gap-1 text-center font-mono">
-                    <div className="bg-zinc-900/60 p-1.5 rounded border border-zinc-850">
-                      <div className="text-[9px] text-rose-400 font-bold">多</div>
-                      <div className="text-sm font-bold text-white mt-0.5">{longCount}</div>
-                    </div>
-                    <div className="bg-zinc-900/60 p-1.5 rounded border border-zinc-850">
-                      <div className="text-[9px] text-emerald-400 font-bold">空</div>
-                      <div className="text-sm font-bold text-white mt-0.5">{shortCount}</div>
-                    </div>
-                    <div className="bg-zinc-900/60 p-1.5 rounded border border-zinc-850">
-                      <div className="text-[9px] text-zinc-400">持</div>
-                      <div className="text-sm font-bold text-zinc-300 mt-0.5">{holdCount}</div>
-                    </div>
-                    <div className="bg-zinc-900/60 p-1.5 rounded border border-zinc-850">
-                      <div className="text-[9px] text-emerald-400 font-bold">隔</div>
-                      <div className="text-sm font-bold text-white mt-0.5">{quarantinedCount}</div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Override testing */}
-                <div className="premium-card rounded-xl p-4 shadow relative overflow-hidden flex flex-col justify-between">
-                  <div>
-                    <h3 className="text-[10px] text-[#FFB74D] font-black tracking-wider uppercase font-mono flex items-center gap-1.5">
-                      <Sliders className="w-3.5 h-3.5" /> 大盤剛性回測
-                    </h3>
-                    <div className="grid grid-cols-3 gap-1 mt-2.5">
-                      <button 
-                        onClick={() => handleTsmcOverrideChange("force_green")}
-                        className={`py-1 text-[10px] rounded transition-all font-mono font-bold ${overrideTsmcState === "force_green" ? "bg-rose-600 text-white shadow-[0_0_8px_rgba(244,63,94,0.3)]" : "bg-zinc-900 text-zinc-400 border border-zinc-850 hover:text-white"}`}
-                      >
-                        紅燈(買點)
-                      </button>
-                      <button 
-                        onClick={() => handleTsmcOverrideChange("force_red")}
-                        className={`py-1 text-[10px] rounded transition-all font-mono font-bold ${overrideTsmcState === "force_red" ? "bg-emerald-600 text-white shadow-[0_0_8px_rgba(16,184,129,0.3)]" : "bg-zinc-900 text-zinc-400 border border-zinc-850 hover:text-white"}`}
-                      >
-                        綠燈(隔離)
-                      </button>
-                      <button 
-                        onClick={() => handleTsmcOverrideChange("auto")}
-                        className={`py-1 text-[10px] rounded transition-all font-mono font-bold ${overrideTsmcState === "auto" ? "bg-zinc-700 text-white" : "bg-zinc-900 text-zinc-400 border border-zinc-850 hover:text-white"}`}
-                      >
-                        自動
-                      </button>
-                    </div>
-                  </div>
-                  <div className="text-[9px] text-zinc-550 mt-1.5 font-mono">
-                    提供手動測試紅燈(跌破20MA)與綠燈狀態
-                  </div>
-                </div>
-
-              </div>
-
-              {/* Sweep Trigger Module */}
-              <div className="bg-gradient-to-r from-zinc-900 to-[#0e1117] rounded-xl border border-zinc-800 p-5 shadow-lg relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-[#E5A823]/5 rounded-full blur-2xl"></div>
-                <div className="flex flex-col md:flex-row items-center justify-between gap-4 relative z-10">
-                  <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-full bg-amber-500/10 border border-amber-500/20 text-[#FFB74D] flex items-center justify-center animate-pulse shrink-0">
-                      <RefreshCw className={`w-5 h-5 ${isScanning ? "animate-spin" : ""}`} />
-                    </div>
-                    <div>
-                      <h4 className="text-white font-bold text-sm">🦁 獅王戰神 V2026.Max 90 檔純高 Beta 股期洗價掃描器</h4>
-                      <p className="text-xs text-zinc-400 mt-1">配備自動重試指數退避、防空值裝甲，一鍵批次同步洗盤</p>
-                    </div>
-                  </div>
-                  
-                  <div className="w-full md:w-auto">
-                    <button
-                      onClick={triggerMatrixScan}
-                      disabled={isScanning}
-                      className={`w-full md:w-auto px-6 py-3 rounded-lg font-bold text-xs uppercase tracking-wider transition-all shadow-md flex items-center justify-center gap-2 ${
-                        isScanning 
-                          ? "bg-zinc-800 text-zinc-550 border border-zinc-700 cursor-not-allowed" 
-                          : "bg-gradient-to-r from-[#E5A823] to-[#FFB74D] text-[#08090c] hover:scale-[1.02] active:scale-[0.98]"
-                      }`}
-                    >
-                      {isScanning ? "正在為 90 檔高 Beta 洗價中..." : "⚡ 啟動全域即時量化洗價"}
-                    </button>
-                  </div>
-                </div>
-
-                {isScanning && (
-                  <div className="mt-4 pt-3 border-t border-zinc-800/60 text-xs">
-                    <div className="flex justify-between items-center text-zinc-400 font-mono mb-1.5">
-                      <span>掃描進度: {currScanIndex || "正在連接 yfinance 對沖中樞..."}</span>
-                      <span>{Math.round(scanProgress)}%</span>
-                    </div>
-                    <div className="w-full h-1.5 bg-zinc-950 rounded-full overflow-hidden border border-zinc-800">
-                      <motion.div 
-                        className="h-full bg-gradient-to-r from-[#E5A823] to-yellow-300"
-                        initial={{ width: 0 }}
-                        animate={{ width: `${scanProgress}%` }}
-                        transition={{ duration: 0.1 }}
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Main Matrix Table */}
-              <div className="premium-card rounded-xl shadow-2xl overflow-hidden">
-                
-                {/* Filters Row */}
-                <div className="p-4 border-b border-zinc-800 bg-[#0e1117] flex flex-wrap gap-4 items-center justify-between">
-                  
-                  <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <Search className="absolute left-3 top-2.5 w-4 h-4 text-zinc-500" />
-                      <input 
-                        type="text" 
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="代號、名稱、實戰備忘錄..." 
-                        className="pl-9 pr-4 py-2 text-xs rounded bg-zinc-950 border border-zinc-850 text-white placeholder-zinc-650 focus:outline-none focus:border-[#E5A823] w-60"
-                      />
-                    </div>
-
-                    {/* Elite filter checkbox */}
-                    <label className="flex items-center gap-2 text-xs font-semibold cursor-pointer select-none text-zinc-300 bg-zinc-900 border border-zinc-800 rounded px-2.5 py-1.5 hover:text-white transition">
-                      <input 
-                        type="checkbox" 
-                        checked={eliteOnly}
-                        onChange={(e) => setEliteOnly(e.target.checked)}
-                        className="accent-[#E5A823] cursor-pointer"
-                      />
-                      <span>⭐ Score &gt;= 38 精英標的</span>
-                    </label>
-                  </div>
-
-                  {/* Signal pills */}
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[11px] text-zinc-500 font-mono">裁決:</span>
-                    {(["多", "空", "持倉", "隔離"] as StockSignalOption[]).map(sig => {
-                      const active = selectedSignalFilters.includes(sig);
-                      return (
-                        <button
-                          key={sig}
-                          onClick={() => toggleSignalFilter(sig)}
-                          className={`text-[10px] font-bold px-2.5 py-1 rounded transition ${
-                            active 
-                              ? sig === "多" 
-                                ? "bg-rose-950/70 border border-rose-500/50 text-rose-400" 
-                                : sig === "空" 
-                                ? "bg-emerald-950/70 border border-emerald-500/50 text-emerald-400" 
-                                : sig === "隔離" 
-                                ? "bg-emerald-950/70 border border-emerald-500/50 text-emerald-400" 
-                                : "bg-zinc-800 text-white border border-zinc-700"
-                              : "bg-zinc-900 text-zinc-550 border border-transparent hover:text-zinc-350"
-                          }`}
-                        >
-                          {sig}
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {/* Sort dropdown */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] text-zinc-500 font-mono">排序:</span>
-                    <select 
-                      value={sortBy}
-                      onChange={(e) => setSortBy(e.target.value)}
-                      className="bg-zinc-950 border border-zinc-850 rounded px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#E5A823]"
-                    >
-                      <option value="score_desc">戰力評分 (高 → 低)</option>
-                      <option value="change_pct_desc">今日漲幅 (大 → 小)</option>
-                      <option value="change_pct_asc">今日跌幅 (小 → 大)</option>
-                      <option value="close_desc">最新現價 (高 → 低)</option>
-                      <option value="volume_desc">爆量倍數 (高 → 低)</option>
-                      <option value="id">股票代號 (順序)</option>
-                    </select>
-                  </div>
-
-                  {/* ViewMode Toggle */}
-                  <div className="flex items-center gap-1 bg-zinc-900 border border-zinc-850 rounded p-1">
-                    <button
-                      onClick={() => setViewMode("table")}
-                      className={`px-2.5 py-1 text-[10px] font-bold rounded transition-all select-none ${
-                        viewMode === "table" 
-                          ? "bg-[#E5A823] text-black shadow font-black" 
-                          : "text-zinc-400 hover:text-white"
-                      }`}
-                    >
-                      📋 表格視圖
-                    </button>
-                    <button
-                      onClick={() => setViewMode("cards")}
-                      className={`px-2.5 py-1 text-[10px] font-bold rounded transition-all select-none ${
-                        viewMode === "cards" 
-                          ? "bg-[#E5A823] text-black shadow font-black" 
-                          : "text-zinc-400 hover:text-white"
-                      }`}
-                    >
-                      🎴 籌碼卡片
-                    </button>
-                  </div>
-
-                </div>
-
-                {/* Table list */}
-                {viewMode === "table" ? (
-                  <div className="overflow-x-auto max-h-[550px] overflow-y-auto">
-                    <table className="w-full text-left border-collapse table-auto text-xs">
-                    <thead>
-                      <tr className="border-b border-zinc-850 bg-[#0e1117]/95 text-[10px] uppercase font-mono font-bold text-zinc-500 sticky top-0 z-10 select-none">
-                        <th className="py-2.5 px-3">代號 / 股名</th>
-                        <th className="py-2.5 px-2 text-right">現價</th>
-                        <th className="py-2.5 px-2 text-right">漲跌%</th>
-                        <th className="py-2.5 px-2 text-center text-[#FFB74D]">評分</th>
-                        <th className="py-2.5 px-3 text-left">建議進場價格區間 (5檔定價)</th>
-                        <th className="py-2.5 px-2 text-right text-rose-400 font-bold">減碼價(20%)</th>
-                        <th className="py-2.5 px-2 text-right text-rose-400">移動停利</th>
-                        <th className="py-2.5 px-2 text-right text-emerald-400 font-bold">防呆停損</th>
-                        <th className="py-2.5 px-2 text-center">策略訊號</th>
-                        <th className="py-2.5 px-3 text-center">實戰操作</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-zinc-850/60 text-zinc-300">
-                      {processedSignals.length === 0 ? (
-                        <tr>
-                          <td colSpan={10} className="py-16 text-center text-zinc-500 font-mono">
-                            <AlertTriangle className="w-9 h-9 text-amber-500/35 mx-auto mb-2" />
-                            沒有符合篩選條件的黃金標的
-                            {eliteOnly && (
-                              <p className="text-[11px] text-zinc-650 mt-1">💡 當前開啟了 Score &gt;= 38 限制，試著關閉以檢視更多</p>
-                            )}
-                          </td>
-                        </tr>
-                      ) : (
-                        processedSignals.map(stock => {
-                          const isSelected = selectedStock?.stock_id === stock.stock_id;
-                          return (
-                            <tr
-                              key={stock.stock_id}
-                              onClick={() => {
-                                setSelectedStock(stock);
-                                setNotesText(stock.master_notes || "");
-                              }}
-                              className={`hover:bg-zinc-900/50 cursor-pointer transition ${
-                                isSelected ? "bg-zinc-900/70 border-l-2 border-[#E5A823] text-white" : ""
-                              }`}
-                            >
-                              <td className="py-2 px-3">
-                                <div className="font-mono font-bold flex items-center gap-1">
-                                  {stock.stock_id}
-                                  {stock.liquidity_warning && <span className="text-amber-500" title="流動性警告">⚠️</span>}
-                                </div>
-                                <div className="text-[10px] text-zinc-500 mt-0.5">{stock.stock_name}</div>
-                              </td>
-                              <td className="py-2 px-2 text-right font-mono font-semibold">
-                                {stock.close_price.toFixed(1)}
-                              </td>
-                              <td className={`py-2 px-2 text-right font-mono font-black ${stock.change_pct >= 0 ? "text-rose-400" : "text-emerald-400"}`}>
-                                {stock.change_pct >= 0 ? `+${stock.change_pct.toFixed(2)}` : stock.change_pct.toFixed(2)}%
-                              </td>
-                              <td className="py-2 px-2 text-center">
-                                <span className={`px-2 py-0.5 rounded font-mono font-bold text-xs ${
-                                  stock.score >= 38 
-                                    ? "bg-yellow-950 text-[#FFB74D] border border-yellow-500/40" 
-                                    : "bg-zinc-800/80 text-zinc-450"
-                                }`}>
-                                  {stock.score}
-                                </span>
-                              </td>
-                              <td className="py-2 px-3 text-left font-mono text-[10px] text-zinc-350 max-w-[210px] truncate" title={stock.suggested_entry_price}>
-                                {stock.suggested_entry_price}
-                              </td>
-                              <td className="py-2 px-2 text-right font-mono text-rose-400 font-bold">
-                                {stock.take_profit_half_price?.toFixed(1) || "-"}
-                              </td>
-                              <td className="py-2 px-2 text-right font-mono text-rose-400">
-                                {stock.trailing_stop_price?.toFixed(1) || "-"}
-                              </td>
-                              <td className="py-2 px-2 text-right font-mono text-emerald-400 font-bold">
-                                {stock.stop_loss_price?.toFixed(1) || "-"}
-                              </td>
-                              <td className="py-2 px-2 text-center">
-                                {renderSignalBadge(stock.signal)}
-                              </td>
-                              <td className="py-2 px-3 text-center" onClick={e => e.stopPropagation()}>
-                                <div className="flex items-center gap-1.5 justify-center">
-                                  <button
-                                    onClick={() => openBuyModalForStock(stock)}
-                                    disabled={data?.macroEStopActive}
-                                    className={`px-2.5 py-1 text-[10px] font-bold rounded shadow transition active:scale-[0.96] ${
-                                      data?.macroEStopActive 
-                                        ? "bg-zinc-800 text-zinc-550 border border-zinc-850 cursor-not-allowed"
-                                        : "bg-rose-900/90 text-rose-300 border border-rose-600/40 hover:bg-rose-800"
-                                    }`}
-                                  >
-                                    買入
-                                  </button>
-                                  <button
-                                    onClick={() => {
-                                      setSelectedStock(stock);
-                                      setNotesText(stock.master_notes || "");
-                                    }}
-                                    className="px-2.5 py-1 text-[10px] font-bold rounded bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 transition"
-                                  >
-                                    解盤
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        })
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 max-h-[550px] overflow-y-auto p-2">
-                    {processedSignals.length === 0 ? (
-                      <div className="col-span-full py-16 text-center text-zinc-500 font-mono">
-                        <AlertTriangle className="w-9 h-9 text-amber-500/35 mx-auto mb-2" />
-                        沒有符合篩選條件的黃金標的
-                      </div>
-                    ) : (
-                      processedSignals.map(stock => {
-                        const isSelected = selectedStock?.stock_id === stock.stock_id;
-                        const rsiVal = stock.scoreBreakdown?.rsiAbove50 ? 65 : 42;
-                        const statusText = stock.score >= 45 ? "🔥 過熱" : "✅ 正常";
-                        const momentumText = stock.score >= 45 ? "🚀 極強" : "📈 偏多";
-                        const volumeRatio = stock.volume_multiplier ? stock.volume_multiplier.toFixed(1) + "x" : "1.2x";
-                        
-                        // S-Class or A-Class determination
-                        const isSClass = stock.score >= 45;
-                        const actionTier = isSClass ? "🏆 S級重倉狙擊" : "🥇 A級右側/左側伏擊";
-                        
-                        // 20% Profit take warning flash
-                        const isTakeProfitWarning = stock.close_price >= (stock.take_profit_half_price || stock.close_price * 1.20);
-                        
-                        // Half-Kelly calculation (base 1M capital)
-                        const winRate = stock.score >= 45 ? 85 : 68;
-                        const win_prob = winRate / 100;
-                        const odds = 2.0;
-                        const half_kelly = 0.5 * (win_prob - (1.0 - win_prob) / odds);
-                        const allocated_capital = 1000000 * half_kelly;
-                        const orderShares = isSClass ? Math.floor(allocated_capital / stock.close_price) : Math.floor(20000 / stock.close_price);
-                        const orderAmount = orderShares * stock.close_price;
-                        
-                        // Pyramid tranches
-                        const p1 = Math.floor(orderShares * 0.5);
-                        const p2 = Math.floor(orderShares * 0.3);
-                        const p3 = Math.floor(orderShares * 0.2);
-                        
-                        // Card Neon/Breathing border styling
-                        let borderStyle = "border-zinc-850 bg-zinc-950/80 hover:border-zinc-700 hover:bg-zinc-900/30";
-                        if (isSelected) {
-                          borderStyle = "border-2 border-[#E5A823] bg-zinc-900/90 shadow-[0_0_25px_rgba(229,168,35,0.22)] scale-[1.01]";
-                        } else if (isTakeProfitWarning) {
-                          borderStyle = "border border-[#FFB74D] bg-yellow-950/20 shadow-[0_0_18px_rgba(245,158,11,0.18)] animate-pulse-yellow";
-                        } else if (isSClass) {
-                          borderStyle = "border border-amber-500/60 bg-zinc-950/80 hover:border-amber-400 shadow-[0_0_15px_rgba(229,168,35,0.08)] hover:shadow-[0_0_22px_rgba(229,168,35,0.18)]";
-                        }
-                        
-                        return (
-                          <div
-                            key={stock.stock_id}
-                            onClick={() => {
-                              setSelectedStock(stock);
-                              setNotesText(stock.master_notes || "");
-                            }}
-                            className={`premium-card rounded-xl p-4 shadow-xl transition-all duration-300 relative overflow-hidden group cursor-pointer flex flex-col justify-between gap-3 ${borderStyle}`}
-                          >
-                            {/* Card Top Row */}
-                            <div className="flex items-start justify-between">
-                              <div>
-                                <div className="flex items-center gap-1.5">
-                                  <span className="text-base font-mono font-black text-white">{stock.stock_id}</span>
-                                  <span className="text-xs font-bold text-zinc-400">{stock.stock_name}</span>
-                                </div>
-                                <div className="flex flex-wrap gap-1 mt-1 text-[8px] font-mono">
-                                  <span className="bg-zinc-900 text-zinc-450 px-1 py-0.5 rounded border border-zinc-800">
-                                    {stock.category || "AI與權值"}
-                                  </span>
-                                  <span className="bg-zinc-900 text-zinc-450 px-1 py-0.5 rounded border border-zinc-800">
-                                    {actionTier}
-                                  </span>
-                                  {isTakeProfitWarning && (
-                                    <span className="bg-amber-950 text-[#FFB74D] px-1 py-0.5 rounded border border-amber-600/40 font-bold animate-pulse">
-                                      ⚠️ 獲利20%減碼
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                              
-                              <div className="text-right">
-                                <div className="text-[8px] font-mono text-zinc-550">全域檢核</div>
-                                <span className={`px-2 py-0.5 rounded font-mono font-black text-[9px] ${
-                                  isSClass 
-                                    ? "bg-yellow-950 text-[#FFB74D] border border-yellow-500/40" 
-                                    : "bg-zinc-800/80 text-zinc-400 border border-zinc-700"
-                                }`}>
-                                  {stock.score} / 50 分
-                                </span>
-                              </div>
-                            </div>
-                            
-                            {/* Technical Grid (Bloomberg style 2x2 chips) */}
-                            <div className="grid grid-cols-4 gap-1 text-center font-mono text-[8px] bg-zinc-950 p-1.5 rounded-lg border border-zinc-900">
-                              <div className="flex flex-col p-1 rounded bg-zinc-900/60">
-                                <span className="text-zinc-550 text-[7px]">RSI</span>
-                                <span className="text-white font-bold">{rsiVal}</span>
-                              </div>
-                              <div className="flex flex-col p-1 rounded bg-zinc-900/60">
-                                <span className="text-zinc-550 text-[7px]">狀態</span>
-                                <span className={`font-bold ${isSClass ? "text-[#f43f5e]" : "text-[#10b881]"}`}>{statusText}</span>
-                              </div>
-                              <div className="flex flex-col p-1 rounded bg-zinc-900/60">
-                                <span className="text-zinc-550 text-[7px]">動能</span>
-                                <span className={`font-bold ${isSClass ? "text-[#f43f5e]" : "text-[#10b881]"}`}>{momentumText}</span>
-                              </div>
-                              <div className="flex flex-col p-1 rounded bg-zinc-900/60">
-                                <span className="text-zinc-550 text-[7px]">量比</span>
-                                <span className="text-white font-bold">{volumeRatio}</span>
-                              </div>
-                            </div>
-                            
-                            {/* Live Headline/Notes */}
-                            {stock.master_notes && (
-                              <div className="border-l-2 border-amber-400 pl-2 py-0.5 text-[9px] font-sans text-amber-300 italic truncate" title={stock.master_notes.split(" | ")[0]}>
-                                📰 {stock.master_notes.split(" | ")[0]}
-                              </div>
-                            )}
-                            
-                            {/* Pricing Zones */}
-                            <div className="grid grid-cols-3 gap-1 text-center font-mono text-[8px] pt-1">
-                              <div className="bg-zinc-900/60 p-1 rounded border border-zinc-850">
-                                <span className="text-zinc-550 text-[7px] block mb-0.5">現價建倉</span>
-                                <span className="text-[#FFB74D] font-extrabold">{stock.close_price.toFixed(1)}</span>
-                              </div>
-                              <div className="bg-zinc-900/60 p-1 rounded border border-zinc-850">
-                                <span className="text-zinc-555 text-[7px] block mb-0.5">波段支撐</span>
-                                <span className="text-[#10b881] font-extrabold">{stock.stop_loss_price ? stock.stop_loss_price.toFixed(1) : "-"}</span>
-                              </div>
-                              <div className="bg-zinc-900/60 p-1 rounded border border-zinc-850">
-                                <span className="text-zinc-555 text-[7px] block mb-0.5">波段壓力</span>
-                                <span className="text-[#f43f5e] font-extrabold">{stock.take_profit_half_price ? stock.take_profit_half_price.toFixed(1) : "-"}</span>
-                              </div>
-                            </div>
-                            
-                            {/* Execution Orders (Half-Kelly Pyramid or ROD limits) */}
-                            {isSClass ? (
-                              <div className="bg-zinc-950 p-2 rounded-lg border border-amber-500/20 text-[8px] font-mono space-y-1">
-                                <div className="flex justify-between items-center text-zinc-450">
-                                  <span className="text-[#FFB74D] font-bold">🏆 S級 半凱利金字塔建倉 (5-3-2)</span>
-                                  <span className="text-white font-bold">約 NT$ {orderAmount.toLocaleString()}</span>
-                                </div>
-                                <div className="grid grid-cols-3 gap-1 text-center text-[7px] pt-1 border-t border-zinc-900">
-                                  <div className="bg-zinc-900/40 p-0.5 rounded">
-                                    <span className="text-zinc-500 block">首批(50%)</span>
-                                    <span className="text-[#f43f5e] font-bold">{p1} 股</span>
-                                  </div>
-                                  <div className="bg-zinc-900/40 p-0.5 rounded">
-                                    <span className="text-zinc-500 block">二批(30%)</span>
-                                    <span className="text-[#f43f5e] font-bold">{p2} 股</span>
-                                  </div>
-                                  <div className="bg-zinc-900/40 p-0.5 rounded">
-                                    <span className="text-zinc-550 block">三批(20%)</span>
-                                    <span className="text-[#f43f5e] font-bold">{p3} 股</span>
-                                  </div>
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="bg-zinc-950 p-2 rounded-lg border border-zinc-900 text-[8px] font-mono space-y-1">
-                                <div className="flex justify-between items-center text-zinc-450">
-                                  <span className="text-[#FFB74D]">🎯 A級 ROD限價伏擊單 (20MA)</span>
-                                  <span className="text-white font-bold">約 NT$ {orderAmount.toLocaleString()}</span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                  <span className="text-zinc-550">伏擊價格區間:</span>
-                                  <span className="text-[#10b881] font-extrabold">{(stock.close_price * 0.985).toFixed(1)} ~ {(stock.close_price * 0.995).toFixed(1)}</span>
-                                </div>
-                                <div className="flex justify-between items-center text-[7px] pt-1 border-t border-zinc-900 text-zinc-500">
-                                  <span>建議買入: <span className="text-[#FFB74D] font-bold">{orderShares} 股</span></span>
-                                  <span>防呆停損: <span className="text-[#10b881] font-bold">{stock.stop_loss_price ? stock.stop_loss_price.toFixed(1) : "-"}</span></span>
-                                </div>
-                              </div>
-                            )}
-                            
-                            {/* Action Buttons */}
-                            <div className="flex items-center gap-1.5 justify-end pt-1" onClick={e => e.stopPropagation()}>
-                              <button
-                                onClick={() => openBuyModalForStock(stock)}
-                                disabled={data?.macroEStopActive}
-                                className={`flex-1 py-1.5 text-[9px] font-bold rounded shadow transition active:scale-[0.96] text-center ${
-                                  data?.macroEStopActive 
-                                    ? "bg-zinc-800 text-zinc-550 border border-zinc-850 cursor-not-allowed"
-                                    : "bg-rose-950/90 text-rose-350 border border-rose-700/40 hover:bg-rose-900"
-                                }`}
-                              >
-                                現價建倉
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setSelectedStock(stock);
-                                  setNotesText(stock.master_notes || "");
-                                }}
-                                className="px-2.5 py-1.5 text-[9px] font-bold rounded bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 transition"
-                              >
-                                實戰解盤
-                              </button>
-                            </div>
-                            
-                            {/* Bottom metadata shadow */}
-                            <div className={`absolute bottom-0 left-0 right-0 h-1 opacity-70 bg-gradient-to-r ${isSClass ? "from-amber-500 to-[#FFB74D]" : "from-[#f43f5e] via-[#FFB74D] to-[#10b881]"}`}></div>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-                )}
-
-                <div className="p-3.5 bg-[#0e1117] border-t border-zinc-850 text-[10px] font-mono text-zinc-500 flex flex-col sm:flex-row justify-between items-center gap-2">
-                  <span>精英戰線已過濾符合 {processedSignals.length} 檔標的</span>
-                  <span>最後盤中洗價時間: {data ? data.scanTime : "讀取中..."}</span>
-                </div>
-
-              </div>
-
-            </div>
-
-            {/* Right Side Tactical Intelligence Panel */}
-            <div className="lg:col-span-4 flex flex-col gap-6">
-              
-              <div className="premium-card rounded-xl shadow-xl overflow-hidden sticky top-[135px]">
-                
-                {/* Header */}
-                <div className="p-4 bg-gradient-to-r from-zinc-900 to-[#0e1117] border-b border-zinc-850 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Award className="w-5 h-5 text-[#FFB74D]" />
-                    <h3 className="font-bold text-white text-sm">🦁 獅王戰神實戰解盤與註記</h3>
-                  </div>
-                  <span className="text-[10px] font-mono tracking-widest text-[#FFB74D] uppercase font-bold">
-                    V2026.Max
-                  </span>
-                </div>
-
-                {selectedStock ? (
+  // ======================= CLOSURE: RENDER DETAILS CONTENT =======================
+  const renderStockDetailsContent = () => {
+    if (!selectedStock) return null;
+    return (
                   <div className="p-5 flex flex-col gap-4">
                     
                     {/* Selected stock core info */}
@@ -2638,6 +1830,823 @@ export default function App() {
                     )}
 
                   </div>
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-[#08090c] text-[#d1d4dc] selection:bg-[#E5A823]/30 selection:text-white flex flex-col antialiased">
+      
+      {/* Cyberpunk Glassmorphism Header */}
+      <header className="border-b border-zinc-850 bg-[#0d0f14]/85 backdrop-blur-md py-4 px-6 relative lg:sticky lg:top-0 z-40 shadow-xl">
+        <div className="w-full max-w-[1700px] mx-auto flex flex-col lg:flex-row items-center justify-between gap-4">
+          
+          {/* Logo & Subhead */}
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-[#E5A823] to-[#FFD54F] flex items-center justify-center text-[#08090c] font-black text-lg shadow-[0_0_20px_rgba(229,168,35,0.35)]">
+              🦁
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="font-display font-black text-xl text-white tracking-tight">獅王戰神 V2026.Max</h1>
+                <span className="text-[10px] bg-gradient-to-r from-yellow-500 to-amber-600 text-black font-black px-2 py-0.5 rounded shadow">
+                  終極大一統版
+                </span>
+              </div>
+              <p className="text-[10px] text-zinc-500 font-mono tracking-wider mt-0.5">
+                WALL STREET ELITE QUANT DECISION SYSTEM & SIMULATOR
+              </p>
+            </div>
+          </div>
+
+          {/* VIX Macro Radar banner */}
+          <div className={`px-4 py-2 rounded-lg border text-xs font-semibold ${vixStatus.bg} ${vixStatus.color} flex items-center gap-2 shadow`}>
+            <ShieldAlert className="w-4 h-4 shrink-0 animate-bounce" />
+            <span>{vixStatus.text}</span>
+          </div>
+
+          {/* Time & DB indicators */}
+          <div className="flex flex-wrap items-center gap-3 text-[11px] font-mono">
+            <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded-md px-3 py-1.5 shadow">
+              <span className="w-1.5 h-1.5 bg-sky-400 rounded-full animate-ping"></span>
+              <span className="text-zinc-500">TAIPEI:</span>
+              <span className="text-[#FFB74D] font-bold">{utcTime || "2026-05-22 14:00:00"}</span>
+            </div>
+
+            <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded-md px-3 py-1.5 shadow">
+              <Database className={`w-3.5 h-3.5 ${dbSync ? "text-emerald-400" : "text-amber-500"}`} />
+              <span className="text-zinc-500">MONGO:</span>
+              <span className={`font-bold ${dbSync ? "text-emerald-400" : "text-amber-500"}`}>
+                {dbSync ? "LionKing_DB" : "Memory Sandbox"}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded-md px-3 py-1.5 shadow">
+              <Cpu className="w-3.5 h-3.5 text-indigo-400" />
+              <span className="text-zinc-500">CO-PILOT:</span>
+              <span className="text-indigo-300 font-bold">Gemini 3.5-Flash</span>
+            </div>
+          </div>
+
+        </div>
+      </header>
+
+      {/* Global Macro Bloomberg-style Banner */}
+      <div className="bg-[#0c0e12] border-b border-zinc-850 py-2.5 px-6">
+        <div className="w-full max-w-[1700px] mx-auto flex flex-wrap items-center justify-between gap-4 font-mono text-xs font-bold">
+          <div className="flex items-center gap-6 overflow-x-auto py-1">
+            <span className="text-zinc-500 text-[10px] tracking-wider uppercase font-bold">🌐 全球總經避險監控:</span>
+            
+            <div className="flex items-center gap-1.5 bg-zinc-950/60 border border-zinc-850 rounded px-2.5 py-1 text-sky-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse"></span>
+              <span>VIX 恐慌指數:</span>
+              <span className="text-white font-extrabold text-[13px]">{data ? data.vixValue?.toFixed(2) : "16.70"}</span>
+            </div>
+
+            <div className="flex items-center gap-1.5 bg-zinc-950/60 border border-zinc-850 rounded px-2.5 py-1 text-[#f43f5e]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#f43f5e] animate-pulse"></span>
+              <span>SOX 費半指數:</span>
+              <span className="text-white font-extrabold text-[13px]">12202.54</span>
+            </div>
+
+            <div className="flex items-center gap-1.5 bg-zinc-950/60 border border-zinc-850 rounded px-2.5 py-1 text-[#f43f5e]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#f43f5e] animate-pulse"></span>
+              <span>WTI 原油價格:</span>
+              <span className="text-white font-extrabold text-[13px]">$97.00</span>
+            </div>
+
+            <div className="flex items-center gap-1.5 bg-zinc-950/60 border border-zinc-850 rounded px-2.5 py-1 text-[#10b881]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#10b881]"></span>
+              <span>現金水位持籌:</span>
+              <span className="text-white font-extrabold text-[13px]">30%</span>
+            </div>
+          </div>
+          
+          <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-[#10b881] animate-ping"></span>
+            <span>主力大資金盤中安全預警</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Navigation tabs */}
+      <div className="bg-[#0b0c10] border-b border-zinc-850 relative lg:sticky lg:top-[77px] z-30 shadow-md">
+        <div className="w-full max-w-[1700px] mx-auto px-4 md:px-6 flex items-center justify-between overflow-x-auto no-scrollbar">
+          <div className="flex gap-1.5 md:gap-4 py-1 shrink-0">
+            <button
+              onClick={() => setActiveTab("radar")}
+              className={`py-3 px-3 text-xs md:text-sm font-bold flex items-center gap-2 border-b-2 transition-all relative ${
+                activeTab === "radar"
+                  ? "border-[#E5A823] text-white"
+                  : "border-transparent text-zinc-400 hover:text-white"
+              }`}
+            >
+              <LineChart className="w-4 h-4 text-[#FFB74D]" />
+              📊 獅王大一統監控 (Master Radar)
+              {activeTab === "radar" && (
+                <motion.div layoutId="tab-active-pill" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E5A823]" />
+              )}
+            </button>
+
+            <button
+              onClick={() => setActiveTab("strategy")}
+              className={`py-3 px-3 text-xs md:text-sm font-bold flex items-center gap-2 border-b-2 transition-all relative ${
+                activeTab === "strategy"
+                  ? "border-[#E5A823] text-white"
+                  : "border-transparent text-zinc-400 hover:text-white"
+              }`}
+            >
+              <LineChart className="w-4 h-4 text-[#FFB74D]" />
+              📈 財經策略分析
+              {activeTab === "strategy" && (
+                <motion.div layoutId="tab-active-pill" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E5A823]" />
+              )}
+            </button>
+
+            <button
+              onClick={() => setActiveTab("screener")}
+              className={`py-3 px-3 text-xs md:text-sm font-bold flex items-center gap-2 border-b-2 transition-all relative ${
+                activeTab === "screener"
+                  ? "border-[#E5A823] text-white"
+                  : "border-transparent text-zinc-400 hover:text-white"
+              }`}
+            >
+              <Search className="w-4 h-4 text-[#FFB74D]" />
+              🔍 智能選股雷達
+              {activeTab === "screener" && (
+                <motion.div layoutId="tab-active-pill" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E5A823]" />
+              )}
+            </button>
+
+            <button
+              onClick={() => setActiveTab("holdings")}
+              className={`py-3 px-3 text-xs md:text-sm font-bold flex items-center gap-2 border-b-2 transition-all relative ${
+                activeTab === "holdings"
+                  ? "border-[#E5A823] text-white"
+                  : "border-transparent text-zinc-400 hover:text-white"
+              }`}
+            >
+              <Briefcase className="w-4 h-4 text-[#FFB74D]" />
+              📦 模擬持倉 ({holdings.length})
+              {activeTab === "holdings" && (
+                <motion.div layoutId="tab-active-pill" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E5A823]" />
+              )}
+            </button>
+
+            <button
+              onClick={() => setActiveTab("exits")}
+              className={`py-3 px-3 text-xs md:text-sm font-bold flex items-center gap-2 border-b-2 transition-all relative ${
+                activeTab === "exits"
+                  ? "border-[#E5A823] text-white"
+                  : "border-transparent text-zinc-400 hover:text-white"
+              }`}
+            >
+              <History className="w-4 h-4 text-[#FFB74D]" />
+              🚪 已出場檢討記錄 ({exits.length})
+              {activeTab === "exits" && (
+                <motion.div layoutId="tab-active-pill" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E5A823]" />
+              )}
+            </button>
+
+            <button
+              onClick={() => setActiveTab("chat")}
+              className={`py-3 px-3 text-xs md:text-sm font-bold flex items-center gap-2 border-b-2 transition-all relative ${
+                activeTab === "chat"
+                  ? "border-[#E5A823] text-white"
+                  : "border-transparent text-zinc-400 hover:text-white"
+              }`}
+            >
+              <MessageSquare className="w-4 h-4 text-[#FFB74D]" />
+              💬 AI 避險大師對話
+              {activeTab === "chat" && (
+                <motion.div layoutId="tab-active-pill" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E5A823]" />
+              )}
+            </button>
+
+            <button
+              onClick={() => setActiveTab("sop")}
+              className={`py-3 px-3 text-xs md:text-sm font-bold flex items-center gap-2 border-b-2 transition-all relative ${
+                activeTab === "sop"
+                  ? "border-[#E5A823] text-white"
+                  : "border-transparent text-zinc-400 hover:text-white"
+              }`}
+            >
+              <BookOpen className="w-4 h-4 text-[#FFB74D]" />
+              🛡️ 量化鐵律 SOP
+              {activeTab === "sop" && (
+                <motion.div layoutId="tab-active-pill" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E5A823]" />
+              )}
+            </button>
+          </div>
+
+          <div className="hidden lg:flex items-center gap-2 text-xs font-mono">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span className="text-zinc-550">V2026.Max ENGINE ACTIVE</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Body */}
+      <main className="flex-1 w-full max-w-[1700px] mx-auto p-4 md:p-6">
+        
+        {/* ======================= TAB 1: RADAR ======================= */}
+        {activeTab === "radar" && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-fade-in">
+            
+            {/* Left and Mid Content Table Area */}
+            <div className="lg:col-span-8 flex flex-col gap-6">
+              
+              {/* Top Tactical Cards */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                
+                {/* TSMC 生命線 */}
+                <div className="premium-card rounded-xl p-3 md:p-4 shadow relative overflow-hidden group">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="text-[9px] md:text-[10px] text-zinc-500 font-black tracking-wider uppercase font-mono">台積電生命線 (20MA)</h3>
+                      <div className="text-2xl font-mono font-bold text-white mt-1.5 flex items-baseline gap-1">
+                        {data ? data.tsmcPrice : 1045.0} <span className="text-xs text-zinc-500">元</span>
+                      </div>
+                    </div>
+                    <div className={`p-2 rounded-lg ${data && data.tsmcPrice >= data.tsmcMa20Value ? "bg-rose-950/70 border border-rose-500/30 text-rose-400" : "bg-emerald-950/80 border border-emerald-500/30 text-emerald-400"}`}>
+                      <Zap className="w-4 h-4 animate-pulse" />
+                    </div>
+                  </div>
+                  <div className="mt-3.5 text-[11px] text-zinc-400 flex items-center justify-between">
+                    <span>月線水位: {data ? data.tsmcMa20Value : 1030.0} 元</span>
+                    <span className={`font-bold font-mono ${data && data.tsmcPrice >= data.tsmcMa20Value ? "text-rose-400" : "text-emerald-400"}`}>
+                      {data && data.tsmcPrice >= data.tsmcMa20Value ? "🔴 買點開放" : "🟢 全面停買隔離"}
+                    </span>
+                  </div>
+                  <div className={`absolute bottom-0 left-0 right-0 h-0.5 ${data && data.tsmcPrice >= data.tsmcMa20Value ? "bg-rose-500" : "bg-emerald-500"}`}></div>
+                </div>
+
+                {/* 大盤隔離狀態 */}
+                <div className="premium-card rounded-xl p-3 md:p-4 shadow relative overflow-hidden group">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="text-[9px] md:text-[10px] text-zinc-500 font-black tracking-wider uppercase font-mono">台北交易時間防線</h3>
+                      <div className="mt-2.5">
+                        <span className="px-2.5 py-1 text-xs font-bold rounded-md bg-zinc-900 border border-zinc-800 text-[#FFB74D] inline-flex items-center gap-1.5">
+                          <Sliders className="w-3.5 h-3.5" />
+                          台北時間盤中濾網
+                        </span>
+                      </div>
+                    </div>
+                    <div className="p-2 rounded-lg bg-zinc-900 border border-zinc-850 text-zinc-400">
+                      <ShieldAlert className="w-4 h-4" />
+                    </div>
+                  </div>
+                  <div className="mt-3 text-[11px] text-zinc-500 leading-tight">
+                    僅限台北時間 09:00 - 13:30 允許觸發買進，其餘自動觀望。
+                  </div>
+                </div>
+
+                {/* Score Stats */}
+                <div className="premium-card rounded-xl p-3 md:p-4 shadow relative overflow-hidden group">
+                  <h3 className="text-[9px] md:text-[10px] text-zinc-500 font-black tracking-wider uppercase font-mono mb-2">90 檔純高 Beta 分佈</h3>
+                  <div className="grid grid-cols-4 gap-1 text-center font-mono">
+                    <div className="bg-zinc-900/60 p-1.5 rounded border border-zinc-850">
+                      <div className="text-[9px] text-rose-400 font-bold">多</div>
+                      <div className="text-sm font-bold text-white mt-0.5">{longCount}</div>
+                    </div>
+                    <div className="bg-zinc-900/60 p-1.5 rounded border border-zinc-850">
+                      <div className="text-[9px] text-emerald-400 font-bold">空</div>
+                      <div className="text-sm font-bold text-white mt-0.5">{shortCount}</div>
+                    </div>
+                    <div className="bg-zinc-900/60 p-1.5 rounded border border-zinc-850">
+                      <div className="text-[9px] text-zinc-400">持</div>
+                      <div className="text-sm font-bold text-zinc-300 mt-0.5">{holdCount}</div>
+                    </div>
+                    <div className="bg-zinc-900/60 p-1.5 rounded border border-zinc-850">
+                      <div className="text-[9px] text-emerald-400 font-bold">隔</div>
+                      <div className="text-sm font-bold text-white mt-0.5">{quarantinedCount}</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Override testing */}
+                <div className="premium-card rounded-xl p-3 md:p-4 shadow relative overflow-hidden flex flex-col justify-between">
+                  <div>
+                    <h3 className="text-[10px] text-[#FFB74D] font-black tracking-wider uppercase font-mono flex items-center gap-1.5">
+                      <Sliders className="w-3.5 h-3.5" /> 大盤剛性回測
+                    </h3>
+                    <div className="grid grid-cols-3 gap-1 mt-2.5">
+                      <button 
+                        onClick={() => handleTsmcOverrideChange("force_green")}
+                        className={`py-1 text-[10px] rounded transition-all font-mono font-bold ${overrideTsmcState === "force_green" ? "bg-rose-600 text-white shadow-[0_0_8px_rgba(244,63,94,0.3)]" : "bg-zinc-900 text-zinc-400 border border-zinc-850 hover:text-white"}`}
+                      >
+                        紅燈(買點)
+                      </button>
+                      <button 
+                        onClick={() => handleTsmcOverrideChange("force_red")}
+                        className={`py-1 text-[10px] rounded transition-all font-mono font-bold ${overrideTsmcState === "force_red" ? "bg-emerald-600 text-white shadow-[0_0_8px_rgba(16,184,129,0.3)]" : "bg-zinc-900 text-zinc-400 border border-zinc-850 hover:text-white"}`}
+                      >
+                        綠燈(隔離)
+                      </button>
+                      <button 
+                        onClick={() => handleTsmcOverrideChange("auto")}
+                        className={`py-1 text-[10px] rounded transition-all font-mono font-bold ${overrideTsmcState === "auto" ? "bg-zinc-700 text-white" : "bg-zinc-900 text-zinc-400 border border-zinc-850 hover:text-white"}`}
+                      >
+                        自動
+                      </button>
+                    </div>
+                  </div>
+                  <div className="text-[9px] text-zinc-550 mt-1.5 font-mono">
+                    提供手動測試紅燈(跌破20MA)與綠燈狀態
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Sweep Trigger Module */}
+              <div className="bg-gradient-to-r from-zinc-900 to-[#0e1117] rounded-xl border border-zinc-800 p-5 shadow-lg relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-[#E5A823]/5 rounded-full blur-2xl"></div>
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4 relative z-10">
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-full bg-amber-500/10 border border-amber-500/20 text-[#FFB74D] flex items-center justify-center animate-pulse shrink-0">
+                      <RefreshCw className={`w-5 h-5 ${isScanning ? "animate-spin" : ""}`} />
+                    </div>
+                    <div>
+                      <h4 className="text-white font-bold text-sm">🦁 獅王戰神 V2026.Max 90 檔純高 Beta 股期洗價掃描器</h4>
+                      <p className="text-xs text-zinc-400 mt-1">配備自動重試指數退避、防空值裝甲，一鍵批次同步洗盤</p>
+                    </div>
+                  </div>
+                  
+                  <div className="w-full md:w-auto">
+                    <button
+                      onClick={triggerMatrixScan}
+                      disabled={isScanning}
+                      className={`w-full md:w-auto px-6 py-3 rounded-lg font-bold text-xs uppercase tracking-wider transition-all shadow-md flex items-center justify-center gap-2 ${
+                        isScanning 
+                          ? "bg-zinc-800 text-zinc-550 border border-zinc-700 cursor-not-allowed" 
+                          : "bg-gradient-to-r from-[#E5A823] to-[#FFB74D] text-[#08090c] hover:scale-[1.02] active:scale-[0.98]"
+                      }`}
+                    >
+                      {isScanning ? "正在為 90 檔高 Beta 洗價中..." : "⚡ 啟動全域即時量化洗價"}
+                    </button>
+                  </div>
+                </div>
+
+                {isScanning && (
+                  <div className="mt-4 pt-3 border-t border-zinc-800/60 text-xs">
+                    <div className="flex justify-between items-center text-zinc-400 font-mono mb-1.5">
+                      <span>掃描進度: {currScanIndex || "正在連接 yfinance 對沖中樞..."}</span>
+                      <span>{Math.round(scanProgress)}%</span>
+                    </div>
+                    <div className="w-full h-1.5 bg-zinc-950 rounded-full overflow-hidden border border-zinc-800">
+                      <motion.div 
+                        className="h-full bg-gradient-to-r from-[#E5A823] to-yellow-300"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${scanProgress}%` }}
+                        transition={{ duration: 0.1 }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Main Matrix Table */}
+              <div className="premium-card rounded-xl shadow-2xl overflow-hidden">
+                
+                {/* Filters Row */}
+                <div className="p-4 border-b border-zinc-800 bg-[#0e1117] flex flex-wrap gap-4 items-center justify-between">
+                  
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-2.5 w-4 h-4 text-zinc-500" />
+                      <input 
+                        type="text" 
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="代號、名稱、實戰備忘錄..." 
+                        className="pl-9 pr-4 py-2 text-xs rounded bg-zinc-950 border border-zinc-850 text-white placeholder-zinc-650 focus:outline-none focus:border-[#E5A823] w-60"
+                      />
+                    </div>
+
+                    {/* Elite filter checkbox */}
+                    <label className="flex items-center gap-2 text-xs font-semibold cursor-pointer select-none text-zinc-300 bg-zinc-900 border border-zinc-800 rounded px-2.5 py-1.5 hover:text-white transition">
+                      <input 
+                        type="checkbox" 
+                        checked={eliteOnly}
+                        onChange={(e) => setEliteOnly(e.target.checked)}
+                        className="accent-[#E5A823] cursor-pointer"
+                      />
+                      <span>⭐ Score &gt;= 38 精英標的</span>
+                    </label>
+                  </div>
+
+                  {/* Signal pills */}
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[11px] text-zinc-500 font-mono">裁決:</span>
+                    {(["多", "空", "持倉", "隔離"] as StockSignalOption[]).map(sig => {
+                      const active = selectedSignalFilters.includes(sig);
+                      return (
+                        <button
+                          key={sig}
+                          onClick={() => toggleSignalFilter(sig)}
+                          className={`text-[10px] font-bold px-2.5 py-1 rounded transition ${
+                            active 
+                              ? sig === "多" 
+                                ? "bg-rose-950/70 border border-rose-500/50 text-rose-400" 
+                                : sig === "空" 
+                                ? "bg-emerald-950/70 border border-emerald-500/50 text-emerald-400" 
+                                : sig === "隔離" 
+                                ? "bg-emerald-950/70 border border-emerald-500/50 text-emerald-400" 
+                                : "bg-zinc-800 text-white border border-zinc-700"
+                              : "bg-zinc-900 text-zinc-550 border border-transparent hover:text-zinc-350"
+                          }`}
+                        >
+                          {sig}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Sort dropdown */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] text-zinc-500 font-mono">排序:</span>
+                    <select 
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value)}
+                      className="bg-zinc-950 border border-zinc-850 rounded px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#E5A823]"
+                    >
+                      <option value="score_desc">戰力評分 (高 → 低)</option>
+                      <option value="change_pct_desc">今日漲幅 (大 → 小)</option>
+                      <option value="change_pct_asc">今日跌幅 (小 → 大)</option>
+                      <option value="close_desc">最新現價 (高 → 低)</option>
+                      <option value="volume_desc">爆量倍數 (高 → 低)</option>
+                      <option value="id">股票代號 (順序)</option>
+                    </select>
+                  </div>
+
+                  {/* ViewMode Toggle */}
+                  <div className="flex items-center gap-1 bg-zinc-900 border border-zinc-850 rounded p-1">
+                    <button
+                      onClick={() => setViewMode("table")}
+                      className={`px-2.5 py-1 text-[10px] font-bold rounded transition-all select-none ${
+                        viewMode === "table" 
+                          ? "bg-[#E5A823] text-black shadow font-black" 
+                          : "text-zinc-400 hover:text-white"
+                      }`}
+                    >
+                      📋 表格視圖
+                    </button>
+                    <button
+                      onClick={() => setViewMode("cards")}
+                      className={`px-2.5 py-1 text-[10px] font-bold rounded transition-all select-none ${
+                        viewMode === "cards" 
+                          ? "bg-[#E5A823] text-black shadow font-black" 
+                          : "text-zinc-400 hover:text-white"
+                      }`}
+                    >
+                      🎴 籌碼卡片
+                    </button>
+                  </div>
+
+                </div>
+
+                {/* Table list */}
+                {viewMode === "table" ? (
+                  <div className="overflow-x-auto max-h-[550px] overflow-y-auto">
+                    <table className="w-full text-left border-collapse table-auto text-xs">
+                    <thead>
+                      <tr className="border-b border-zinc-850 bg-[#0e1117]/95 text-[10px] uppercase font-mono font-bold text-zinc-500 sticky top-0 z-10 select-none">
+                        <th className="py-2.5 px-3">代號 / 股名</th>
+                        <th className="py-2.5 px-2 text-right">現價</th>
+                        <th className="py-2.5 px-2 text-right">漲跌%</th>
+                        <th className="py-2.5 px-2 text-center text-[#FFB74D]">評分</th>
+                        <th className="py-2.5 px-3 text-left">建議進場價格區間 (5檔定價)</th>
+                        <th className="py-2.5 px-2 text-right text-rose-400 font-bold">減碼價(20%)</th>
+                        <th className="py-2.5 px-2 text-right text-rose-400">移動停利</th>
+                        <th className="py-2.5 px-2 text-right text-emerald-400 font-bold">防呆停損</th>
+                        <th className="py-2.5 px-2 text-center">策略訊號</th>
+                        <th className="py-2.5 px-3 text-center">實戰操作</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-850/60 text-zinc-300">
+                      {processedSignals.length === 0 ? (
+                        <tr>
+                          <td colSpan={10} className="py-16 text-center text-zinc-500 font-mono">
+                            <AlertTriangle className="w-9 h-9 text-amber-500/35 mx-auto mb-2" />
+                            沒有符合篩選條件的黃金標的
+                            {eliteOnly && (
+                              <p className="text-[11px] text-zinc-650 mt-1">💡 當前開啟了 Score &gt;= 38 限制，試著關閉以檢視更多</p>
+                            )}
+                          </td>
+                        </tr>
+                      ) : (
+                        processedSignals.map(stock => {
+                          const isSelected = selectedStock?.stock_id === stock.stock_id;
+                          return (
+                            <tr
+                              key={stock.stock_id}
+                              onClick={() => {
+                                setSelectedStock(stock);
+                                setNotesText(stock.master_notes || "");
+                              }}
+                              className={`hover:bg-zinc-900/50 cursor-pointer transition ${
+                                isSelected ? "bg-zinc-900/70 border-l-2 border-[#E5A823] text-white" : ""
+                              }`}
+                            >
+                              <td className="py-2 px-3">
+                                <div className="font-mono font-bold flex items-center gap-1">
+                                  {stock.stock_id}
+                                  {stock.liquidity_warning && <span className="text-amber-500" title="流動性警告">⚠️</span>}
+                                </div>
+                                <div className="text-[10px] text-zinc-500 mt-0.5">{stock.stock_name}</div>
+                              </td>
+                              <td className="py-2 px-2 text-right font-mono font-semibold">
+                                {stock.close_price.toFixed(1)}
+                              </td>
+                              <td className={`py-2 px-2 text-right font-mono font-black ${stock.change_pct >= 0 ? "text-rose-400" : "text-emerald-400"}`}>
+                                {stock.change_pct >= 0 ? `+${stock.change_pct.toFixed(2)}` : stock.change_pct.toFixed(2)}%
+                              </td>
+                              <td className="py-2 px-2 text-center">
+                                <span className={`px-2 py-0.5 rounded font-mono font-bold text-xs ${
+                                  stock.score >= 38 
+                                    ? "bg-yellow-950 text-[#FFB74D] border border-yellow-500/40" 
+                                    : "bg-zinc-800/80 text-zinc-450"
+                                }`}>
+                                  {stock.score}
+                                </span>
+                              </td>
+                              <td className="py-2 px-3 text-left font-mono text-[10px] text-zinc-350 max-w-[210px] truncate" title={stock.suggested_entry_price}>
+                                {stock.suggested_entry_price}
+                              </td>
+                              <td className="py-2 px-2 text-right font-mono text-rose-400 font-bold">
+                                {stock.take_profit_half_price?.toFixed(1) || "-"}
+                              </td>
+                              <td className="py-2 px-2 text-right font-mono text-rose-400">
+                                {stock.trailing_stop_price?.toFixed(1) || "-"}
+                              </td>
+                              <td className="py-2 px-2 text-right font-mono text-emerald-400 font-bold">
+                                {stock.stop_loss_price?.toFixed(1) || "-"}
+                              </td>
+                              <td className="py-2 px-2 text-center">
+                                {renderSignalBadge(stock.signal)}
+                              </td>
+                              <td className="py-2 px-3 text-center" onClick={e => e.stopPropagation()}>
+                                <div className="flex items-center gap-1.5 justify-center">
+                                  <button
+                                    onClick={() => openBuyModalForStock(stock)}
+                                    disabled={data?.macroEStopActive}
+                                    className={`px-2.5 py-1 text-[10px] font-bold rounded shadow transition active:scale-[0.96] ${
+                                      data?.macroEStopActive 
+                                        ? "bg-zinc-800 text-zinc-550 border border-zinc-850 cursor-not-allowed"
+                                        : "bg-rose-900/90 text-rose-300 border border-rose-600/40 hover:bg-rose-800"
+                                    }`}
+                                  >
+                                    買入
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setSelectedStock(stock);
+                                      setNotesText(stock.master_notes || "");
+                                    }}
+                                    className="px-2.5 py-1 text-[10px] font-bold rounded bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 transition"
+                                  >
+                                    解盤
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 max-h-[550px] overflow-y-auto p-2">
+                    {processedSignals.length === 0 ? (
+                      <div className="col-span-full py-16 text-center text-zinc-500 font-mono">
+                        <AlertTriangle className="w-9 h-9 text-amber-500/35 mx-auto mb-2" />
+                        沒有符合篩選條件的黃金標的
+                      </div>
+                    ) : (
+                      processedSignals.map(stock => {
+                        const isSelected = selectedStock?.stock_id === stock.stock_id;
+                        const rsiVal = stock.scoreBreakdown?.rsiAbove50 ? 65 : 42;
+                        const statusText = stock.score >= 45 ? "🔥 過熱" : "✅ 正常";
+                        const momentumText = stock.score >= 45 ? "🚀 極強" : "📈 偏多";
+                        const volumeRatio = stock.volume_multiplier ? stock.volume_multiplier.toFixed(1) + "x" : "1.2x";
+                        
+                        // S-Class or A-Class determination
+                        const isSClass = stock.score >= 45;
+                        const actionTier = isSClass ? "🏆 S級重倉狙擊" : "🥇 A級右側/左側伏擊";
+                        
+                        // 20% Profit take warning flash
+                        const isTakeProfitWarning = stock.close_price >= (stock.take_profit_half_price || stock.close_price * 1.20);
+                        
+                        // Half-Kelly calculation (base 1M capital)
+                        const winRate = stock.score >= 45 ? 85 : 68;
+                        const win_prob = winRate / 100;
+                        const odds = 2.0;
+                        const half_kelly = 0.5 * (win_prob - (1.0 - win_prob) / odds);
+                        const allocated_capital = 1000000 * half_kelly;
+                        const orderShares = isSClass ? Math.floor(allocated_capital / stock.close_price) : Math.floor(20000 / stock.close_price);
+                        const orderAmount = orderShares * stock.close_price;
+                        
+                        // Pyramid tranches
+                        const p1 = Math.floor(orderShares * 0.5);
+                        const p2 = Math.floor(orderShares * 0.3);
+                        const p3 = Math.floor(orderShares * 0.2);
+                        
+                        // Card Neon/Breathing border styling
+                        let borderStyle = "border-zinc-850 bg-zinc-950/80 hover:border-zinc-700 hover:bg-zinc-900/30";
+                        if (isSelected) {
+                          borderStyle = "border-2 border-[#E5A823] bg-zinc-900/90 shadow-[0_0_25px_rgba(229,168,35,0.22)] scale-[1.01]";
+                        } else if (isTakeProfitWarning) {
+                          borderStyle = "border border-[#FFB74D] bg-yellow-950/20 shadow-[0_0_18px_rgba(245,158,11,0.18)] animate-pulse-yellow";
+                        } else if (isSClass) {
+                          borderStyle = "border border-amber-500/60 bg-zinc-950/80 hover:border-amber-400 shadow-[0_0_15px_rgba(229,168,35,0.08)] hover:shadow-[0_0_22px_rgba(229,168,35,0.18)]";
+                        }
+                        
+                        return (
+                          <div
+                            key={stock.stock_id}
+                            onClick={() => {
+                              setSelectedStock(stock);
+                              setNotesText(stock.master_notes || "");
+                            }}
+                            className={`premium-card rounded-xl p-4 shadow-xl transition-all duration-300 relative overflow-hidden group cursor-pointer flex flex-col justify-between gap-3 ${borderStyle}`}
+                          >
+                            {/* Card Top Row */}
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-base font-mono font-black text-white">{stock.stock_id}</span>
+                                  <span className="text-xs font-bold text-zinc-400">{stock.stock_name}</span>
+                                </div>
+                                <div className="flex flex-wrap gap-1 mt-1 text-[8px] font-mono">
+                                  <span className="bg-zinc-900 text-zinc-450 px-1 py-0.5 rounded border border-zinc-800">
+                                    {stock.category || "AI與權值"}
+                                  </span>
+                                  <span className="bg-zinc-900 text-zinc-450 px-1 py-0.5 rounded border border-zinc-800">
+                                    {actionTier}
+                                  </span>
+                                  {isTakeProfitWarning && (
+                                    <span className="bg-amber-950 text-[#FFB74D] px-1 py-0.5 rounded border border-amber-600/40 font-bold animate-pulse">
+                                      ⚠️ 獲利20%減碼
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              
+                              <div className="text-right">
+                                <div className="text-[8px] font-mono text-zinc-550">全域檢核</div>
+                                <span className={`px-2 py-0.5 rounded font-mono font-black text-[9px] ${
+                                  isSClass 
+                                    ? "bg-yellow-950 text-[#FFB74D] border border-yellow-500/40" 
+                                    : "bg-zinc-800/80 text-zinc-400 border border-zinc-700"
+                                }`}>
+                                  {stock.score} / 50 分
+                                </span>
+                              </div>
+                            </div>
+                            
+                            {/* Technical Grid (Bloomberg style 2x2 chips) */}
+                            <div className="grid grid-cols-4 gap-1 text-center font-mono text-[8px] bg-zinc-950 p-1.5 rounded-lg border border-zinc-900">
+                              <div className="flex flex-col p-1 rounded bg-zinc-900/60">
+                                <span className="text-zinc-550 text-[7px]">RSI</span>
+                                <span className="text-white font-bold">{rsiVal}</span>
+                              </div>
+                              <div className="flex flex-col p-1 rounded bg-zinc-900/60">
+                                <span className="text-zinc-550 text-[7px]">狀態</span>
+                                <span className={`font-bold ${isSClass ? "text-[#f43f5e]" : "text-[#10b881]"}`}>{statusText}</span>
+                              </div>
+                              <div className="flex flex-col p-1 rounded bg-zinc-900/60">
+                                <span className="text-zinc-550 text-[7px]">動能</span>
+                                <span className={`font-bold ${isSClass ? "text-[#f43f5e]" : "text-[#10b881]"}`}>{momentumText}</span>
+                              </div>
+                              <div className="flex flex-col p-1 rounded bg-zinc-900/60">
+                                <span className="text-zinc-550 text-[7px]">量比</span>
+                                <span className="text-white font-bold">{volumeRatio}</span>
+                              </div>
+                            </div>
+                            
+                            {/* Live Headline/Notes */}
+                            {stock.master_notes && (
+                              <div className="border-l-2 border-amber-400 pl-2 py-0.5 text-[9px] font-sans text-amber-300 italic truncate" title={stock.master_notes.split(" | ")[0]}>
+                                📰 {stock.master_notes.split(" | ")[0]}
+                              </div>
+                            )}
+                            
+                            {/* Pricing Zones */}
+                            <div className="grid grid-cols-3 gap-1 text-center font-mono text-[8px] pt-1">
+                              <div className="bg-zinc-900/60 p-1 rounded border border-zinc-850">
+                                <span className="text-zinc-550 text-[7px] block mb-0.5">現價建倉</span>
+                                <span className="text-[#FFB74D] font-extrabold">{stock.close_price.toFixed(1)}</span>
+                              </div>
+                              <div className="bg-zinc-900/60 p-1 rounded border border-zinc-850">
+                                <span className="text-zinc-555 text-[7px] block mb-0.5">波段支撐</span>
+                                <span className="text-[#10b881] font-extrabold">{stock.stop_loss_price ? stock.stop_loss_price.toFixed(1) : "-"}</span>
+                              </div>
+                              <div className="bg-zinc-900/60 p-1 rounded border border-zinc-850">
+                                <span className="text-zinc-555 text-[7px] block mb-0.5">波段壓力</span>
+                                <span className="text-[#f43f5e] font-extrabold">{stock.take_profit_half_price ? stock.take_profit_half_price.toFixed(1) : "-"}</span>
+                              </div>
+                            </div>
+                            
+                            {/* Execution Orders (Half-Kelly Pyramid or ROD limits) */}
+                            {isSClass ? (
+                              <div className="bg-zinc-950 p-2 rounded-lg border border-amber-500/20 text-[8px] font-mono space-y-1">
+                                <div className="flex justify-between items-center text-zinc-450">
+                                  <span className="text-[#FFB74D] font-bold">🏆 S級 半凱利金字塔建倉 (5-3-2)</span>
+                                  <span className="text-white font-bold">約 NT$ {orderAmount.toLocaleString()}</span>
+                                </div>
+                                <div className="grid grid-cols-3 gap-1 text-center text-[7px] pt-1 border-t border-zinc-900">
+                                  <div className="bg-zinc-900/40 p-0.5 rounded">
+                                    <span className="text-zinc-500 block">首批(50%)</span>
+                                    <span className="text-[#f43f5e] font-bold">{p1} 股</span>
+                                  </div>
+                                  <div className="bg-zinc-900/40 p-0.5 rounded">
+                                    <span className="text-zinc-500 block">二批(30%)</span>
+                                    <span className="text-[#f43f5e] font-bold">{p2} 股</span>
+                                  </div>
+                                  <div className="bg-zinc-900/40 p-0.5 rounded">
+                                    <span className="text-zinc-550 block">三批(20%)</span>
+                                    <span className="text-[#f43f5e] font-bold">{p3} 股</span>
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="bg-zinc-950 p-2 rounded-lg border border-zinc-900 text-[8px] font-mono space-y-1">
+                                <div className="flex justify-between items-center text-zinc-450">
+                                  <span className="text-[#FFB74D]">🎯 A級 ROD限價伏擊單 (20MA)</span>
+                                  <span className="text-white font-bold">約 NT$ {orderAmount.toLocaleString()}</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <span className="text-zinc-550">伏擊價格區間:</span>
+                                  <span className="text-[#10b881] font-extrabold">{(stock.close_price * 0.985).toFixed(1)} ~ {(stock.close_price * 0.995).toFixed(1)}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-[7px] pt-1 border-t border-zinc-900 text-zinc-500">
+                                  <span>建議買入: <span className="text-[#FFB74D] font-bold">{orderShares} 股</span></span>
+                                  <span>防呆停損: <span className="text-[#10b881] font-bold">{stock.stop_loss_price ? stock.stop_loss_price.toFixed(1) : "-"}</span></span>
+                                </div>
+                              </div>
+                            )}
+                            
+                            {/* Action Buttons */}
+                            <div className="flex items-center gap-1.5 justify-end pt-1" onClick={e => e.stopPropagation()}>
+                              <button
+                                onClick={() => openBuyModalForStock(stock)}
+                                disabled={data?.macroEStopActive}
+                                className={`flex-1 py-1.5 text-[9px] font-bold rounded shadow transition active:scale-[0.96] text-center ${
+                                  data?.macroEStopActive 
+                                    ? "bg-zinc-800 text-zinc-550 border border-zinc-850 cursor-not-allowed"
+                                    : "bg-rose-950/90 text-rose-350 border border-rose-700/40 hover:bg-rose-900"
+                                }`}
+                              >
+                                現價建倉
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setSelectedStock(stock);
+                                  setNotesText(stock.master_notes || "");
+                                }}
+                                className="px-2.5 py-1.5 text-[9px] font-bold rounded bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 transition"
+                              >
+                                實戰解盤
+                              </button>
+                            </div>
+                            
+                            {/* Bottom metadata shadow */}
+                            <div className={`absolute bottom-0 left-0 right-0 h-1 opacity-70 bg-gradient-to-r ${isSClass ? "from-amber-500 to-[#FFB74D]" : "from-[#f43f5e] via-[#FFB74D] to-[#10b881]"}`}></div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                )}
+
+                <div className="p-3.5 bg-[#0e1117] border-t border-zinc-850 text-[10px] font-mono text-zinc-500 flex flex-col sm:flex-row justify-between items-center gap-2">
+                  <span>精英戰線已過濾符合 {processedSignals.length} 檔標的</span>
+                  <span>最後盤中洗價時間: {data ? data.scanTime : "讀取中..."}</span>
+                </div>
+
+              </div>
+
+            </div>
+
+            {/* Right Side Tactical Intelligence Panel */}
+            <div className="hidden lg:flex lg:col-span-4 flex-col gap-6">
+              
+              <div className="premium-card rounded-xl shadow-xl overflow-hidden sticky top-[135px]">
+                
+                {/* Header */}
+                <div className="p-4 bg-gradient-to-r from-zinc-900 to-[#0e1117] border-b border-zinc-850 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Award className="w-5 h-5 text-[#FFB74D]" />
+                    <h3 className="font-bold text-white text-sm">🦁 獅王戰神實戰解盤與註記</h3>
+                  </div>
+                  <span className="text-[10px] font-mono tracking-widest text-[#FFB74D] uppercase font-bold">
+                    V2026.Max
+                  </span>
+                </div>
+
+                {selectedStock ? (
+                  renderStockDetailsContent()
                 ) : (
                   <div className="p-16 text-center text-zinc-550 font-mono">
                     <AlertTriangle className="w-10 h-10 text-amber-500/20 mx-auto mb-3" />
@@ -4305,6 +4314,52 @@ export default function App() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* 3. MOBILE SIDE-UP DETAIL DRAWER */}
+      <AnimatePresence>
+        {selectedStock && (
+          <div className="lg:hidden fixed inset-0 z-50 flex items-end justify-center">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedStock(null)}
+              className="absolute inset-0 bg-black/75 backdrop-blur-xs"
+            />
+            {/* Drawer Container */}
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 26, stiffness: 210 }}
+              className="relative w-full max-h-[85vh] bg-[#0c0e12] border-t border-zinc-800 rounded-t-3xl shadow-2xl flex flex-col overflow-hidden z-10"
+            >
+              {/* Drag Handle & Sticky Header */}
+              <div className="p-3 bg-gradient-to-r from-zinc-900 to-[#0e1117] border-b border-zinc-850 flex flex-col items-center select-none">
+                <div className="w-12 h-1.5 bg-zinc-700 rounded-full mb-3" />
+                <div className="w-full flex items-center justify-between px-3">
+                  <div className="flex items-center gap-2">
+                    <Award className="w-4.5 h-4.5 text-[#FFB74D]" />
+                    <h3 className="font-bold text-white text-xs md:text-sm">🦁 獅王戰神實戰解盤 (行動終端)</h3>
+                  </div>
+                  <button 
+                    onClick={() => setSelectedStock(null)}
+                    className="p-1 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+              {/* Content wrapper with auto scroll */}
+              <div className="overflow-y-auto flex-1 pb-10">
+                {renderStockDetailsContent()}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
 
     </div>
   );
