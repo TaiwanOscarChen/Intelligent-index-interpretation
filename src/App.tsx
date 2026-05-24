@@ -2199,7 +2199,7 @@ export default function App() {
               onClick={() => setActiveTab("radar")}
               className={`py-2 px-1 sm:px-1.5 md:px-2 lg:px-2.5 text-[9px] sm:text-[10px] md:text-xs lg:text-[13px] font-bold flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
                 activeTab === "radar"
-                  ? "border-[#E5A823] text-white"
+                  ? "border-transparent text-white"
                   : "border-transparent text-zinc-400 hover:text-white"
               }`}
             >
@@ -2214,7 +2214,7 @@ export default function App() {
               onClick={() => setActiveTab("strategy")}
               className={`py-2 px-1 sm:px-1.5 md:px-2 lg:px-2.5 text-[9px] sm:text-[10px] md:text-xs lg:text-[13px] font-bold flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
                 activeTab === "strategy"
-                  ? "border-[#E5A823] text-white"
+                  ? "border-transparent text-white"
                   : "border-transparent text-zinc-400 hover:text-white"
               }`}
             >
@@ -2229,7 +2229,7 @@ export default function App() {
               onClick={() => setActiveTab("screener")}
               className={`py-2 px-1 sm:px-1.5 md:px-2 lg:px-2.5 text-[9px] sm:text-[10px] md:text-xs lg:text-[13px] font-bold flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
                 activeTab === "screener"
-                  ? "border-[#E5A823] text-white"
+                  ? "border-transparent text-white"
                   : "border-transparent text-zinc-400 hover:text-white"
               }`}
             >
@@ -2244,7 +2244,7 @@ export default function App() {
               onClick={() => setActiveTab("holdings")}
               className={`py-2 px-1 sm:px-1.5 md:px-2 lg:px-2.5 text-[9px] sm:text-[10px] md:text-xs lg:text-[13px] font-bold flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
                 activeTab === "holdings"
-                  ? "border-[#E5A823] text-white"
+                  ? "border-transparent text-white"
                   : "border-transparent text-zinc-400 hover:text-white"
               }`}
             >
@@ -2259,7 +2259,7 @@ export default function App() {
               onClick={() => setActiveTab("exits")}
               className={`py-2 px-1 sm:px-1.5 md:px-2 lg:px-2.5 text-[9px] sm:text-[10px] md:text-xs lg:text-[13px] font-bold flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
                 activeTab === "exits"
-                  ? "border-[#E5A823] text-white"
+                  ? "border-transparent text-white"
                   : "border-transparent text-zinc-400 hover:text-white"
               }`}
             >
@@ -2274,7 +2274,7 @@ export default function App() {
               onClick={() => setActiveTab("chat")}
               className={`py-2 px-1 sm:px-1.5 md:px-2 lg:px-2.5 text-[9px] sm:text-[10px] md:text-xs lg:text-[13px] font-bold flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
                 activeTab === "chat"
-                  ? "border-[#E5A823] text-white"
+                  ? "border-transparent text-white"
                   : "border-transparent text-zinc-400 hover:text-white"
               }`}
             >
@@ -2289,7 +2289,7 @@ export default function App() {
               onClick={() => setActiveTab("sop")}
               className={`py-2 px-1 sm:px-1.5 md:px-2 lg:px-2.5 text-[9px] sm:text-[10px] md:text-xs lg:text-[13px] font-bold flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
                 activeTab === "sop"
-                  ? "border-[#E5A823] text-white"
+                  ? "border-transparent text-white"
                   : "border-transparent text-zinc-400 hover:text-white"
               }`}
             >
@@ -3288,6 +3288,167 @@ export default function App() {
                   </motion.div>
                 );
               })}
+            </div>
+
+            {/* Sectors Heatmap Advanced Quantitative Extension */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+              {/* 三大法人全月累計對沖籌碼資金觀察牆 */}
+              <div className="premium-card rounded-xl p-5 shadow-lg relative overflow-hidden group">
+                <div className="flex justify-between items-start border-b border-zinc-850 pb-3 mb-4">
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-[#FFB74D] shrink-0" />
+                    <div>
+                      <h4 className="text-white text-xs font-bold font-sans">三大法人全月累計對沖籌碼資金觀察牆</h4>
+                      <p className="text-[9px] text-zinc-500 font-mono mt-0.5">INSTITUTIONAL MONTHLY FLOW MONITOR</p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded font-bold">
+                    穩定度: 94%
+                  </span>
+                </div>
+                
+                <div className="space-y-4 text-xs font-mono">
+                  {/* Foreign Institutional Flow */}
+                  <div>
+                    <div className="flex justify-between items-center mb-1 text-[11px]">
+                      <span className="text-zinc-400 font-sans">外資累計對沖量 (全月)</span>
+                      <span className="text-[#f43f5e] font-bold">+1,245.8 億元</span>
+                    </div>
+                    <div className="w-full h-2 bg-zinc-950 rounded-full overflow-hidden border border-zinc-900 flex">
+                      <div className="w-1/2 h-full bg-zinc-950 border-r border-zinc-900"></div>
+                      <div className="w-[38%] h-full bg-rose-500 shadow-[0_0_8px_#f43f5e]"></div>
+                    </div>
+                  </div>
+
+                  {/* Trust Institutional Flow */}
+                  <div>
+                    <div className="flex justify-between items-center mb-1 text-[11px]">
+                      <span className="text-zinc-400 font-sans">投信累計鎖碼量 (全月)</span>
+                      <span className="text-[#f43f5e] font-bold">+412.3 億元</span>
+                    </div>
+                    <div className="w-full h-2 bg-zinc-950 rounded-full overflow-hidden border border-zinc-900 flex">
+                      <div className="w-1/2 h-full bg-zinc-950 border-r border-zinc-900"></div>
+                      <div className="w-[20%] h-full bg-rose-500 shadow-[0_0_8px_#f43f5e]"></div>
+                    </div>
+                  </div>
+
+                  {/* Dealer Flow */}
+                  <div>
+                    <div className="flex justify-between items-center mb-1 text-[11px]">
+                      <span className="text-zinc-400 font-sans">自營商對沖避險 (全月)</span>
+                      <span className="text-[#10b881] font-bold">-185.6 億元</span>
+                    </div>
+                    <div className="w-full h-2 bg-zinc-950 rounded-full overflow-hidden border border-zinc-900 flex">
+                      <div className="w-[35%] h-full ml-[15%] bg-[#10b881] shadow-[0_0_8px_#10b881]"></div>
+                      <div className="w-1/2 h-full bg-zinc-950 border-l border-zinc-900"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-zinc-850/60 text-[10px] text-zinc-500 leading-relaxed font-sans">
+                  💡 外資及投信呈雙星匯聚買超鎖碼狀態，自營商進行選擇權等權利金對沖，籌碼架構極其健康穩定。
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-rose-500 to-amber-500"></div>
+              </div>
+
+              {/* 全自動對沖風控雷達訊號檢索區 */}
+              <div className="premium-card rounded-xl p-5 shadow-lg relative overflow-hidden group">
+                <div className="flex justify-between items-start border-b border-zinc-850 pb-3 mb-4">
+                  <div className="flex items-center gap-2">
+                    <ShieldAlert className="w-5 h-5 text-[#FFB74D] shrink-0" />
+                    <div>
+                      <h4 className="text-white text-xs font-bold font-sans">全自動對沖風控雷達訊號檢索區</h4>
+                      <p className="text-[9px] text-zinc-500 font-mono mt-0.5">AUTO-HEDGING & RISK MONITOR</p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-mono text-rose-400 bg-rose-950/60 border border-rose-500/30 px-2 py-0.5 rounded font-bold animate-pulse">
+                    安全閥門: 正常
+                  </span>
+                </div>
+
+                <div className="space-y-3.5 text-xs font-mono">
+                  <div className="flex justify-between items-center bg-zinc-950/60 p-2 rounded border border-zinc-900">
+                    <span className="text-zinc-550 font-sans">對沖通道觸發狀態</span>
+                    <span className="text-[#f43f5e] font-extrabold flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#f43f5e] animate-ping"></span>
+                      🔴 多頭解封 (月線上)
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center bg-zinc-950/60 p-2 rounded border border-zinc-900">
+                    <span className="text-zinc-550 font-sans">波動率風險敞口 VIX</span>
+                    <span className="text-[#10b881] font-extrabold">🟢 低曝險 (16.70)</span>
+                  </div>
+
+                  <div className="flex justify-between items-center bg-zinc-950/60 p-2 rounded border border-zinc-900">
+                    <span className="text-zinc-550 font-sans">建議對沖衍生品配比</span>
+                    <span className="text-[#FFB74D] font-extrabold">12% 認售權證 (Put)</span>
+                  </div>
+
+                  <div className="flex justify-between items-center bg-zinc-950/60 p-2 rounded border border-zinc-900">
+                    <span className="text-zinc-550 font-sans">總體防禦現金配比</span>
+                    <span className="text-white font-extrabold">30% 現金水位</span>
+                  </div>
+                </div>
+
+                <div className="mt-3.5 pt-2 text-[10px] text-zinc-500 leading-relaxed font-sans">
+                  💡 台北月線防守點位處於 1030 元上方（台積電生命線安全），波動率穩定，系統建議採取半凱利積極建倉策略。
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-500 to-indigo-500"></div>
+              </div>
+
+              {/* 操盤手金字塔凱利資金分配比重計算器 */}
+              <div className="premium-card rounded-xl p-5 shadow-lg relative overflow-hidden group">
+                <div className="flex justify-between items-start border-b border-zinc-850 pb-3 mb-4">
+                  <div className="flex items-center gap-2">
+                    <Briefcase className="w-5 h-5 text-[#FFB74D] shrink-0" />
+                    <div>
+                      <h4 className="text-white text-xs font-bold font-sans">操盤手金字塔凱利資金分配比重計算器</h4>
+                      <p className="text-[9px] text-zinc-500 font-mono mt-0.5">PYRAMID KELLY LEVERAGE MATRIX</p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-mono text-[#FFB74D] bg-amber-950/60 border border-amber-500/30 px-2 py-0.5 rounded font-bold">
+                    利潤因子: 2.84
+                  </span>
+                </div>
+
+                <div className="space-y-2 text-[11px] font-mono">
+                  <div className="grid grid-cols-3 text-zinc-550 font-bold border-b border-zinc-900 pb-1 text-[10px]">
+                    <div>梯隊別</div>
+                    <div className="text-center">凱利配比</div>
+                    <div className="text-right">防守止損線</div>
+                  </div>
+
+                  <div className="grid grid-cols-3 text-white border-b border-zinc-900/40 py-1 items-center">
+                    <div className="font-bold text-zinc-300 font-sans">第一梯隊 (Core)</div>
+                    <div className="text-center text-[#f43f5e] font-bold">35% 權重</div>
+                    <div className="text-right text-zinc-500 font-sans">MA60 移動線</div>
+                  </div>
+
+                  <div className="grid grid-cols-3 text-white border-b border-zinc-900/40 py-1 items-center">
+                    <div className="font-bold text-zinc-300 font-sans">第二梯隊 (Def)</div>
+                    <div className="text-center text-[#FFB74D] font-bold">20% 權重</div>
+                    <div className="text-right text-zinc-500 font-sans">頸線支撐防禦</div>
+                  </div>
+
+                  <div className="grid grid-cols-3 text-white border-b border-zinc-900/40 py-1 items-center">
+                    <div className="font-bold text-zinc-300 font-sans">第三梯隊 (Hedge)</div>
+                    <div className="text-center text-[#10b881] font-bold">10% 期權</div>
+                    <div className="text-right text-zinc-500 font-sans">VIX &gt; 28 停損</div>
+                  </div>
+
+                  <div className="grid grid-cols-3 text-zinc-550 py-1 items-center text-[10px]">
+                    <div className="font-sans">剩餘預備金</div>
+                    <div className="text-center font-bold">35% 儲備</div>
+                    <div className="text-right text-sky-400 font-sans">避險鎖利啟動</div>
+                  </div>
+                </div>
+
+                <div className="mt-3.5 pt-2 text-[10px] text-zinc-500 leading-relaxed font-sans">
+                  💡 嚴格遵循半凱利公式防禦，核心仓位35%以內，當戰力分數大於38時，才啟用第二與第三梯隊加碼，確保極致穩定。
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#10b881] to-[#E5A823]"></div>
+              </div>
             </div>
 
             {/* Tactical stats panel */}
