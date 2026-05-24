@@ -1934,14 +1934,14 @@ export default function App() {
           <div className="flex gap-1.5 md:gap-4 py-1 shrink-0">
             <button
               onClick={() => setActiveTab("radar")}
-              className={`py-3 px-3 text-xs md:text-sm font-bold flex items-center gap-2 border-b-2 transition-all relative ${
+              className={`py-2.5 px-3 text-[11px] md:text-xs lg:text-sm font-bold flex items-center gap-1.5 md:gap-2 border-b-2 transition-all relative whitespace-nowrap ${
                 activeTab === "radar"
                   ? "border-[#E5A823] text-white"
                   : "border-transparent text-zinc-400 hover:text-white"
               }`}
             >
               <LineChart className="w-4 h-4 text-[#FFB74D]" />
-              📊 獅王大一統監控 (Master Radar)
+              獅王大一統監控 (Master Radar)
               {activeTab === "radar" && (
                 <motion.div layoutId="tab-active-pill" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E5A823]" />
               )}
@@ -1949,14 +1949,14 @@ export default function App() {
 
             <button
               onClick={() => setActiveTab("strategy")}
-              className={`py-3 px-3 text-xs md:text-sm font-bold flex items-center gap-2 border-b-2 transition-all relative ${
+              className={`py-2.5 px-3 text-[11px] md:text-xs lg:text-sm font-bold flex items-center gap-1.5 md:gap-2 border-b-2 transition-all relative whitespace-nowrap ${
                 activeTab === "strategy"
                   ? "border-[#E5A823] text-white"
                   : "border-transparent text-zinc-400 hover:text-white"
               }`}
             >
-              <LineChart className="w-4 h-4 text-[#FFB74D]" />
-              📈 財經策略分析
+              <TrendingUp className="w-4 h-4 text-[#FFB74D]" />
+              財經策略分析
               {activeTab === "strategy" && (
                 <motion.div layoutId="tab-active-pill" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E5A823]" />
               )}
@@ -1964,14 +1964,14 @@ export default function App() {
 
             <button
               onClick={() => setActiveTab("screener")}
-              className={`py-3 px-3 text-xs md:text-sm font-bold flex items-center gap-2 border-b-2 transition-all relative ${
+              className={`py-2.5 px-3 text-[11px] md:text-xs lg:text-sm font-bold flex items-center gap-1.5 md:gap-2 border-b-2 transition-all relative whitespace-nowrap ${
                 activeTab === "screener"
                   ? "border-[#E5A823] text-white"
                   : "border-transparent text-zinc-400 hover:text-white"
               }`}
             >
               <Search className="w-4 h-4 text-[#FFB74D]" />
-              🔍 智能選股雷達
+              智能選股雷達
               {activeTab === "screener" && (
                 <motion.div layoutId="tab-active-pill" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E5A823]" />
               )}
@@ -1979,14 +1979,14 @@ export default function App() {
 
             <button
               onClick={() => setActiveTab("holdings")}
-              className={`py-3 px-3 text-xs md:text-sm font-bold flex items-center gap-2 border-b-2 transition-all relative ${
+              className={`py-2.5 px-3 text-[11px] md:text-xs lg:text-sm font-bold flex items-center gap-1.5 md:gap-2 border-b-2 transition-all relative whitespace-nowrap ${
                 activeTab === "holdings"
                   ? "border-[#E5A823] text-white"
                   : "border-transparent text-zinc-400 hover:text-white"
               }`}
             >
               <Briefcase className="w-4 h-4 text-[#FFB74D]" />
-              📦 模擬持倉 ({holdings.length})
+              模擬持倉 ({holdings.length})
               {activeTab === "holdings" && (
                 <motion.div layoutId="tab-active-pill" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E5A823]" />
               )}
@@ -1994,14 +1994,14 @@ export default function App() {
 
             <button
               onClick={() => setActiveTab("exits")}
-              className={`py-3 px-3 text-xs md:text-sm font-bold flex items-center gap-2 border-b-2 transition-all relative ${
+              className={`py-2.5 px-3 text-[11px] md:text-xs lg:text-sm font-bold flex items-center gap-1.5 md:gap-2 border-b-2 transition-all relative whitespace-nowrap ${
                 activeTab === "exits"
                   ? "border-[#E5A823] text-white"
                   : "border-transparent text-zinc-400 hover:text-white"
               }`}
             >
               <History className="w-4 h-4 text-[#FFB74D]" />
-              🚪 已出場檢討記錄 ({exits.length})
+              已出場檢討記錄 ({exits.length})
               {activeTab === "exits" && (
                 <motion.div layoutId="tab-active-pill" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E5A823]" />
               )}
@@ -2009,14 +2009,14 @@ export default function App() {
 
             <button
               onClick={() => setActiveTab("chat")}
-              className={`py-3 px-3 text-xs md:text-sm font-bold flex items-center gap-2 border-b-2 transition-all relative ${
+              className={`py-2.5 px-3 text-[11px] md:text-xs lg:text-sm font-bold flex items-center gap-1.5 md:gap-2 border-b-2 transition-all relative whitespace-nowrap ${
                 activeTab === "chat"
                   ? "border-[#E5A823] text-white"
                   : "border-transparent text-zinc-400 hover:text-white"
               }`}
             >
               <MessageSquare className="w-4 h-4 text-[#FFB74D]" />
-              💬 AI 避險大師對話
+              AI 避險大師對話
               {activeTab === "chat" && (
                 <motion.div layoutId="tab-active-pill" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E5A823]" />
               )}
@@ -2024,14 +2024,14 @@ export default function App() {
 
             <button
               onClick={() => setActiveTab("sop")}
-              className={`py-3 px-3 text-xs md:text-sm font-bold flex items-center gap-2 border-b-2 transition-all relative ${
+              className={`py-2.5 px-3 text-[11px] md:text-xs lg:text-sm font-bold flex items-center gap-1.5 md:gap-2 border-b-2 transition-all relative whitespace-nowrap ${
                 activeTab === "sop"
                   ? "border-[#E5A823] text-white"
                   : "border-transparent text-zinc-400 hover:text-white"
               }`}
             >
               <BookOpen className="w-4 h-4 text-[#FFB74D]" />
-              🛡️ 量化鐵律 SOP
+              量化鐵律 SOP
               {activeTab === "sop" && (
                 <motion.div layoutId="tab-active-pill" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E5A823]" />
               )}
