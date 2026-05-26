@@ -4662,7 +4662,7 @@ export default function App() {
 
               <div className="premium-card rounded-xl p-4 shadow relative overflow-hidden flex flex-col justify-between">
                 <div>
-                  <span className="text-[9px] font-mono text-zinc-500 block">整體夏普比率 PORTFOLIO SHARPE</span>
+                  <span className="text-[9px] font-mono text-zinc-500 block">整體夏普比率 投資組合收益品質</span>
                   <div className="text-xl font-mono font-black text-[#FFB74D] mt-1">2.78</div>
                 </div>
                 <p className="text-[9px] text-zinc-550 leading-tight mt-2">
@@ -4930,7 +4930,7 @@ export default function App() {
 
                   <div className="premium-card rounded-xl p-4 shadow relative overflow-hidden flex flex-col justify-between">
                     <div>
-                      <span className="text-[9px] font-mono text-zinc-550 block">策略對沖獲利因子 PROFIT FACTOR</span>
+                      <span className="text-[9px] font-mono text-zinc-550 block">策略對沖獲利因子</span>
                       <div className="text-xl font-mono font-black text-amber-500 mt-1">{profitFactor}</div>
                     </div>
                     <p className="text-[9px] text-zinc-500 mt-2 font-sans">
@@ -4966,7 +4966,7 @@ export default function App() {
             <div className="premium-card rounded-xl p-6 shadow">
               <h3 className="text-white text-lg font-bold">歷史出場操盤檢討日誌</h3>
               <p className="text-xs text-zinc-450 mt-1">
-                記錄您所有歷史模擬持倉的清倉記錄，並包含 <code>Gemini 3.5-Flash</code> 為您客製化產生的精闢操盤回顧與改進方向。
+                記錄您所有歷史模擬持倉的清倉記錄，並包含 <code>Gemini AI</code> 為您客製化產生的精闢操盤回顧與改進方向。
               </p>
 
               {/* Category performance breakdown */}
@@ -5115,7 +5115,7 @@ export default function App() {
                         {!isUser && (
                           <div className="text-[9px] text-[#FFB74D] font-mono tracking-wider uppercase font-bold mb-1 flex items-center gap-1">
                             <Sparkles className="w-3 h-3 text-[#FFB74D] animate-pulse" />
-                            🦁 LION KING CO-PILOT
+                            🦁 獅王量化共駕大師
                           </div>
                         )}
                         <div className="whitespace-pre-wrap">{msg.content}</div>
@@ -5603,7 +5603,7 @@ export default function App() {
             <span>© 2026 獅王量化交易基金會. All rights reserved. 獅王戰神 V2026.Max 終極大一統核心.</span>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-[10px] text-emerald-400">● 雲端 MONGODB ATLAS 同步對接正常</span>
+            <span className="text-[10px] text-emerald-400">● 雲端資料庫同步對接正常</span>
             <span>|</span>
             <span className="text-[10px] text-amber-500">無重力穩定對沖運行中</span>
           </div>

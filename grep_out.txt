@@ -1,0 +1,1 @@
+2415: { title: "全球總經與 VIX", desc: "美債殖利率與恐慌指數", icon: Activity, color: "text-red-400", bg: "bg-red-500/10", border: "border-red-500/30", link: "https://finance.yahoo.com/quote/%5EVIX/" },\n

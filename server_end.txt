@@ -1,0 +1,161 @@
+    console.error("AI Auto Trade Error:", err);
+  }
+}
+
+// SPA Static / Development Server Ingress Route Setup
+const startViteAndExpress = async () => {
+  if (process.env.NODE_ENV !== "production") {
+    // Inject Vite Dev Server as Middleware
+    const { createServer: createViteServer } = await import("vite");
+    const vite = await createViteServer({
+      server: { middlewareMode: true },
+      appType: "spa",
+    });
+    
+    app.use(vite.middlewares);
+    console.log("⚡ [Vite Middleware] Master Dev Middleware correctly hooked and bound.");
+  } else {
+    // Serve static compiled UI files in production mode
+    const distPath = path.join(process.cwd(), "dist");
+    app.use(express.static(distPath));
+    
+    app.all("*", (req, res) => {
+      res.sendFile(path.join(distPath, "index.html"));
+    });
+    console.log("📦 [Production Ingress] Static files deployed from static workspace /dist.");
+  }
+
+  
+// 🚀 Smart Start: Force Sweep immediately
+app.post("/api/sweep/force", async (req, res) => {
+  console.log("⚡ [Smart Start] 向 GitHub Actions 請求啟動全域即時量化洗價");
+  const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+  if (!GITHUB_TOKEN) {
+    return res.status(400).json({ success: false, error: "未設定 GITHUB_TOKEN 機密變數，無法啟動雲端洗價。請至 Vercel 儀表板設定 GITHUB_TOKEN 或等待背景 10 分鐘排程。" });
+  }
+  
+  try {
+    const fetchResponse = await fetch("https://api.github.com/repos/TaiwanOscarChen/Intelligent-index-interpretation/actions/workflows/quant_sweep.yml/dispatches", {
+      method: "POST",
+      headers: {
+        "Authorization": `token ${GITHUB_TOKEN}`,
+        "Accept": "application/vnd.github.v3+json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ ref: "main" })
+    });
+    
+    if (fetchResponse.ok) {
+      res.json({ success: true, message: "已成功向 GitHub 雲端機房發送洗價指令！資料將在稍後自動更新於儀表板。" });
+    } else {
+      const errorText = await fetchResponse.text();
+      res.status(500).json({ success: false, error: `GitHub API 錯誤: ${fetchResponse.status} - ${errorText}` });
+    }
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+
+// ⚡ Vercel Cloud Fast Price Updater
+app.post("/api/prices/fast", async (req, res) => {
+  try {
+    if (!dbConnected || !holdingsCollection) return res.status(500).json({ success: false, message: "DB not connected" });
+    const holdings = await holdingsCollection.find({}).toArray();
+    
+    let updated = 0;
+    for (const h of holdings) {
+      try {
+        let ticker = h.stock_id;
+        if (!ticker.startsWith("^")) {
+           ticker = (ticker.length === 4 && !isNaN(Number(ticker))) ? `${ticker}.TW` : `${ticker}.TWO`;
+        }
+        const quote = await yahooFinance.quote(ticker);
+        if (quote && quote.regularMarketPrice) {
+          const current_price = Number(quote.regularMarketPrice.toFixed(2));
+          await holdingsCollection.updateOne(
+            { stock_id: h.stock_id },
+            { $set: { current_price } }
+          );
+          
+          const db = (holdingsCollection as any).s.db;
+          const signalsCol = db.collection("strategy_signals");
+          await signalsCol.updateOne(
+            { stock_id: h.stock_id },
+            { $set: { close_price: current_price } }
+          );
+          updated++;
+        }
+      } catch (err) {
+        console.error(`Error fetching price for ${h.stock_id}:`, err);
+      }
+    }
+    res.json({ success: true, updated, message: `Fast prices updated for ${updated} stocks via Cloud.` });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.listen(PORT, "0.0.0.0", () => {
+    console.log(`🚀 [Master Server Init] 獅王大一統版決策終端啟動於：http://localhost:${PORT}`);
+  });
+
+  // Run a background sweep asynchronously on startup
+  console.log("⚡ [Master Server Init] 啟動背景初始化即時全矩陣掃描...");
+  exec("python app.py --sweep", (err, stdout, stderr) => {
+    if (err) {
+      console.warn("⚠️ 背景初始掃描失敗 (可能是本機無 python 或 yfinance 限流)，自動開啟 high-fidelity 本地仿真快取。");
+      runInMemoryScanFallback();
+    } else {
+      console.log("🟢 背景初始掃描成功，MongoDB 已同步最新實時盤面。");
+      executeAIAutoTrade();
+    }
+  });
+
+  // Start Taipei Market Hours Intraday Scheduler (runs every 10 minutes)
+  setInterval(() => {
+    try {
+      const formatter = new Intl.DateTimeFormat("en-US", {
+        timeZone: "Asia/Taipei",
+        weekday: "short",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false
+      });
+      
+      const formattedParts = formatter.formatToParts(new Date());
+      const partMap: Record<string, string> = {};
+      formattedParts.forEach(p => {
+        partMap[p.type] = p.value;
+      });
+      
+      const weekday = partMap.weekday;
+      const hour = parseInt(partMap.hour, 10);
+      const minute = parseInt(partMap.minute, 10);
+      
+      const isWeekday = ["Mon", "Tue", "Wed", "Thu", "Fri"].includes(weekday);
+      const isTradingTime = (hour >= 9 && hour < 14) || (hour === 14 && minute === 0);
+      
+      if (isWeekday && isTradingTime) {
+        console.log(`⏰ [Intraday Scheduler] 台北標準時間 (${weekday} ${partMap.hour}:${partMap.minute})，執行 Lion King 背景自動掃描洗價...`);
+        exec("python app.py --sweep", (err) => {
+          if (!err) executeAIAutoTrade();
+        });
+      }
+    } catch (err) {
+      console.error("❌ [Scheduler Error] 盤中定時任務異常:", err);
+    }
+  }, 10 * 60 * 1000);
+
+  // Start Fast Price Updater (every 30 seconds)
+  setInterval(() => {
+    console.log("⚡ [Fast Updater] 觸發極速報價引擎...");
+    exec("python fast_price_updater.py");
+  }, 30 * 1000);
+};
+
+if (!process.env.VERCEL) {
+  startViteAndExpress();
+}
+
+export default app;

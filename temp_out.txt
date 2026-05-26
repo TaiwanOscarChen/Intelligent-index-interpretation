@@ -1,0 +1,1 @@
+Line 295: const interval = setInterval(updateTime, 1000);\nLine 354: const mdInterval = setInterval(fetchMarketData, 5 * 60 * 1000); // refresh every 5 min\n

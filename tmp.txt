@@ -1,0 +1,50 @@
+    }
+  });
+
+  // Start Taipei Market Hours Intraday Scheduler (runs every 10 minutes)
+  setInterval(() => {
+    try {
+      const formatter = new Intl.DateTimeFormat("en-US", {
+        timeZone: "Asia/Taipei",
+        weekday: "short",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false
+      });
+      
+      const formattedParts = formatter.formatToParts(new Date());
+      const partMap: Record<string, string> = {};
+      formattedParts.forEach(p => {
+        partMap[p.type] = p.value;
+      });
+      
+      const weekday = partMap.weekday;
+      const hour = parseInt(partMap.hour, 10);
+      const minute = parseInt(partMap.minute, 10);
+      
+      const isWeekday = ["Mon", "Tue", "Wed", "Thu", "Fri"].includes(weekday);
+      const isTradingTime = (hour >= 9 && hour < 14) || (hour === 14 && minute === 0);
+      
+      if (isWeekday && isTradingTime) {
+        console.log(`⏰ [Intraday Scheduler] 台北標準時間 (${weekday} ${partMap.hour}:${partMap.minute})，執行 Lion King 背景自動掃描洗價...`);
+        exec("python app.py --sweep", (err) => {
+          if (!err) executeAIAutoTrade();
+        });
+      }
+    } catch (err) {
+      console.error("❌ [Scheduler Error] 盤中定時任務異常:", err);
+    }
+  }, 10 * 60 * 1000);
+
+  // Start Fast Price Updater (every 30 seconds)
+  setInterval(() => {
+    console.log("⚡ [Fast Updater] 觸發極速報價引擎...");
+    exec("python fast_price_updater.py");
+  }, 30 * 1000);
+};
+
+if (!process.env.VERCEL) {
+  startViteAndExpress();
+}
+
+export default app;
