@@ -901,6 +901,17 @@ def execute_ai_auto_trade(current_vix):
     try:
         import datetime
         from pymongo import MongoClient
+        
+        # 剛性風控防線：進場與出場必須在開盤後盤中 (台北時間週一至週五 09:00 - 13:30)
+        now_taipei = datetime.datetime.now(TW_TZ)
+        is_weekday = now_taipei.weekday() < 5
+        current_time_str = now_taipei.strftime("%H:%M")
+        is_trading_hours = is_weekday and ("09:00" <= current_time_str <= "13:30")
+        
+        if not is_trading_hours:
+            print(f"⏰ [AI Auto Trade] 當前台北時間 {now_taipei.strftime('%Y-%m-%d %H:%M:%S')} 非開盤盤中時段 (週一至週五 09:00 - 13:30)，跳過自動進出場交易。")
+            return
+            
         if not MONGO_URI:
             print("⚠️ MONGO_URI 未設定，無法執行 AI 自動交易。")
             return
