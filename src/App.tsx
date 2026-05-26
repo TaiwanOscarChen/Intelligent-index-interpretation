@@ -2393,7 +2393,15 @@ export default function App() {
             </button>
           </div>
 
-          <div className="hidden lg:flex items-center gap-2 text-xs font-mono">\n
+          <div className="hidden lg:flex items-center gap-2 text-xs font-mono">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span className="text-zinc-550">V2026.Max ENGINE ACTIVE</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Body */}
+      <main className="flex-1 w-full max-w-[1700px] mx-auto p-4 md:p-6">
           {/* ============================================================== */}
           {/* GLOBAL MACRO & OPENAPI LINKS DASHBOARD */}
           {/* ============================================================== */}
@@ -2435,15 +2443,6 @@ export default function App() {
               </div>
             </div>
           </div>
-
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span className="text-zinc-550">V2026.Max ENGINE ACTIVE</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Body */}
-      <main className="flex-1 w-full max-w-[1700px] mx-auto p-4 md:p-6">
         
         {/* ======================= TAB 1: RADAR ======================= */}
         {activeTab === "radar" && (

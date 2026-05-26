@@ -2,10 +2,8 @@ import yfinance as yf
 from pymongo import MongoClient
 import os
 import sys
-from dotenv import load_dotenv
 import urllib.parse
 
-load_dotenv()
 MONGO_URI = os.getenv("MONGO_URI")
 if not MONGO_URI:
     # Use the default from app.py
