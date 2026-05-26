@@ -32,7 +32,10 @@ import {
   Paperclip,
   FileText,
   Link,
-  Trash2
+  Trash2,
+  Activity,
+  Globe,
+  Server
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { StockSignal, ScanResult, StockSignalOption, HoldingItem, ExitLogItem } from "./types.js";
