@@ -1878,29 +1878,6 @@ async function executeAIAutoTrade() {
 }
 
 // SPA Static / Development Server Ingress Route Setup
-const startViteAndExpress = async () => {
-  if (process.env.NODE_ENV !== "production") {
-    // Inject Vite Dev Server as Middleware
-    const { createServer: createViteServer } = await import("vite");
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "spa",
-    });
-    
-    app.use(vite.middlewares);
-    console.log("⚡ [Vite Middleware] Master Dev Middleware correctly hooked and bound.");
-  } else {
-    // Serve static compiled UI files in production mode
-    const distPath = path.join(process.cwd(), "dist");
-    app.use(express.static(distPath));
-    
-    app.all("*", (req, res) => {
-      res.sendFile(path.join(distPath, "index.html"));
-    });
-    console.log("📦 [Production Ingress] Static files deployed from static workspace /dist.");
-  }
-
-  
 // 🚀 Smart Start: Force Sweep immediately
 app.post("/api/sweep/force", async (req, res) => {
   console.log("⚡ [Smart Start] 向 GitHub Actions 請求啟動全域即時量化洗價");
@@ -1971,6 +1948,30 @@ app.post("/api/prices/fast", async (req, res) => {
   }
 });
 
+
+const startViteAndExpress = async () => {
+  if (process.env.NODE_ENV !== "production") {
+    // Inject Vite Dev Server as Middleware
+    const { createServer: createViteServer } = await import("vite");
+    const vite = await createViteServer({
+      server: { middlewareMode: true },
+      appType: "spa",
+    });
+    
+    app.use(vite.middlewares);
+    console.log("⚡ [Vite Middleware] Master Dev Middleware correctly hooked and bound.");
+  } else {
+    // Serve static compiled UI files in production mode
+    const distPath = path.join(process.cwd(), "dist");
+    app.use(express.static(distPath));
+    
+    app.all("*", (req, res) => {
+      res.sendFile(path.join(distPath, "index.html"));
+    });
+    console.log("📦 [Production Ingress] Static files deployed from static workspace /dist.");
+  }
+
+  
 app.listen(PORT, "0.0.0.0", () => {
     console.log(`🚀 [Master Server Init] 獅王大一統版決策終端啟動於：http://localhost:${PORT}`);
   });
