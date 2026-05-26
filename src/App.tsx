@@ -351,11 +351,20 @@ export default function App() {
     }
   };
 
-  useEffect(() => {
+  const refreshAllData = async () => {
+    try {
+      await fetch("/api/prices/fast", { method: "POST" });
+    } catch (e) {
+      console.warn("Fast price update failed:", e);
+    }
     fetchSignals();
     fetchHoldings();
     fetchMarketData();
-    const mdInterval = setInterval(fetchMarketData, 30 * 1000); // refresh every 30 sec for real-time prices
+  };
+
+  useEffect(() => {
+    refreshAllData();
+    const mdInterval = setInterval(refreshAllData, 30 * 1000); // refresh every 30 sec for real-time prices
     return () => clearInterval(mdInterval);
   }, []);
 
