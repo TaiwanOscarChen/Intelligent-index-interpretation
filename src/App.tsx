@@ -2428,7 +2428,7 @@ export default function App() {
 
           <div className="hidden lg:flex items-center gap-2 text-xs font-mono">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span className="text-zinc-550">V2026.Max ENGINE ACTIVE</span>
+            <span className="text-zinc-550">V2026.Max 量化引擎運作中</span>
           </div>
         </div>
       </div>
@@ -2701,7 +2701,7 @@ export default function App() {
                       <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
                       <h4 className="text-white text-xs font-bold font-sans">AI 量化自動交易實時情報流</h4>
                     </div>
-                    <span className="text-[8px] font-mono text-[#FFB74D] uppercase font-bold">Live Feed</span>
+                    <span className="text-[8px] font-mono text-[#FFB74D] uppercase font-bold">實時廣播</span>
                   </div>
 
                   <div className="space-y-1.5 max-h-[70px] overflow-y-auto pr-1 no-scrollbar font-mono text-[9px]">
@@ -3747,7 +3747,7 @@ export default function App() {
                     <TrendingUp className="w-5 h-5 text-[#FFB74D] shrink-0" />
                     <div>
                       <h4 className="text-white text-xs font-bold font-sans">三大法人全月累計對沖籌碼資金觀察牆</h4>
-                      <p className="text-[9px] text-zinc-500 font-mono mt-0.5">INSTITUTIONAL MONTHLY FLOW MONITOR</p>
+                      <p className="text-[9px] text-zinc-500 font-mono mt-0.5">法人月度資金流向監控</p>
                     </div>
                   </div>
                   <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded font-bold">
@@ -3817,7 +3817,7 @@ export default function App() {
                     <ShieldAlert className="w-5 h-5 text-[#FFB74D] shrink-0" />
                     <div>
                       <h4 className="text-white text-xs font-bold font-sans">全自動對沖風控雷達訊號檢索區</h4>
-                      <p className="text-[9px] text-zinc-500 font-mono mt-0.5">AUTO-HEDGING & RISK MONITOR</p>
+                      <p className="text-[9px] text-zinc-500 font-mono mt-0.5">自動對沖與風控監控</p>
                     </div>
                   </div>
                   <span className="text-[10px] font-mono text-rose-400 bg-rose-950/60 border border-rose-500/30 px-2 py-0.5 rounded font-bold animate-pulse">
@@ -3866,7 +3866,7 @@ export default function App() {
                     <Briefcase className="w-5 h-5 text-[#FFB74D] shrink-0" />
                     <div>
                       <h4 className="text-white text-xs font-bold font-sans">操盤手金字塔凱利資金分配比重計算器</h4>
-                      <p className="text-[9px] text-zinc-500 font-mono mt-0.5">PYRAMID KELLY LEVERAGE MATRIX</p>
+                      <p className="text-[9px] text-zinc-500 font-mono mt-0.5">金字塔凱利槓桿矩陣</p>
                     </div>
                   </div>
                   <span className="text-[10px] font-mono text-[#FFB74D] bg-amber-950/60 border border-amber-500/30 px-2 py-0.5 rounded font-bold">
@@ -3923,7 +3923,7 @@ export default function App() {
                     <TrendingUp className="w-5 h-5 text-amber-400 shrink-0" />
                     <div>
                       <h4 className="text-white text-xs font-bold font-mono">產業板塊戰力資金流向熱力矩陣</h4>
-                      <p className="text-[9px] text-zinc-550 font-mono mt-0.5">SECTOR FUND MONEY FLOW MATRIX</p>
+                      <p className="text-[9px] text-zinc-550 font-mono mt-0.5">產業板塊資金流向矩陣</p>
                     </div>
                   </div>
                   <span className="text-[9px] font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded font-bold">
@@ -3967,7 +3967,7 @@ export default function App() {
                     <ShieldAlert className="w-5 h-5 text-indigo-400 shrink-0" />
                     <div>
                       <h4 className="text-white text-xs font-bold font-mono">波動率風險相關係數偏離矩陣</h4>
-                      <p className="text-[9px] text-zinc-550 font-mono mt-0.5">VOLATILITY RISK & BETA BIAS MATRIX</p>
+                      <p className="text-[9px] text-zinc-550 font-mono mt-0.5">波動率風險與 BETA 偏差矩陣</p>
                     </div>
                   </div>
                   <span className="text-[9px] font-mono text-sky-400 bg-sky-950/60 border border-sky-500/30 px-2 py-0.5 rounded font-bold">
@@ -4030,7 +4030,7 @@ export default function App() {
                         <TrendingUp className="w-5 h-5 text-[#FFB74D]" />
                         <div>
                           <h3 className="font-bold text-white text-sm">{selectedCategory} 板塊成份股監控雷達</h3>
-                          <p className="text-[9px] text-zinc-550 font-mono mt-0.5">CONSTITUENT STOCKS RADAR</p>
+                          <p className="text-[9px] text-zinc-550 font-mono mt-0.5">成份股監控雷達</p>
                         </div>
                       </div>
                       <button
@@ -5605,7 +5605,7 @@ export default function App() {
           <div className="flex items-center gap-3">
             <span className="text-[10px] text-emerald-400">● 雲端 MONGODB ATLAS 同步對接正常</span>
             <span>|</span>
-            <span className="text-[10px] text-amber-500">ANTIGRAVITY STABLE FLIGHT</span>
+            <span className="text-[10px] text-amber-500">無重力穩定對沖運行中</span>
           </div>
         </div>
       </footer>
