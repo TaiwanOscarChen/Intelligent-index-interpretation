@@ -90,6 +90,7 @@ async function connectToMongo() {
       signalsCollection = db.collection("strategy_signals");
       holdingsCollection = db.collection("simulated_holdings");
       exitsCollection = db.collection("exit_logs");
+      notificationsCollection = db.collection("trade_notifications");
       dbConnected = true;
       console.log("🟢 [MongoDB Atlas] 金鑰對接成功！順利載入 LionKing_DB (signals, holdings, exit_logs)。");
       prefetchMissingStocks().catch(err => console.error("Prefetch error:", err));
@@ -699,8 +700,8 @@ app.get("/api/market-data", async (req, res) => {
     
     // ── 三大法人合計 (億元) ──
     const foreignNet = realMacro?.foreignNet ?? Math.round((120 + seedSin(3) * 850) * 10) / 10; // 外資
-    const trustNet = Math.round((45 + seedSin(4) * 280) * 10) / 10;    // 投信
-    const dealerNet = Math.round((-12 + seedSin(5) * 120) * 10) / 10;  // 自營商
+    const trustNet = realMacro?.trustNet ?? Math.round((45 + seedSin(4) * 280) * 10) / 10;    // 投信
+    const dealerNet = realMacro?.dealerNet ?? Math.round((-12 + seedSin(5) * 120) * 10) / 10;  // 自營商
     const threePartyNet = realMacro?.threePartyNet ?? Math.round((foreignNet + trustNet + dealerNet) * 10) / 10;
     
     // ── 外資台指期未平倉 (口) ──
@@ -1412,6 +1413,20 @@ app.post("/api/generate-notes", async (req, res) => {
 // ==============================================================================
 
 // A. Get Simulated Holdings & Exits
+app.get("/api/notifications", async (req, res) => {
+  try {
+    if (dbConnected && notificationsCollection) {
+      const list = await notificationsCollection.find({}).sort({ timestamp: -1 }).limit(20).toArray();
+      return res.json(list);
+    } else {
+      return res.json([]);
+    }
+  } catch (err) {
+    console.error("Fetch notifications error:", err);
+    return res.status(500).json({ error: "Failed to fetch notifications" });
+  }
+});
+
 app.get("/api/holdings", async (req, res) => {
   try {
     let holdings: HoldingItem[] = [];

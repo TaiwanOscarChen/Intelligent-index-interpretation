@@ -103,3 +103,51 @@ body {
 .glass-table-row:hover {
   background-color: rgba(255, 255, 255, 0.02) !important;
 }
+
+/* Beautiful border-gradient and glassmorphism style for Screener Panel */
+.screener-card-gradient-border {
+  position: relative;
+  background: rgba(9, 10, 15, 0.45) !important;
+  backdrop-filter: blur(16px);
+  border-radius: 12px;
+  z-index: 1;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.screener-card-gradient-border::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 12px;
+  padding: 1.5px; /* Border thickness */
+  background: linear-gradient(135deg, rgba(229, 168, 37, 0.35) 0%, rgba(99, 102, 241, 0.2) 50%, rgba(244, 63, 94, 0.25) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: -1;
+  transition: background 0.3s ease;
+}
+
+.screener-card-gradient-border:hover {
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6), 0 0 25px rgba(229, 168, 37, 0.06);
+}
+
+.screener-card-gradient-border:hover::before {
+  background: linear-gradient(135deg, rgba(229, 168, 37, 0.8) 0%, rgba(99, 102, 241, 0.6) 50%, rgba(244, 63, 94, 0.7) 100%);
+}
+
+/* Premium row hover interaction: shifts right and displays soft gold glow */
+.screener-table-row {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.screener-table-row:hover {
+  background: rgba(229, 168, 37, 0.08) !important;
+  transform: translateX(6px);
+  box-shadow: inset 3px 0 0 0 #E5A823, 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+

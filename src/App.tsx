@@ -288,6 +288,9 @@ export default function App() {
   const [marketData, setMarketData] = useState<any>(null);
   const [isLoadingMarketData, setIsLoadingMarketData] = useState<boolean>(false);
   const [showSiWangModal, setShowSiWangModal] = useState<{ stock: string; tag: string } | null>(null);
+  const [tradeNotifications, setTradeNotifications] = useState<any[]>([]);
+  const [currentToast, setCurrentToast] = useState<any>(null);
+  const [lastNotificationTime, setLastNotificationTime] = useState<string>("");
 
   useEffect(() => {
     // Keep real-time UTC Clock updated
@@ -351,6 +354,26 @@ export default function App() {
     }
   };
 
+  const fetchNotifications = async () => {
+    try {
+      const response = await fetch("/api/notifications");
+      const list = await response.json();
+      if (Array.isArray(list) && list.length > 0) {
+        setTradeNotifications(list);
+        const newest = list[0];
+        if (newest.timestamp !== lastNotificationTime) {
+          setLastNotificationTime(newest.timestamp);
+          setCurrentToast(newest);
+          setTimeout(() => {
+            setCurrentToast(null);
+          }, 8000);
+        }
+      }
+    } catch (err) {
+      console.warn("Failed to fetch trade notifications:", err);
+    }
+  };
+
   const refreshAllData = async () => {
     try {
       await fetch("/api/prices/fast", { method: "POST" });
@@ -360,6 +383,7 @@ export default function App() {
     fetchSignals();
     fetchHoldings();
     fetchMarketData();
+    fetchNotifications();
   };
 
   useEffect(() => {
@@ -2298,14 +2322,14 @@ export default function App() {
           <div className="flex gap-0.5 sm:gap-1.5 md:gap-2.5 py-1 shrink-0">
             <button
               onClick={() => setActiveTab("radar")}
-              className={`py-2 px-1 sm:px-1.5 md:px-2 lg:px-2.5 text-[9px] sm:text-[10px] md:text-xs lg:text-[13px] font-bold flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
+              className={`group py-3 px-2 sm:px-2.5 md:px-3 lg:px-4 text-[11px] sm:text-xs md:text-sm lg:text-[15px] font-black uppercase tracking-wider group transition-all flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
                 activeTab === "radar"
                   ? "border-transparent text-white"
                   : "border-transparent text-zinc-400 hover:text-white"
               }`}
             >
-              <LineChart className="w-4 h-4 text-[#FFB74D]" />
-              獅王全域整合監控雷達 (Master Radar)
+              <LineChart className="w-5 h-5 text-[#E5A823] group-hover:animate-bounce" />
+              <span className="tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-white to-zinc-300">監控雷達</span>
               {activeTab === "radar" && (
                 <motion.div layoutId="tab-active-pill" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E5A823]" />
               )}
@@ -2313,7 +2337,7 @@ export default function App() {
 
             <button
               onClick={() => setActiveTab("strategy")}
-              className={`py-2 px-1 sm:px-1.5 md:px-2 lg:px-2.5 text-[9px] sm:text-[10px] md:text-xs lg:text-[13px] font-bold flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
+              className={`group py-3 px-2 sm:px-2.5 md:px-3 lg:px-4 text-[11px] sm:text-xs md:text-sm lg:text-[15px] font-black uppercase tracking-wider group transition-all flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
                 activeTab === "strategy"
                   ? "border-transparent text-white"
                   : "border-transparent text-zinc-400 hover:text-white"
@@ -2328,7 +2352,7 @@ export default function App() {
 
             <button
               onClick={() => setActiveTab("screener")}
-              className={`py-2 px-1 sm:px-1.5 md:px-2 lg:px-2.5 text-[9px] sm:text-[10px] md:text-xs lg:text-[13px] font-bold flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
+              className={`group py-3 px-2 sm:px-2.5 md:px-3 lg:px-4 text-[11px] sm:text-xs md:text-sm lg:text-[15px] font-black uppercase tracking-wider group transition-all flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
                 activeTab === "screener"
                   ? "border-transparent text-white"
                   : "border-transparent text-zinc-400 hover:text-white"
@@ -2343,7 +2367,7 @@ export default function App() {
 
             <button
               onClick={() => setActiveTab("holdings")}
-              className={`py-2 px-1 sm:px-1.5 md:px-2 lg:px-2.5 text-[9px] sm:text-[10px] md:text-xs lg:text-[13px] font-bold flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
+              className={`group py-3 px-2 sm:px-2.5 md:px-3 lg:px-4 text-[11px] sm:text-xs md:text-sm lg:text-[15px] font-black uppercase tracking-wider group transition-all flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
                 activeTab === "holdings"
                   ? "border-transparent text-white"
                   : "border-transparent text-zinc-400 hover:text-white"
@@ -2358,7 +2382,7 @@ export default function App() {
 
             <button
               onClick={() => setActiveTab("exits")}
-              className={`py-2 px-1 sm:px-1.5 md:px-2 lg:px-2.5 text-[9px] sm:text-[10px] md:text-xs lg:text-[13px] font-bold flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
+              className={`group py-3 px-2 sm:px-2.5 md:px-3 lg:px-4 text-[11px] sm:text-xs md:text-sm lg:text-[15px] font-black uppercase tracking-wider group transition-all flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
                 activeTab === "exits"
                   ? "border-transparent text-white"
                   : "border-transparent text-zinc-400 hover:text-white"
@@ -2373,7 +2397,7 @@ export default function App() {
 
             <button
               onClick={() => setActiveTab("chat")}
-              className={`py-2 px-1 sm:px-1.5 md:px-2 lg:px-2.5 text-[9px] sm:text-[10px] md:text-xs lg:text-[13px] font-bold flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
+              className={`group py-3 px-2 sm:px-2.5 md:px-3 lg:px-4 text-[11px] sm:text-xs md:text-sm lg:text-[15px] font-black uppercase tracking-wider group transition-all flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
                 activeTab === "chat"
                   ? "border-transparent text-white"
                   : "border-transparent text-zinc-400 hover:text-white"
@@ -2388,7 +2412,7 @@ export default function App() {
 
             <button
               onClick={() => setActiveTab("sop")}
-              className={`py-2 px-1 sm:px-1.5 md:px-2 lg:px-2.5 text-[9px] sm:text-[10px] md:text-xs lg:text-[13px] font-bold flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
+              className={`group py-3 px-2 sm:px-2.5 md:px-3 lg:px-4 text-[11px] sm:text-xs md:text-sm lg:text-[15px] font-black uppercase tracking-wider group transition-all flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
                 activeTab === "sop"
                   ? "border-transparent text-white"
                   : "border-transparent text-zinc-400 hover:text-white"
@@ -2635,6 +2659,69 @@ export default function App() {
                     </div>
                   </div>
                 )}
+              </div>
+
+              {/* ======================= PROFESSIONAL AI WIDGETS PANEL ======================= */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                {/* Widget A: AI Capital Deployed */}
+                <div className="premium-card rounded-xl p-4 shadow-lg border border-zinc-800 relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 w-16 h-16 bg-emerald-500/5 rounded-full blur-xl"></div>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider font-mono">AI 避險資金部署水位</span>
+                      <div className="text-xl font-bold text-white mt-1 font-mono">
+                        NT$ {(holdings.length * 20000).toLocaleString()} <span className="text-xs text-zinc-500">/ 100,000 元</span>
+                      </div>
+                    </div>
+                    <div className="bg-emerald-950/80 p-2 rounded-lg border border-emerald-500/20 text-emerald-400">
+                      <ShieldAlert className="w-4 h-4 animate-pulse" />
+                    </div>
+                  </div>
+                  
+                  {/* Progress Bar */}
+                  <div className="mt-4">
+                    <div className="flex justify-between text-[9px] text-zinc-455 font-mono mb-1">
+                      <span>持股檔數: {holdings.length} / 5 檔</span>
+                      <span>{Math.round((holdings.length / 5) * 100)}% 曝險比率</span>
+                    </div>
+                    <div className="w-full h-1.5 bg-zinc-950 rounded-full overflow-hidden border border-zinc-900">
+                      <div 
+                        className="h-full bg-gradient-to-r from-[#10b881] to-emerald-400 shadow-[0_0_8px_#10b881]" 
+                        style={{ width: `${(holdings.length / 5) * 100}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Widget B: Live Trade Alerts Feed */}
+                <div className="premium-card rounded-xl p-4 shadow-lg border border-zinc-800 relative overflow-hidden">
+                  <div className="flex justify-between items-center border-b border-zinc-850 pb-2 mb-2">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                      <h4 className="text-white text-xs font-bold font-sans">AI 量化自動交易實時情報流</h4>
+                    </div>
+                    <span className="text-[8px] font-mono text-[#FFB74D] uppercase font-bold">Live Feed</span>
+                  </div>
+
+                  <div className="space-y-1.5 max-h-[70px] overflow-y-auto pr-1 no-scrollbar font-mono text-[9px]">
+                    {tradeNotifications.length === 0 ? (
+                      <div className="text-center py-4 text-zinc-650">📡 等候背景量化洗價訊號觸發...</div>
+                    ) : (
+                      tradeNotifications.slice(0, 3).map((item, idx) => (
+                        <div key={idx} className="flex justify-between items-center p-1 bg-zinc-950/50 rounded border border-zinc-900/60">
+                          <span className={`font-bold ${item.type === 'BUY' ? 'text-emerald-400' : 'text-rose-400'}`}>
+                            {item.type === 'BUY' ? '🟢 買入' : '🔴 賣出'}
+                          </span>
+                          <span className="text-zinc-300 font-bold truncate max-w-[80px]">{item.stock_name}</span>
+                          <span className="text-zinc-500">{item.price} 元</span>
+                          <span className="text-zinc-600 text-[8px]">{new Date(item.timestamp).toLocaleTimeString('zh-TW', { hour12: false })}</span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+
               </div>
 
               {/* Main Matrix Table */}
@@ -4094,7 +4181,7 @@ export default function App() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-fade-in select-none">
             {/* Left: Filter Controls */}
             <div className="lg:col-span-4 flex flex-col gap-6">
-              <div className="premium-card rounded-xl p-5 shadow-lg space-y-5">
+              <div className="screener-card-gradient-border backdrop-blur-md bg-zinc-950/40 rounded-xl p-5 shadow-lg space-y-5">
                 <div className="flex items-center gap-2 border-b border-zinc-850 pb-3">
                   <Sliders className="w-5 h-5 text-[#FFB74D]" />
                   <h3 className="font-bold text-white text-sm">智能選股多維度篩選器</h3>
@@ -4244,7 +4331,7 @@ export default function App() {
               </div>
 
               {/* 三大法人籌碼大盤統計 */}
-              <div className="premium-card rounded-xl p-5 shadow-lg space-y-4">
+              <div className="screener-card-gradient-border backdrop-blur-md bg-zinc-950/40 rounded-xl p-5 shadow-lg space-y-4">
                 <div className="flex items-center gap-2 border-b border-zinc-850 pb-3">
                   <Award className="w-5 h-5 text-indigo-400 animate-pulse" />
                   <h4 className="text-white text-xs font-bold font-mono uppercase">三大法人籌碼雷達監控</h4>
@@ -4299,7 +4386,7 @@ export default function App() {
               </div>
 
               {/* Market Calendar & Macro Panel */}
-              <div className="premium-card rounded-xl p-5 shadow-lg space-y-4">
+              <div className="screener-card-gradient-border backdrop-blur-md bg-zinc-950/40 rounded-xl p-5 shadow-lg space-y-4">
                 <div className="flex items-center gap-2 border-b border-zinc-850 pb-3">
                   <Zap className="w-5 h-5 text-amber-400" />
                   <h4 className="text-white text-xs font-bold font-mono uppercase">全球總經暨曆法追蹤</h4>
@@ -4390,7 +4477,7 @@ export default function App() {
 
             {/* Right: Screener Filtered Results Table */}
             <div className="lg:col-span-8 flex flex-col gap-6">
-              <div className="premium-card rounded-xl shadow-2xl overflow-hidden flex-1 flex flex-col justify-between">
+              <div className="screener-card-gradient-border backdrop-blur-md bg-zinc-950/40 rounded-xl shadow-2xl overflow-hidden flex-1 flex flex-col justify-between">
                 
                 {/* Table Header / Action Strip */}
                 <div className="p-4 border-b border-zinc-800 bg-[#0e1117] flex flex-col sm:flex-row gap-4 items-center justify-between">
@@ -4469,7 +4556,7 @@ export default function App() {
                                 setNotesText(stock.master_notes || "");
                                 setActiveTab("radar");
                               }}
-                              className="hover:bg-zinc-900/50 cursor-pointer transition"
+                              className="screener-table-row cursor-pointer"
                             >
                               <td className="py-2 px-3">
                                 <div className="font-mono font-bold text-white">{stock.stock_id}</div>
@@ -5522,6 +5609,44 @@ export default function App() {
           </div>
         </div>
       </footer>
+
+      {/* Dynamic Glassmorphic AI Trade Notification Toast */}
+      <AnimatePresence>
+        {currentToast && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            className="fixed bottom-6 right-6 z-[60] max-w-sm w-full p-4 bg-zinc-950/90 border border-zinc-800 rounded-xl shadow-2xl backdrop-blur-md select-none font-sans overflow-hidden"
+          >
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 via-yellow-400 to-[#E5A823]"></div>
+            <div className="flex items-start gap-3 mt-1">
+              <div className={`p-2 rounded-lg shrink-0 ${currentToast.type === 'BUY' ? 'bg-emerald-950/70 border border-emerald-500/20 text-emerald-400' : 'bg-rose-950/70 border border-rose-500/20 text-rose-400'}`}>
+                {currentToast.type === 'BUY' ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                  <span className={`text-[10px] font-black tracking-wider uppercase px-1.5 py-0.5 rounded font-mono ${currentToast.type === 'BUY' ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/20' : 'bg-rose-950 text-rose-400 border border-rose-500/20'}`}>
+                    AI {currentToast.type === 'BUY' ? '自動建倉' : '自動平倉'}
+                  </span>
+                  <span className="text-[9px] text-zinc-550 font-mono">
+                    {new Date(currentToast.timestamp).toLocaleTimeString('zh-TW', { hour12: false })}
+                  </span>
+                </div>
+                <h4 className="text-white text-xs font-bold mt-2 flex items-center gap-1.5">
+                  <span className="text-zinc-400 font-mono">[{currentToast.stock_id}]</span>
+                  <span>{currentToast.stock_name}</span>
+                  <span className="text-zinc-500">|</span>
+                  <span className="text-[#FFB74D] font-mono">NT$ {currentToast.price}</span>
+                </h4>
+                <p className="text-[10px] text-zinc-450 mt-1.5 leading-relaxed bg-zinc-900/40 p-2 rounded border border-zinc-900/60 font-mono">
+                  {currentToast.reason}
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ============================================================================== */}
       {/* 🚀 MODALS SECTION */}

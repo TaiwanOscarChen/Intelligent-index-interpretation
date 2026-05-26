@@ -822,6 +822,8 @@ def update_macro_data():
         "cnnFearGreed": 50,
         "threePartyNet": 0.0,
         "foreignNet": 0.0,
+        "trustNet": 0.0,
+        "dealerNet": 0.0,
         "foreignFutures": 0.0,
         "tradeValue": 0.0,
         "status": "online",
@@ -860,14 +862,23 @@ def update_macro_data():
             # TWSE BFI82U: [{"Item":"自營商(自行買賣)","Buy_Sum":"123","Sell_Sum":"123","Difference":"0"}, ...]
             three_party = 0.0
             foreign = 0.0
+            trust = 0.0
+            dealer = 0.0
             for item in json_data:
+                item_name = item.get("Item", "")
                 diff_str = item.get("Difference", "0").replace(",", "")
                 diff = float(diff_str) / 100000000.0 # Convert to hundred million (億)
                 three_party += diff
-                if "外資" in item.get("Item", ""):
+                if "外資" in item_name:
                     foreign += diff
+                elif "投信" in item_name:
+                    trust += diff
+                elif "自營商" in item_name:
+                    dealer += diff
             data["threePartyNet"] = round(three_party, 2)
             data["foreignNet"] = round(foreign, 2)
+            data["trustNet"] = round(trust, 2)
+            data["dealerNet"] = round(dealer, 2)
             print(f"✅ 成功獲取 三大法人買賣超: {data['threePartyNet']}億, 外資: {data['foreignNet']}億")
         else:
             print(f"⚠️ TWSE API 回傳錯誤碼: {res.status_code}")
@@ -884,6 +895,157 @@ def update_macro_data():
         print("✅ 總經數據已寫入 MongoDB")
     except Exception as e:
         print(f"❌ MongoDB 寫入總經數據失敗: {e}")
+
+
+def execute_ai_auto_trade(current_vix):
+    try:
+        import datetime
+        from pymongo import MongoClient
+        if not MONGO_URI:
+            print("⚠️ MONGO_URI 未設定，無法執行 AI 自動交易。")
+            return
+        client = MongoClient(MONGO_URI)
+        db = client["LionKing_DB"]
+        print("🤖 [AI Auto Trade] 開始執行資金與部位全域調度...")
+        strategy_collection = db['strategy_signals']
+        holdings_collection = db['simulated_holdings']
+        exits_collection = db['exit_logs']
+        notifications_collection = db['trade_notifications']
+        
+        signals = list(strategy_collection.find({}))
+        holdings = list(holdings_collection.find({}))
+        
+        # 1. 處理自動出場 (無限制數量)
+        for h in holdings:
+            stock_id = h.get('stock_id')
+            sig = next((s for s in signals if s.get('stock_id') == stock_id), None)
+            current_price = sig.get('close_price') if sig else h.get('current_price', h.get('buy_price'))
+            buy_price = h.get('buy_price')
+            
+            if not buy_price or buy_price == 0:
+                continue
+                
+            current_pnl_pct = ((current_price - buy_price) / buy_price) * 100
+            stop_loss = sig.get('stop_loss_price') if sig else (buy_price * 0.95)
+            
+            should_exit = False
+            reason = ""
+            
+            if current_price <= stop_loss:
+                should_exit = True
+                reason = "觸發停損或移動防線"
+            elif current_pnl_pct <= -5:
+                should_exit = True
+                reason = "虧損達 -5% 止損"
+            elif current_pnl_pct >= 20:
+                should_exit = True
+                reason = "獲利達 20% 自動結算"
+            elif current_vix > 30:
+                should_exit = True
+                reason = "VIX > 30 系統強制物理隔離"
+            elif sig and sig.get('score', 0) < 38:
+                should_exit = True
+                reason = "戰力評分跌破 38 分，退守防禦"
+                
+            if should_exit:
+                stock_name = h.get('stock_name', stock_id)
+                print(f"🤖 [AI Auto Trade] 自動平倉 {stock_name} ({stock_id}) - 理由: {reason}")
+                
+                now_taipei = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8)))
+                
+                exit_item = {
+                    "stock_id": stock_id,
+                    "stock_name": stock_name,
+                    "buy_price": buy_price,
+                    "buy_date": h.get('buy_date'),
+                    "exit_price": current_price,
+                    "exit_date": now_taipei.strftime('%Y-%m-%d'),
+                    "exit_time": now_taipei.strftime('%H:%M:%S'),
+                    "shares": h.get('shares', 1),
+                    "pnl_value": round((current_price - buy_price) * h.get('shares', 1)),
+                    "pnl_pct": round(current_pnl_pct, 2),
+                    "exit_reason": reason,
+                    "review_notes": "AI 自動決策系統依據風控鐵律執行平倉。"
+                }
+                
+                exits_collection.insert_one(exit_item)
+                holdings_collection.delete_one({"stock_id": stock_id})
+                
+                notifications_collection.insert_one({
+                    "type": "SELL",
+                    "stock_id": stock_id,
+                    "stock_name": stock_name,
+                    "price": current_price,
+                    "reason": reason,
+                    "timestamp": now_taipei.isoformat()
+                })
+        
+        # 2. 處理自動進場 (最多 5 檔)
+        current_holdings = list(holdings_collection.find({}))
+        current_holdings_count = len(current_holdings)
+        
+        valid_signals = [s for s in signals if s.get('score', 0) >= 38]
+        valid_signals.sort(key=lambda x: x.get('score', 0), reverse=True)
+        
+        for sig in valid_signals:
+            if current_holdings_count >= 5:
+                print("🤖 [AI Auto Trade] 庫存已達 5 檔滿載，停止自動建倉。")
+                break
+                
+            stock_id = sig.get('stock_id')
+            if any(h.get('stock_id') == stock_id for h in current_holdings):
+                continue
+                
+            stock_name = sig.get('stock_name')
+            score = sig.get('score')
+            close_price = sig.get('close_price')
+            
+            if not close_price or close_price == 0:
+                continue
+                
+            print(f"🤖 [AI Auto Trade] 發現 S/A 級標的 {stock_name} ({stock_id}) 分數: {score}。自動建倉！")
+            now_taipei = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8)))
+            
+            shares = max(1, int(20000 // close_price))
+            
+            new_h = {
+                "stock_id": stock_id,
+                "stock_name": stock_name,
+                "buy_price": close_price,
+                "buy_date": now_taipei.strftime('%Y-%m-%d'),
+                "buy_time": now_taipei.strftime('%H:%M:%S'),
+                "shares": shares,
+                "current_price": close_price,
+                "current_pnl_pct": 0,
+                "current_pnl_value": 0,
+                "max_price_reached": close_price,
+                "take_profit_triggered": False,
+                "stop_loss_price": sig.get('stop_loss_price'),
+                "trailing_stop_price": sig.get('trailing_stop_price'),
+                "suggested_action": "🟢 AI 自動買入"
+            }
+            
+            holdings_collection.update_one(
+                {"stock_id": stock_id},
+                {"$set": new_h},
+                upsert=True
+            )
+            current_holdings.append(new_h)
+            current_holdings_count += 1
+            
+            notifications_collection.insert_one({
+                "type": "BUY",
+                "stock_id": stock_id,
+                "stock_name": stock_name,
+                "price": close_price,
+                "shares": shares,
+                "reason": f"戰力 {score} 分，觸發強勢建倉！",
+                "timestamp": now_taipei.isoformat()
+            })
+            
+    except Exception as e:
+        print(f"❌ [AI Auto Trade Error] 自動交易執行異常: {e}")
+
 
 def run_v2026_full_sweep():
     update_macro_data()
@@ -1349,6 +1511,7 @@ def run_v2026_full_sweep():
         except Exception as e:
             print(f"❌ [MongoDB] lion_signals bulk write error: {e}", file=sys.stderr)
 
+    execute_ai_auto_trade(vix_value)
     return result
 
 def run_streamlit_app():
