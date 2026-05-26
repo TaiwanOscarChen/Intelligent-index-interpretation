@@ -132,7 +132,6 @@ function seedInitialSignals() {
     const ma20_val = Math.round(stock.basePrice * 10) / 10;
     const ma10_val = Math.round(stock.basePrice * 0.99 * 10) / 10;
     const ma5_val = Math.round(stock.basePrice * 0.98 * 10) / 10;
-    const ma60_val = Math.round(stock.basePrice * 0.95 * 10) / 10;
     const yesterday_ma20 = Math.round(stock.basePrice * 0.998 * 10) / 10;
     
     const bias20 = Math.round(((close_price - ma20_val) / ma20_val) * 100 * 100) / 100;
@@ -342,7 +341,6 @@ function runInMemoryScanFallback(overrideTsmc?: 'green' | 'red') {
     const ma20_val = Math.round(newPrice * 0.985 * 10) / 10;
     const ma10_val = Math.round(newPrice * 0.99 * 10) / 10;
     const ma5_val = Math.round(newPrice * 0.995 * 10) / 10;
-    const ma60_val = Math.round(newPrice * 0.955 * 10) / 10;
     
     const finalScore = isTsmcQuarantine ? Math.max(10, stock.score - 12) : Math.min(50, Math.max(20, stock.score + Math.floor(Math.random() * 6) - 2));
     const vix_value = 16.5;
@@ -1783,6 +1781,101 @@ ${fileAnalysisContext}
 });
 
 
+
+// ==============================================================================
+// 🤖 AI AUTO TRADE SIMULATOR
+// ==============================================================================
+async function executeAIAutoTrade() {
+  try {
+    if (!dbConnected || !holdingsCollection || !exitsCollection) return;
+    const db = (holdingsCollection as any).s.db;
+    const strategySignalsCollection = db.collection("strategy_signals");
+    
+    const signals = await strategySignalsCollection.find({}).toArray();
+    const holdings = await holdingsCollection.find({}).toArray();
+
+    // 1. Process Exits
+    for (const h of holdings) {
+      const sig = signals.find((s: any) => s.stock_id === h.stock_id);
+      const current_price = sig ? sig.close_price : h.current_price;
+      const current_pnl_pct = ((current_price - h.buy_price) / h.buy_price) * 100;
+      const stop_loss = sig ? sig.stop_loss_price : (h.buy_price * 0.95);
+      const vix_value = sig ? sig.vixValue : 0;
+      
+      let shouldExit = false;
+      let reason = "";
+
+      if (current_price <= stop_loss) {
+        shouldExit = true; reason = "觸發停損或移動防線";
+      } else if (current_pnl_pct <= -5) {
+        shouldExit = true; reason = "虧損達 -5% 止損";
+      } else if (current_pnl_pct >= 20) {
+        shouldExit = true; reason = "獲利達 20% 自動結算";
+      } else if (vix_value > 30) {
+        shouldExit = true; reason = "VIX > 30 系統強制物理隔離";
+      } else if (sig && sig.score < 38) {
+        shouldExit = true; reason = "戰力評分跌破 38 分，退守防禦";
+      }
+
+      if (shouldExit) {
+        console.log(`🤖 [AI Auto Trade] 自動平倉 ${h.stock_name} (${h.stock_id}) - 理由: ${reason}`);
+        const nowTaipei = new Date(Date.now() + 8 * 60 * 60 * 1000);
+        const exitItem = {
+          stock_id: h.stock_id,
+          stock_name: h.stock_name,
+          buy_price: h.buy_price,
+          buy_date: h.buy_date,
+          exit_price: current_price,
+          exit_date: nowTaipei.toISOString().split('T')[0],
+          exit_time: nowTaipei.toISOString().split('T')[1].substring(0, 8),
+          shares: h.shares,
+          pnl_value: Math.round((current_price - h.buy_price) * h.shares),
+          pnl_pct: Math.round(current_pnl_pct * 100) / 100,
+          exit_reason: reason,
+          review_notes: "AI 自動決策系統依據風控鐵律執行平倉。"
+        };
+        await exitsCollection.insertOne(exitItem);
+        await holdingsCollection.deleteOne({ stock_id: h.stock_id });
+      }
+    }
+
+    // 2. Process Entries
+    const currentHoldings = await holdingsCollection.find({}).toArray();
+    for (const sig of signals) {
+      if (sig.score >= 38) {
+        const exists = currentHoldings.find((h: any) => h.stock_id === sig.stock_id);
+        if (!exists) {
+          console.log(`🤖 [AI Auto Trade] 發現 S/A 級標的 ${sig.stock_name} (${sig.stock_id}) 分數: ${sig.score}。自動建倉！`);
+          const nowTaipei = new Date(Date.now() + 8 * 60 * 60 * 1000);
+          const newH = {
+            stock_id: sig.stock_id,
+            stock_name: sig.stock_name,
+            buy_price: sig.close_price,
+            buy_date: nowTaipei.toISOString().split('T')[0],
+            buy_time: nowTaipei.toISOString().split('T')[1].substring(0, 8),
+            shares: Math.floor(20000 / sig.close_price) || 1,
+            current_price: sig.close_price,
+            current_pnl_pct: 0,
+            current_pnl_value: 0,
+            max_price_reached: sig.close_price,
+            take_profit_triggered: false,
+            stop_loss_price: sig.stop_loss_price,
+            trailing_stop_price: sig.trailing_stop_price,
+            suggested_action: "🟢 AI 自動買入"
+          };
+          await holdingsCollection.updateOne(
+            { stock_id: sig.stock_id },
+            { $set: newH },
+            { upsert: true }
+          );
+        }
+      }
+    }
+  } catch (err) {
+    console.error("AI Auto Trade Error:", err);
+  }
+}
+
 // SPA Static / Development Server Ingress Route Setup
 const startViteAndExpress = async () => {
   if (process.env.NODE_ENV !== "production") {
@@ -1806,7 +1899,22 @@ const startViteAndExpress = async () => {
     console.log("📦 [Production Ingress] Static files deployed from static workspace /dist.");
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
+  
+// 🚀 Smart Start: Force Sweep immediately
+app.post("/api/sweep/force", (req, res) => {
+  console.log("⚡ [Smart Start] 啟動全域即時量化洗價 (Force Sweep)");
+  exec("python app.py --sweep", (err, stdout, stderr) => {
+    if (err) {
+      console.error("Force Sweep Error:", err);
+      return res.status(500).json({ success: false, error: err.message });
+    }
+    console.log("🟢 強制掃描完成，觸發 AI Auto Trade。");
+    executeAIAutoTrade();
+    res.json({ success: true, message: "Sweep completed" });
+  });
+});
+
+app.listen(PORT, "0.0.0.0", () => {
     console.log(`🚀 [Master Server Init] 獅王大一統版決策終端啟動於：http://localhost:${PORT}`);
   });
 
@@ -1818,6 +1926,7 @@ const startViteAndExpress = async () => {
       runInMemoryScanFallback();
     } else {
       console.log("🟢 背景初始掃描成功，MongoDB 已同步最新實時盤面。");
+      executeAIAutoTrade();
     }
   });
 
@@ -1847,12 +1956,20 @@ const startViteAndExpress = async () => {
       
       if (isWeekday && isTradingTime) {
         console.log(`⏰ [Intraday Scheduler] 台北標準時間 (${weekday} ${partMap.hour}:${partMap.minute})，執行 Lion King 背景自動掃描洗價...`);
-        exec("python app.py --sweep");
+        exec("python app.py --sweep", (err) => {
+          if (!err) executeAIAutoTrade();
+        });
       }
     } catch (err) {
       console.error("❌ [Scheduler Error] 盤中定時任務異常:", err);
     }
-  }, 10 * 60 * 1000); // 10 minutes
+  }, 10 * 60 * 1000);
+
+  // Start Fast Price Updater (every 30 seconds)
+  setInterval(() => {
+    console.log("⚡ [Fast Updater] 觸發極速報價引擎...");
+    exec("python fast_price_updater.py");
+  }, 30 * 1000);
 };
 
 if (!process.env.VERCEL) {

@@ -352,7 +352,7 @@ export default function App() {
     fetchSignals();
     fetchHoldings();
     fetchMarketData();
-    const mdInterval = setInterval(fetchMarketData, 5 * 60 * 1000); // refresh every 5 min
+    const mdInterval = setInterval(fetchMarketData, 30 * 1000); // refresh every 30 sec for real-time prices
     return () => clearInterval(mdInterval);
   }, []);
 
@@ -2390,7 +2390,49 @@ export default function App() {
             </button>
           </div>
 
-          <div className="hidden lg:flex items-center gap-2 text-xs font-mono">
+          <div className="hidden lg:flex items-center gap-2 text-xs font-mono">\n
+          {/* ============================================================== */}
+          {/* GLOBAL MACRO & OPENAPI LINKS DASHBOARD */}
+          {/* ============================================================== */}
+          <div className="bg-[#0c0e12] border border-cyan-900/50 rounded-xl p-6 mb-8 relative overflow-hidden group shadow-[0_0_20px_rgba(0,255,255,0.05)]">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 blur opacity-20 group-hover:opacity-40 transition duration-500 rounded-xl"></div>
+            
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-blue-950/50 rounded-lg border border-blue-800/50">
+                  <Globe className="w-6 h-6 text-cyan-400" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-white">全球情報與 OpenAPI 數據直連網關</h3>
+                  <p className="text-sm text-zinc-400">實時串接總經、籌碼、新聞與證交所底層資料庫，強化決策穩定度</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {[
+                  { title: "全球總經與 VIX", desc: "美債殖利率與恐慌指數", icon: Activity, color: "text-red-400", bg: "bg-red-500/10", border: "border-red-500/30", link: "https://finance.yahoo.com/quote/%5EVIX/" },
+                  { title: "法人期現貨籌碼", desc: "外資投信未平倉水位", icon: Database, color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/30", link: "https://www.taifex.com.tw/cht/3/futContractsDate" },
+                  { title: "台股即時產業新聞", desc: "第一手重大訊息觀測", icon: Globe, color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/30", link: "https://mops.twse.com.tw/mops/web/t05st01" },
+                  { title: "證交所 OpenAPI", desc: "實時逐筆交易與報價", icon: Server, color: "text-cyan-400", bg: "bg-cyan-500/10", border: "border-cyan-500/30", link: "https://openapi.twse.com.tw/" },
+                ].map((item, idx) => (
+                  <a 
+                    key={idx}
+                    href={item.link}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={`flex flex-col p-4 rounded-lg border ${item.border} ${item.bg} hover:bg-opacity-20 transition-all duration-300 cursor-pointer`}
+                  >
+                    <div className="flex items-center gap-3 mb-2">
+                      <item.icon className={`w-5 h-5 ${item.color}`} />
+                      <span className="font-bold text-gray-200">{item.title}</span>
+                    </div>
+                    <span className="text-xs text-gray-400">{item.desc}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             <span className="text-zinc-550">V2026.Max ENGINE ACTIVE</span>
           </div>
