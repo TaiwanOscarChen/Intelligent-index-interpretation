@@ -683,16 +683,25 @@ app.get("/api/market-data", async (req, res) => {
     const isMarketHours = isTradingDay && hour >= 9 && hour < 14;
     
     // ── 台指 VIX ──
-    const twVix = Math.round((16.5 + seedSin(1) * 4.2 + (isMarketHours ? seedCos(5) * 1.5 : 0)) * 100) / 100;
+    
+    let realMacro: any = null;
+    if (dbConnected && holdingsCollection) {
+      try {
+        const db = (holdingsCollection as any).s.db;
+        const macroCol = db.collection("market_macro_data");
+        realMacro = await macroCol.findOne({ _id: "latest_macro" });
+      } catch(e) {}
+    }
+    const twVix = realMacro?.twVix ?? Math.round((16.5 + seedSin(1) * 4.2 + (isMarketHours ? seedCos(5) * 1.5 : 0)) * 100) / 100;
     
     // ── CNN Fear & Greed Index (0-100) ──
-    const cnnFearGreed = Math.round(Math.max(5, Math.min(95, 55 + seedSin(2) * 22 + seedCos(3) * 8)));
+    const cnnFearGreed = realMacro?.cnnFearGreed ?? Math.round(Math.max(5, Math.min(95, 55 + seedSin(2) * 22 + seedCos(3) * 8)));
     
     // ── 三大法人合計 (億元) ──
-    const foreignNet = Math.round((120 + seedSin(3) * 850) * 10) / 10; // 外資
+    const foreignNet = realMacro?.foreignNet ?? Math.round((120 + seedSin(3) * 850) * 10) / 10; // 外資
     const trustNet = Math.round((45 + seedSin(4) * 280) * 10) / 10;    // 投信
     const dealerNet = Math.round((-12 + seedSin(5) * 120) * 10) / 10;  // 自營商
-    const threePartyNet = Math.round((foreignNet + trustNet + dealerNet) * 10) / 10;
+    const threePartyNet = realMacro?.threePartyNet ?? Math.round((foreignNet + trustNet + dealerNet) * 10) / 10;
     
     // ── 外資台指期未平倉 (口) ──
     const foreignFuturesNet = Math.round(-18450 + seedSin(6) * 3200);
@@ -1912,36 +1921,54 @@ app.post("/api/sweep/force", async (req, res) => {
 // ⚡ Vercel Cloud Fast Price Updater
 app.post("/api/prices/fast", async (req, res) => {
   try {
-    if (!dbConnected || !holdingsCollection) return res.status(500).json({ success: false, message: "DB not connected" });
-    const holdings = await holdingsCollection.find({}).toArray();
+    if (!dbConnected) return res.status(500).json({ success: false, message: "DB not connected" });
     
-    let updated = 0;
-    for (const h of holdings) {
-      try {
-        let ticker = h.stock_id;
-        if (!ticker.startsWith("^")) {
-           ticker = (ticker.length === 4 && !isNaN(Number(ticker))) ? `${ticker}.TW` : `${ticker}.TWO`;
-        }
-        const quote = await yahooFinance.quote(ticker);
-        if (quote && quote.regularMarketPrice) {
-          const current_price = Number(quote.regularMarketPrice.toFixed(2));
-          await holdingsCollection.updateOne(
-            { stock_id: h.stock_id },
-            { $set: { current_price } }
-          );
-          
-          const db = (holdingsCollection as any).s.db;
-          const signalsCol = db.collection("strategy_signals");
-          await signalsCol.updateOne(
-            { stock_id: h.stock_id },
-            { $set: { close_price: current_price } }
-          );
-          updated++;
-        }
-      } catch (err) {
-        console.error(`Error fetching price for ${h.stock_id}:`, err);
+    // Convert INITIAL_STOCKS to yahoo finance tickers
+    const tickers = INITIAL_STOCKS.map(s => {
+      let ticker = s.stock_id;
+      if (!ticker.startsWith("^")) {
+        ticker = (ticker.length === 4 && !isNaN(Number(ticker))) ? `${ticker}.TW` : `${ticker}.TWO`;
       }
+      return { id: s.stock_id, ticker };
+    });
+
+    let updated = 0;
+    const db = (holdingsCollection as any).s.db;
+    const signalsCol = db.collection("strategy_signals");
+
+    // Fetch in batches to avoid timeout or rate limit
+    const batchSize = 10;
+    for (let i = 0; i < tickers.length; i += batchSize) {
+      const batch = tickers.slice(i, i + batchSize);
+      await Promise.all(batch.map(async (item) => {
+        try {
+          const quote = await yahooFinance.quote(item.ticker);
+          if (quote && quote.regularMarketPrice) {
+            const current_price = Number(quote.regularMarketPrice.toFixed(2));
+            
+            // Update strategy signals (global radar board)
+            await signalsCol.updateOne(
+              { stock_id: item.id },
+              { $set: { close_price: current_price } },
+              { upsert: true }
+            );
+            
+            // Also update holdings if present
+            if (holdingsCollection) {
+              await holdingsCollection.updateOne(
+                { stock_id: item.id },
+                { $set: { current_price: current_price } }
+              );
+            }
+            
+            updated++;
+          }
+        } catch (err) {
+          // ignore individual fetch errors to keep the batch moving
+        }
+      }));
     }
+    
     res.json({ success: true, updated, message: `Fast prices updated for ${updated} stocks via Cloud.` });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
