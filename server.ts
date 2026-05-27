@@ -9,7 +9,8 @@ import { MongoClient, Db, Collection } from "mongodb";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 import { exec } from "child_process";
-import yahooFinance from "yahoo-finance2";
+import YahooFinanceClass from "yahoo-finance2";
+const yahooFinance = new YahooFinanceClass();
 import { promisify } from "util";
 import { INITIAL_STOCKS, StockBasicInfo } from "./src/initial_stocks.js";
 import { StockSignal, ScanResult, StockSignalOption, HoldingItem, ExitLogItem } from "./src/types.js";
@@ -1821,31 +1822,51 @@ async function executeAIAutoTrade() {
 
     // 1. Process Exits
     for (const h of holdings) {
-      const sig = signals.find((s: any) => s.stock_id === h.stock_id);
+      const sig = signals.find((s: any) => (s.id || s.stock_id) === h.stock_id);
       const current_price = sig ? sig.close_price : h.current_price;
       const current_pnl_pct = ((current_price - h.buy_price) / h.buy_price) * 100;
+      
+      // 動態停損生死線與移動停利線
       const stop_loss = sig ? sig.stop_loss_price : (h.buy_price * 0.95);
       const vix_value = localScanResult.vixValue || (sig ? sig.vixValue : 18.5);
       
+      // 如果 holdings 中的 trailing_stop_price 比手算的高，採用 holdings 的
+      const max_price_reached = Math.max(h.max_price_reached || h.buy_price, current_price);
+      const computed_trailing = Math.round(max_price_reached * 0.97 * 10) / 10;
+      const trailing_stop = h.trailing_stop_price ? Math.max(h.trailing_stop_price, computed_trailing) : computed_trailing;
+
       let shouldExit = false;
+      let isPartialExit = false;
+      let exitShares = h.shares;
       let reason = "";
 
+      // 檢查出場條件 (V8050.2 鐵血紀律)
       if (current_price <= stop_loss) {
         shouldExit = true; reason = "20MA 物理隔離：收盤價跌破生命線";
-      } else if (current_pnl_pct <= -3.5) {
-        shouldExit = true; reason = "短線打帶跑：虧損觸及 -3.5% 立即出清";
       } else if (current_pnl_pct <= -5.0) {
-        shouldExit = true; reason = "破產防禦：虧損達 -5% 無條件斷頭";
-      } else if (current_pnl_pct >= 20.0) {
-        shouldExit = true; reason = "獲利達 +20%！黃燈強制減碼 50% 鎖利 (清倉落袋)";
+        shouldExit = true; reason = "破產防禦停損：虧損達 -5% 無條件斷頭";
+      } else if (current_pnl_pct <= -3.5) {
+        shouldExit = true; reason = "極短線動能停損：動能消失，虧損觸及 -3.5%";
       } else if (vix_value > 30) {
-        shouldExit = true; reason = "VIX > 30 黑天鵝 E-Stop！強制全面清倉防禦";
+        shouldExit = true; reason = "VIX > 30 黑天鵝 E-Stop：強制全面清倉";
       } else if (sig && sig.score < 38) {
-        shouldExit = true; reason = "戰力評分跌破 38 分，物理隔離 X 級退守觀望";
+        shouldExit = true; reason = "戰力評分跌破 38 (X級)：物理隔離退守觀望";
+      } else if (current_price <= trailing_stop) {
+        shouldExit = true; reason = "移動停利觸發：跌破移動停利防守線";
+      } else if (current_pnl_pct >= 20.0 && !h.take_profit_triggered) {
+        shouldExit = true;
+        isPartialExit = true;
+        exitShares = Math.floor(h.shares / 2);
+        // 如果減碼股數為 0，則改為全數平倉
+        if (exitShares === 0) {
+          exitShares = h.shares;
+          isPartialExit = false;
+        }
+        reason = "獲利達 +20%！黃燈強制機械化減碼 50% 鎖利入袋";
       }
 
       if (shouldExit) {
-        console.log(`🤖 [AI Auto Trade] 自動平倉 ${h.stock_name} (${h.stock_id}) - 理由: ${reason}`);
+        console.log(`🤖 [AI Auto Trade] ${isPartialExit ? '部分減碼' : '自動平倉'} ${h.stock_name} (${h.stock_id}) - 理由: ${reason}`);
         const nowTaipei = new Date(Date.now() + 8 * 60 * 60 * 1000);
         const exitItem = {
           stock_id: h.stock_id,
@@ -1855,14 +1876,49 @@ async function executeAIAutoTrade() {
           exit_price: current_price,
           exit_date: nowTaipei.toISOString().split('T')[0],
           exit_time: nowTaipei.toISOString().split('T')[1].substring(0, 8),
-          shares: h.shares,
-          pnl_value: Math.round((current_price - h.buy_price) * h.shares),
+          shares: exitShares,
+          pnl_value: Math.round((current_price - h.buy_price) * exitShares),
           pnl_pct: Math.round(current_pnl_pct * 100) / 100,
           exit_reason: reason,
-          review_notes: "AI 自動決策系統依據風控鐵律執行平倉。"
+          review_notes: isPartialExit 
+            ? "AI 自動決策系統依據 V8050.2 SOP 獲利達 20% 自動減碼一半鎖定利潤。" 
+            : "AI 自動決策系統依據 V8050.2 SOP 執行全數平倉。"
         };
         await exitsCollection.insertOne(exitItem);
-        await holdingsCollection.deleteOne({ stock_id: h.stock_id });
+
+        if (isPartialExit) {
+          // 部分平倉：更新剩餘持倉股數、標記已減碼、緊縮移動停利線
+          await holdingsCollection.updateOne(
+            { stock_id: h.stock_id },
+            { 
+              $set: { 
+                shares: h.shares - exitShares, 
+                take_profit_triggered: true,
+                max_price_reached: max_price_reached,
+                // 緊縮移動停利線至成本價的 1.10 倍，鎖定至少 10% 獲利
+                trailing_stop_price: Math.round(h.buy_price * 1.10 * 10) / 10
+              } 
+            }
+          );
+        } else {
+          // 全數平倉：刪除該持倉
+          await holdingsCollection.deleteOne({ stock_id: h.stock_id });
+        }
+      } else {
+        // 如果沒有出場，但創下新高，則更新 max_price_reached 和動態更新 trailing_stop_price
+        if (max_price_reached > (h.max_price_reached || 0)) {
+          await holdingsCollection.updateOne(
+            { stock_id: h.stock_id },
+            { 
+              $set: { 
+                max_price_reached: max_price_reached,
+                trailing_stop_price: h.take_profit_triggered 
+                  ? Math.max(h.trailing_stop_price || 0, Math.round(h.buy_price * 1.10 * 10) / 10) // 已經觸發過減碼的，維持不低於 1.10 倍成本
+                  : computed_trailing
+              } 
+            }
+          );
+        }
       }
     }
 
@@ -1870,7 +1926,7 @@ async function executeAIAutoTrade() {
     const currentHoldings = await holdingsCollection.find({}).toArray();
     for (const sig of signals) {
       if (sig.score >= 38) {
-        const exists = currentHoldings.find((h: any) => h.stock_id === sig.stock_id);
+        const exists = currentHoldings.find((h: any) => h.stock_id === (sig.id || sig.stock_id));
         if (!exists) {
           console.log(`🤖 [AI Auto Trade] 發現 S/A 級標的 ${sig.stock_name} (${sig.stock_id}) 分數: ${sig.score}。自動建倉！`);
           const nowTaipei = new Date(Date.now() + 8 * 60 * 60 * 1000);
@@ -1935,14 +1991,19 @@ app.post("/api/sweep/force", async (req, res) => {
 });
 
 
-// ⚡ V8050.0 每1分鐘高頻輕量即時報價端點（GET, 不寫 DB，超快速返回）
-// 前端每 60 秒輪詢此端點取得最新報價，徹底杜絕資訊滯後盲點
+// ⚡ V8050.2 每1分鐘高頻全網即時報價端點（含 86 檔高速批次與內存雙向同步）
 app.get("/api/prices/realtime", async (req, res) => {
   const startTime = Date.now();
-  // 關鍵指數（VIX + TSMC + 費半）加個股
-  const keyTickers = ["^VIX", "^SOX", "2330.TW", "2454.TW"];
-  const otcIds = new Set(["3324","4966","3529","4979","3163","3363","4908","3081","6640","3680","3260","8299"]);
-  const stockTickers = INITIAL_STOCKS.slice(0, 30).map(s => { // 首批30支，確保25s內完成
+  
+  // 15檔精準上櫃股票 (OTC) 集合，確保其餘 71 檔精準補綴 .TW，這 15 檔補綴 .TWO
+  const otcIds = new Set([
+    "4966", "3529", "6138", "5347", "8299", 
+    "3324", "3363", "4979", "3163", "4908", 
+    "3081", "6640", "3680", "6274", "8069"
+  ]);
+
+  const keyTickers = ["^VIX", "^SOX"];
+  const stockTickers = INITIAL_STOCKS.map(s => {
     const id = s.id || (s as any).stock_id;
     return { id, ticker: otcIds.has(id) ? `${id}.TWO` : `${id}.TW` };
   });
@@ -1952,46 +2013,62 @@ app.get("/api/prices/realtime", async (req, res) => {
     ...stockTickers
   ];
 
-  const TIMEOUT_MS = 20000; // Vercel 25s limit 內
-  const BATCH_SIZE = 8;
+  const tickersList = allItems.map(item => item.ticker);
   const prices: Record<string, { price: number; change: number; changePercent: number }> = {};
 
-  async function fetchWithTimeout(ticker: string, timeoutMs: number) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeoutMs);
-    try {
-      const q = await yahooFinance.quote(ticker);
-      clearTimeout(timer);
-      return q;
-    } catch (e) {
-      clearTimeout(timer);
-      return null;
+  console.log(`⚡ [Realtime] 啟動 V8050.2 即時全頻掃描計 ${tickersList.length} 檔成分股...`);
+
+  let fetchedQuotes: any[] = [];
+  let isSuccessful = false;
+
+  // 雙層容錯機制：優先大批次並行查詢
+  try {
+    const qRes = await yahooFinance.quote(tickersList);
+    fetchedQuotes = Array.isArray(qRes) ? qRes : [qRes];
+    isSuccessful = true;
+  } catch (err: any) {
+    console.warn(`⚠️ [Realtime] 大批次查詢失敗: ${err.message}。啟動分批容錯降級機制...`);
+    // 降級為 4 個並行的小批次
+    const BATCH_SIZE = 22;
+    const promises: Promise<any[]>[] = [];
+    for (let i = 0; i < tickersList.length; i += BATCH_SIZE) {
+      const subBatch = tickersList.slice(i, i + BATCH_SIZE);
+      promises.push(
+        yahooFinance.quote(subBatch)
+          .then(res => Array.isArray(res) ? res : [res])
+          .catch(e => {
+            console.error(`❌ [Realtime] 子批次 ${i} 查詢失敗:`, e.message);
+            return [];
+          })
+      );
     }
+    const settled = await Promise.all(promises);
+    fetchedQuotes = settled.flat();
+    isSuccessful = fetchedQuotes.length > 0;
   }
 
-  // 分批並行爬取
-  for (let i = 0; i < allItems.length; i += BATCH_SIZE) {
-    if (Date.now() - startTime > TIMEOUT_MS) break; // 全域 timeout 保護
-    const batch = allItems.slice(i, i + BATCH_SIZE);
-    const results = await Promise.allSettled(
-      batch.map(item => fetchWithTimeout(item.ticker, 5000))
-    );
-    results.forEach((result, idx) => {
-      if (result.status === "fulfilled" && result.value) {
-        const q = result.value as any;
-        const id = batch[idx].id;
-        prices[id] = {
+  // 整理與解析價格數據
+  fetchedQuotes.forEach((q: any) => {
+    if (q && q.symbol) {
+      const item = allItems.find(x => x.ticker.toLowerCase() === q.symbol.toLowerCase() || x.id.toLowerCase() === q.symbol.toLowerCase());
+      if (item) {
+        prices[item.id] = {
           price: Number((q.regularMarketPrice || 0).toFixed(2)),
           change: Number((q.regularMarketChange || 0).toFixed(2)),
           changePercent: Number((q.regularMarketChangePercent || 0).toFixed(3))
         };
       }
-    });
-  }
+    }
+  });
 
   // ⚡ V8050.2 每分鐘自動化持倉價格同步與智慧出場條件審查
   if (prices["^VIX"]) {
     localScanResult.vixValue = prices["^VIX"].price;
+    localScanResult.macroEStopActive = prices["^VIX"].price > 30;
+  }
+  if (prices["2330"]) {
+    localScanResult.tsmcPrice = prices["2330"].price;
+    localScanResult.tsmcMa20Status = localScanResult.tsmcPrice >= localScanResult.tsmcMa20Value ? "多 - 安全" : "空 - 警戒防守";
   }
   
   if (dbConnected && holdingsCollection) {
@@ -1999,19 +2076,26 @@ app.get("/api/prices/realtime", async (req, res) => {
       const db = (holdingsCollection as any).s.db;
       const signalsCol = db.collection("strategy_signals");
       
-      // 將爬取到的實時報價寫入資料庫，確保持倉與信號庫同步最新
+      // 將爬取到的實時報價寫入資料庫，確打破倉與信號庫同步最新
       for (const [id, data] of Object.entries(prices)) {
         if (data.price > 0 && !id.startsWith("^")) {
-          // 更新 strategy_signals 信號庫
+          // 1. 更新 strategy_signals 信號庫
           await signalsCol.updateOne(
             { stock_id: id },
             { $set: { close_price: data.price, change_pct: data.change } }
           );
-          // 更新持倉 current_price
+          // 2. 更新持倉 current_price
           await holdingsCollection.updateOne(
             { stock_id: id },
             { $set: { current_price: data.price } }
           );
+
+          // 3. 同步更新記憶體緩存 localScanResult.signals
+          const sigIndex = localScanResult.signals.findIndex(s => s.stock_id === id);
+          if (sigIndex !== -1) {
+            localScanResult.signals[sigIndex].close_price = data.price;
+            localScanResult.signals[sigIndex].change_pct = data.change;
+          }
         }
       }
       
@@ -2023,15 +2107,16 @@ app.get("/api/prices/realtime", async (req, res) => {
   }
 
   const elapsed = Date.now() - startTime;
-  console.log(`⚡ [Realtime] 1分鐘高頻報價爬蟲完成並觸發智慧出場審查，耗時 ${elapsed}ms，取得 ${Object.keys(prices).length} 支股票`);
+  console.log(`⚡ [Realtime] 1分鐘高頻報價爬蟲與內存同步完成，耗時 ${elapsed}ms，取得 ${Object.keys(prices).length} 檔最新報價`);
   res.json({
-    success: true,
+    success: isSuccessful,
     timestamp: new Date().toISOString(),
     elapsedMs: elapsed,
     count: Object.keys(prices).length,
     prices
   });
 });
+
 
 
 // ⚡ Vercel Cloud Fast Price Updater（含 DB 寫入 + 並行優化）
