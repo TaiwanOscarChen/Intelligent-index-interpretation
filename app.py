@@ -25,7 +25,7 @@ import streamlit as st
 # ==============================================================================
 TW_TZ = pytz.timezone("Asia/Taipei")
 
-# 90 檔純淨個股期貨宇宙 (剔除金融股)
+# 86 檔純淨個股期貨宇宙 (剔除金融股)
 INITIAL_STOCKS = [
     {
         "id": "2330",
@@ -1121,7 +1121,7 @@ def run_v2026_full_sweep():
     except Exception as e:
         print(f"⚠️ 台積電生命水位抓取失敗，採用模擬判定: {e}")
 
-    # 3. yfinance 批量抓取 90 檔個股資料
+    # 3. yfinance 批量抓取 86 檔個股資料
     otc_ids = {"3324", "4966", "3529", "4979", "3163", "3363", "4908", "3081", "6640", "3680", "3260", "8299"}
     ticker_ids = [f"{s['id']}.TWO" if s['id'] in otc_ids else f"{s['id']}.TW" for s in INITIAL_STOCKS]
     try:

@@ -2561,7 +2561,7 @@ export default function App() {
 
                 {/* Score Stats */}
                 <div className="premium-card rounded-xl p-3 md:p-4 shadow relative overflow-hidden group">
-                  <h3 className="text-[9px] md:text-[10px] text-zinc-500 font-black tracking-wider uppercase font-mono mb-2">90 檔純高 Beta 分佈</h3>
+                  <h3 className="text-[9px] md:text-[10px] text-zinc-500 font-black tracking-wider uppercase font-mono mb-2">86 檔純高 Beta 分佈</h3>
                   <div className="grid grid-cols-4 gap-1 text-center font-mono">
                     <div className="bg-zinc-900/60 p-1.5 rounded border border-zinc-850">
                       <div className="text-[9px] text-rose-400 font-bold">多</div>
@@ -2693,7 +2693,7 @@ export default function App() {
                       <RefreshCw className={`w-5 h-5 ${isScanning ? "animate-spin" : ""}`} />
                     </div>
                     <div>
-                      <h4 className="text-white font-bold text-sm">獅王戰神 V2026.Max 90 檔純高 Beta 股期洗價掃描器</h4>
+                      <h4 className="text-white font-bold text-sm">獅王戰神 V2026.Max 86 檔純高 Beta 股期洗價掃描器</h4>
                       <p className="text-xs text-zinc-400 mt-1">配備自動重試指數退避、防空值裝甲，一鍵批次同步洗盤</p>
                     </div>
                   </div>
@@ -2708,7 +2708,7 @@ export default function App() {
                           : "bg-gradient-to-r from-[#E5A823] to-[#FFB74D] text-[#08090c] hover:scale-[1.02] active:scale-[0.98]"
                       }`}
                     >
-                      {isScanning ? "正在為 90 檔高 Beta 洗價中..." : "⚡ 啟動全域即時量化洗價"}
+                      {isScanning ? "正在為 86 檔高 Beta 洗價中..." : "⚡ 啟動全域即時量化洗價"}
                     </button>
                   </div>
                 </div>
@@ -3485,7 +3485,7 @@ export default function App() {
                 </div>
                 <div className="mt-4 p-2 rounded bg-zinc-950/40 border border-zinc-900/60 flex items-center gap-2 text-[10px] text-zinc-400 font-sans leading-relaxed">
                   <Cpu className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
-                  <span>基於 90 檔高 Beta 標的評分分佈與今日平均漲跌幅的動態情緒矩陣。</span>
+                  <span>基於 86 檔高 Beta 標的評分分佈與今日平均漲跌幅的動態情緒矩陣。</span>
                 </div>
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-yellow-500 to-rose-500"></div>
               </div>
@@ -3589,7 +3589,7 @@ export default function App() {
                     <h3 className="text-white text-md font-bold tracking-tight">基金波段累計對沖淨值收益率曲線 (Net Asset Value Performance)</h3>
                   </div>
                   <p className="text-xs text-zinc-400 mt-1">
-                    全面對齊 90 檔高 Beta 純淨標的與 50 道戰神微觀量化濾網，透過半凱利金字塔防禦，所得之歷史對沖回測與實時淨值曲線。
+                    全面對齊 86 檔高 Beta 純淨標的與 50 道戰神微觀量化濾網，透過半凱利金字塔防禦，所得之歷史對沖回測與實時淨值曲線。
                   </p>
                 </div>
                 

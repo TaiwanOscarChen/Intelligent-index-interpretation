@@ -1657,7 +1657,7 @@ app.post("/api/stocks/chat", async (req, res) => {
   }
 
   // Pre-load stock context parameters if stock_id is provided
-  let stockContext = "當前未指定特定個股，提供全域台北標準大盤與 90 檔高 Beta 股期宇宙的量化避險思維即可。";
+  let stockContext = "當前未指定特定個股，提供全域台北標準大盤與 86 檔高 Beta 股期宇宙的量化避險思維即可。";
   if (stock_id) {
     const stock = localScanResult.signals.find(s => s.stock_id === stock_id);
     if (stock) {
@@ -1814,6 +1814,33 @@ ${fileAnalysisContext}
 async function executeAIAutoTrade() {
   try {
     if (!dbConnected || !holdingsCollection || !exitsCollection) return;
+
+    // 剛性風控防線：進場與出場必須在開盤後盤中 (台北時間週一至週五 09:00 - 13:30)
+    const formatter = new Intl.DateTimeFormat("en-US", {
+      timeZone: "Asia/Taipei",
+      weekday: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false
+    });
+    
+    const formattedParts = formatter.formatToParts(new Date());
+    const partMap: Record<string, string> = {};
+    formattedParts.forEach(p => {
+      partMap[p.type] = p.value;
+    });
+    
+    const weekday = partMap.weekday;
+    const timeStr = `${partMap.hour}:${partMap.minute}`;
+    
+    const isWeekday = ["Mon", "Tue", "Wed", "Thu", "Fri"].includes(weekday);
+    const isTradingHours = isWeekday && (timeStr >= "09:00" && timeStr <= "13:30");
+    
+    if (!isTradingHours) {
+      console.log(`⏰ [AI Auto Trade] 當前台北時間 (${weekday} ${timeStr}) 非開盤盤中時段 (週一至週五 09:00 - 13:30)，跳過自動進出場交易。`);
+      return;
+    }
+
     const db = (holdingsCollection as any).s.db;
     const strategySignalsCollection = db.collection("strategy_signals");
     
