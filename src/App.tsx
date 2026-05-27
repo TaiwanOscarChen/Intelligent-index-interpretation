@@ -8,6 +8,7 @@ import {
   Zap, 
   Flame, 
   ShieldAlert, 
+  Shield, 
   TrendingUp, 
   TrendingDown, 
   Database, 
