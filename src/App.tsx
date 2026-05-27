@@ -5183,166 +5183,375 @@ export default function App() {
 
         {/* ======================= TAB 5: SOP ======================= */}
         {activeTab === "sop" && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-fade-in">
+          <div className="space-y-8 animate-fade-in text-left">
             
-            {/* Left rule sheet details */}
-            <div className="lg:col-span-8 space-y-6">
-              
-              <div className="premium-card rounded-xl p-6 shadow-lg space-y-4">
-                <h2 className="text-white text-lg font-bold flex items-center gap-2">
-                  <Award className="w-5 h-5 text-[#FFB74D]" />
-                  獅王戰神 V2026.Max 全域對沖量化鐵律與風控 SOP 白皮書
-                </h2>
-                <p className="text-xs text-zinc-450 leading-relaxed">
-                  本系統严格執行華爾街自營部頂尖對沖策略，所有訊號裁決皆具備純數理與量價剛性約束。操盤手禁止任何手動違規逆勢交易，請嚴格遵循以下四大防護機制：
-                </p>
-
-                <hr className="border-zinc-800" />
-
-                <div className="space-y-4 text-xs leading-relaxed">
-                  
-                  {/* VIX stop */}
-                  <div className="flex gap-3">
-                    <div className="w-8 h-8 rounded bg-rose-950 text-rose-400 flex items-center justify-center shrink-0 border border-rose-800/40">
-                      <ShieldAlert className="w-4.5 h-4.5" />
-                    </div>
-                    <div>
-                      <h4 className="text-white font-bold">1. 總經 VIX E-Stop 斷路停買機制</h4>
-                      <p className="text-zinc-400 mt-1">
-                        系統即時爬取 VIX 恐慌指數。若 <strong>`VIX &gt; 30`</strong> 則強制亮起全站危險停買隔離狀態，此時買進訊號完全阻斷發送，僅允許停損與移動減碼。保留 70% 現金部位以抵禦宏觀巨震。
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Taipei hours filter */}
-                  <div className="flex gap-3">
-                    <div className="w-8 h-8 rounded bg-amber-950 text-amber-400 flex items-center justify-center shrink-0 border border-amber-800/40">
-                      <Sliders className="w-4.5 h-4.5" />
-                    </div>
-                    <div>
-                      <h4 className="text-white font-bold">2. 台北標準時間交易濾網限制</h4>
-                      <p className="text-zinc-400 mt-1">
-                        校正時區為 <code>Asia/Taipei</code>。買進建倉訊號 <strong>僅限於台股盤中 09:00 - 13:30 允許觸發發送</strong>。盤後交易時段新訊號自動遮蔽進入「觀望」或「持倉」分析狀態，防止盤後滑價與無序波動。
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* 20MA stop */}
-                  <div className="flex gap-3">
-                    <div className="w-8 h-8 rounded bg-emerald-950 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-800/40">
-                      <Zap className="w-4.5 h-4.5" />
-                    </div>
-                    <div>
-                      <h4 className="text-white font-bold">3. 生命線 20MA (月線) 物理隔離停損</h4>
-                      <p className="text-zinc-400 mt-1">
-                        任何個股收盤價實體只要 <strong>跌破月線 20MA</strong>，策略一律亮起 <code>🔴 隔離</code> 燈號，強制操盤手發出停損清倉指令，严禁任何向下攤平交易！
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Profit Lock */}
-                  <div className="flex gap-3">
-                    <div className="w-8 h-8 rounded bg-yellow-950 text-[#FFB74D] flex items-center justify-center shrink-0 border border-yellow-800/40">
-                      <Flame className="w-4.5 h-4.5" />
-                    </div>
-                    <div>
-                      <h4 className="text-white font-bold">4. 動態雙關卡停利與利潤奔跑</h4>
-                      <p className="text-zinc-400 mt-1">
-                        持倉部位帳面獲利達 <strong>+20% 時強制發出減碼 50% 鎖利指令</strong> 收回部分本金；剩餘 50% 部位以 <code>10MA</code> 或 <code>最高價回落 1.5 倍 ATR</code> 之較高者設為動態移動停利線，跌破則全數清倉落袋。
-                      </p>
-                    </div>
-                  </div>
-
+            {/* Header Title with Lion King Branding */}
+            <div className="premium-card rounded-xl p-6 shadow-2xl bg-gradient-to-r from-zinc-950 via-[#0e1117] to-zinc-950 border border-[#E5A823]/30">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <div>
+                  <h2 className="text-white text-lg md:text-xl font-black flex items-center gap-3">
+                    <Award className="w-6 h-6 text-[#E5A823] animate-pulse" />
+                    無情交易決策引擎：獅王戰神 V8050.2 終極版量化法典
+                  </h2>
+                  <p className="text-xs text-zinc-450 mt-1.5 leading-relaxed font-sans max-w-3xl">
+                    本法典深度整合《2026 獅王戰神終極量化交易白皮書》與《全域五十項量化極限檢核表》，
+                    旨在完全排除人類情緒 bias，以純數學期望值進行 86 檔高 Beta 純淨標的之全自動洗價掃描。
+                    本系統實行<strong>「開盤盤中 (09:00 - 13:30) 全自動化智能出場」</strong>，跌破月線或虧損觸及死線一律強制清倉。
+                  </p>
                 </div>
-
-                  {/* 老司機操盤四字訣 - Full SOP doctrine */}
-                  <div className="flex gap-3 pt-2 border-t border-zinc-800">
-                    <div className="w-8 h-8 rounded bg-purple-950 text-purple-400 flex items-center justify-center shrink-0 border border-purple-800/40">
-                      <Flame className="w-4.5 h-4.5" />
-                    </div>
-                    <div>
-                      <h4 className="text-white font-bold">5. 老司機操盤四字訣 —【輪・空・殺・早】實戰解碼</h4>
-                      <p className="text-zinc-400 mt-1">
-                        <strong className="text-rose-400">【輪】:</strong> PCB (欣興/南電) 帶動 DRAM 與被動元件，妖股 (青雲/映泰) 噴出代表散場；
-                        <strong className="text-zinc-300 ml-2">【空】:</strong> 大量套牢區視為泥沼，突破後才進入真空高速公路飆車點；
-                        <strong className="text-emerald-400 ml-2">【殺】:</strong> 小台散戶多空比為反向指標，散戶越空代表主力越要拉抬；
-                        <strong className="text-amber-400 ml-2">【早】:</strong> 跟單大老闆設備採購，新聞報營收創新高時為利多出盡，提前出場。
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* 量化策略規格表 */}
-                  <div className="flex gap-3 pt-2 border-t border-zinc-800">
-                    <div className="w-8 h-8 rounded bg-sky-950 text-sky-400 flex items-center justify-center shrink-0 border border-sky-800/40">
-                      <Database className="w-4.5 h-4.5" />
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="text-white font-bold">6. V2026.Max 量化進場規格條件 (50點全域防護)</h4>
-                      <div className="mt-2 space-y-1.5 text-[10px] font-mono">
-                        <div className="grid grid-cols-2 gap-2">
-                          {[
-                            ["大盤20MA生命線", "收盤站上或平", "text-emerald-400"],
-                            ["VIX 恐慌指數", "低於30點才允許進場", "text-emerald-400"],
-                            ["MACD", "主圖零軸上方紅色OSC", "text-rose-400"],
-                            ["KD線", "黃金交叉且KD值>50", "text-rose-400"],
-                            ["外資買超連續", ">=3日外資淨買超", "text-rose-400"],
-                            ["投信籌碼", "投信持股比>3%且增加", "text-rose-400"],
-                            ["股價位階", "偏差20MA: 0%~15%之間", "text-amber-400"],
-                            ["成交量爆量", "爆量>=1.5倍均量", "text-amber-400"],
-                            ["評分門檻", "50點量化矩陣>=38分", "text-[#FFB74D]"],
-                            ["最大部位", "單檔NT$20,000上限", "text-zinc-300"]
-                          ].map(([label, value, color]) => (
-                            <div key={label} className="bg-zinc-950 p-2 rounded border border-zinc-900">
-                              <div className="text-zinc-500 text-[9px]">{label}</div>
-                              <div className={`${color} font-bold text-[10px] mt-0.5`}>{value}</div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
+                <div className="shrink-0 flex items-center gap-2 bg-[#E5A823]/10 border border-[#E5A823]/30 rounded-lg px-3 py-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#E5A823] animate-ping"></span>
+                  <span className="text-[10px] text-[#FFB74D] font-mono font-bold tracking-wider uppercase">V8050.2 ACTIVE</span>
                 </div>
-
+              </div>
             </div>
 
-            {/* Right: Real-time blacklist filter */}
-            <div className="lg:col-span-4 space-y-6">
+            {/* Grid Layout: Left Details, Right Blacklist & Quick Navigation */}
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
               
-              <div className="premium-card rounded-xl p-5 shadow-lg">
-                <h3 className="text-rose-400 text-sm font-bold flex items-center gap-2 mb-3">
-                  <Lock className="w-4 h-4" />
-                  當前物理隔離 / 量化避雷黑名單
-                </h3>
-                <p className="text-[11px] text-zinc-500 mb-3 leading-relaxed">
-                  以下個股目前處於生命線 20MA 下方，或 50點全量化戰力不足 38 分，已被列入隔離避雷區，全面禁止多頭建倉：
-                </p>
+              {/* Left Column: Rules & 50 checkers */}
+              <div className="xl:col-span-8 space-y-6">
+                
+                {/* 50 Checkers Section */}
+                <div className="premium-card rounded-xl p-6 shadow-lg border border-zinc-800">
+                  <h3 className="text-white text-sm font-bold flex items-center gap-2 mb-4">
+                    <Sliders className="w-4.5 h-4.5 text-[#FFB74D]" />
+                    🔍 戰神全域量化 50 道微觀濾網檢核法典 (五大維度)
+                  </h3>
+                  
+                  <div className="space-y-6">
+                    {/* Dimension 1 */}
+                    <div className="bg-zinc-900/40 border border-zinc-850 rounded-xl p-4 space-y-3">
+                      <h4 className="text-[#FFB74D] text-xs font-black flex items-center gap-2">
+                        <span className="w-5 h-5 rounded bg-amber-950 text-[#FFB74D] flex items-center justify-center font-mono font-bold text-[10px]">一</span>
+                        均線地基與乖離防護 (生命線系統)
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px] text-zinc-400 font-mono">
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">1. 20MA 生死線：</span>收盤價必站穩 20MA，不在月線下建多倉。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">2. 完美多頭排列：</span>均線呈「5MA &gt; 8MA &gt; 20MA &gt; 60MA」排列。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">3. 季線長線保護：</span>收盤價 &gt; 60MA，確保中期多頭格局完好。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">4. 極短線動能：</span>收盤價站穩 5MA 與 8MA，維持上攻慣性。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">5. 斜率扣抵翻揚：</span>20MA 扣抵值處於低價區，均線斜率向上。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">6. 中期支撐回踩：</span>股價回落碰 50EMA，連兩根 K 棒站穩不破。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">7. 乖離率控管：</span>與 20MA 正乖離率 &lt; 10%，嚴格防範追高。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">8. 均線糾結爆發：</span>短均線（5/10/20）糾結收斂至 2% 內蓄勢。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">9. 布林中軌定錨：</span>收盤價站上布林通道中軌 (BB_Mid)。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">10. 大盤寬度共振：</span>大盤加權指數同步站穩 20MA 月線生死線。</div>
+                      </div>
+                    </div>
 
-                <div className="space-y-2 max-h-[400px] overflow-y-auto">
-                  {getBlacklistedStocks().length === 0 ? (
-                    <p className="text-xs text-emerald-400 font-mono text-center py-4 bg-emerald-950/20 border border-emerald-900/40 rounded-lg">
-                      🟢 目前全宇宙高 Beta 個股均站上生命線，狀態極佳。
-                    </p>
-                  ) : (
-                    getBlacklistedStocks().map(s => {
-                      return (
-                        <div key={s.stock_id} className="bg-zinc-950 p-2.5 rounded-lg border border-zinc-900 flex justify-between items-center text-xs">
-                          <div>
-                            <span className="font-mono font-bold text-white">{s.stock_id}</span>
-                            <span className="text-zinc-450 ml-1.5 font-bold">{s.stock_name}</span>
-                            <div className="text-[9px] text-zinc-550 font-mono mt-0.5">現價: {s.close_price.toFixed(1)} 元</div>
-                          </div>
+                    {/* Dimension 2 */}
+                    <div className="bg-zinc-900/40 border border-zinc-850 rounded-xl p-4 space-y-3">
+                      <h4 className="text-rose-400 text-xs font-black flex items-center gap-2">
+                        <span className="w-5 h-5 rounded bg-rose-950 text-rose-400 flex items-center justify-center font-mono font-bold text-[10px]">二</span>
+                        極端動能與指標共振 (主升段燃料)
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px] text-zinc-400 font-mono">
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">11. MACD 零上發散：</span>MACD 快慢線 DIF &gt; 0，處主升段領域。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">12. MACD 紅柱點火：</span>OSC 柱狀體由負轉正第一根紅柱。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">13. 60分K 動能共振：</span>日線回檔時，60分 K 的 MACD 綠柱翻紅。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">14. RSI 健康擴張：</span>14 日 RSI 維持在 50～70 的發散區。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">15. RSI 軋空防禦：</span>RSI 飆破 75 沿 8MA 推進，嚴禁逆勢做空。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">16. KD 高檔鈍化：</span>K 值 &gt; 80 且持續高檔鈍化，為強勢軋空。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">17. KD 黃金交叉：</span>在 50 中位數之上發生 KD 黃金交叉。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">18. 指標無背離：</span>股價創新高時，MACD 與 RSI 同步創新高。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">19. 布林頻寬壓縮：</span>頻寬 (BBU-BBL)/BBM &lt; 0.10 極致動能壓縮。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">20. 布林軌道開口：</span>布林上下軌雙向發散，高頻資金進場軋空。</div>
+                      </div>
+                    </div>
 
-                          <div className="text-right">
-                            <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-rose-955 border border-rose-500/30 text-rose-400">
-                              隔離 ({s.score}分)
-                            </span>
-                            <div className="text-[8px] text-zinc-650 font-mono mt-1">20MA: {s.stop_loss_price.toFixed(1)}</div>
-                          </div>
-                        </div>
-                      );
-                    })
-                  )}
+                    {/* Dimension 3 */}
+                    <div className="bg-zinc-900/40 border border-zinc-850 rounded-xl p-4 space-y-3">
+                      <h4 className="text-sky-400 text-xs font-black flex items-center gap-2">
+                        <span className="w-5 h-5 rounded bg-sky-950 text-sky-400 flex items-center justify-center font-mono font-bold text-[10px]">三</span>
+                        量價結構與微觀型態 (洗盤與攻擊確認)
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px] text-zinc-400 font-mono">
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">21. 爆量真突破：</span>單日成交量 &gt; 5 日均量 1.5 倍至 2.5 倍。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">22. 凹洞量壓縮：</span>回檔量縮至近 20 日最大量的 50% 以下。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">23. 紅 K 實體飽滿：</span>突破當日紅 K 實體長度 &gt; 全日振幅 60%。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">24. K 線三三原則：</span>突破後連續 3 日低點不破突破 K 棒最低。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">25. 長下影測支撐：</span>支撐位出現下影線長度大於實體 2 倍。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">26. 四黑一紅洗盤：</span>連 4 根黑 K 後出現 1 根紅 K 吞噬反轉。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">27. 強勢缺口不補：</span>向上跳空缺口 3 至 5 日內絕不回補。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">28. 破底翻轉型態：</span>跌破 20MA 引發停損後爆量收復月線。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">29. ATR 波幅檢核：</span>近 5 日真實波幅 (ATR) 穩定無異常爆發。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">30. 369 時間密碼：</span>連漲天數未達 9 日動能衰退警戒點。</div>
+                      </div>
+                    </div>
+
+                    {/* Dimension 4 */}
+                    <div className="bg-zinc-900/40 border border-zinc-850 rounded-xl p-4 space-y-3">
+                      <h4 className="text-indigo-400 text-xs font-black flex items-center gap-2">
+                        <span className="w-5 h-5 rounded bg-indigo-950 text-indigo-400 flex items-center justify-center font-mono font-bold text-[10px]">四</span>
+                        主力籌碼與暗池追蹤 (跟隨強勢資金)
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px] text-zinc-400 font-mono">
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">31. 法人共振承接：</span>外資與投信連續 3 日同步大買超。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">32. 投信鎖碼區：</span>投信持股比例落在 3%～10% 剛發動區。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">33. 主力集中度：</span>近 5 日主力籌碼集中度 &gt; 5% 且成交佔比 &gt; 10%。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">34. 籌碼強手鎖定：</span>千張大戶持股比例連三週升，散戶融資退。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">35. VWAP 成本狙擊：</span>股價站穩當日與 5 日 VWAP 均線之上。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">36. OFI 冰山委託：</span>盤中主動買單流量 (TickFlow) &gt; 60%。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">37. 內部人建倉：</span>董監事或 CEO 於公開市場買入 &gt; 10 萬美元。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">38. 軋空燃料券資：</span>券資比 &gt; 20% 且借券賣出費率顯著飆升。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">39. 散戶反向指標：</span>小台散戶多空比偏空，觸發軋散戶紅利。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">40. 物理流量門檻：</span>日均成交量 &gt; 1,000 張，隔離小型妖股。</div>
+                      </div>
+                    </div>
+
+                    {/* Dimension 5 */}
+                    <div className="bg-zinc-900/40 border border-zinc-850 rounded-xl p-4 space-y-3">
+                      <h4 className="text-emerald-400 text-xs font-black flex items-center gap-2">
+                        <span className="w-5 h-5 rounded bg-emerald-950 text-emerald-400 flex items-center justify-center font-mono font-bold text-[10px]">五</span>
+                        基本面估值與護城河 (長線保護短線)
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px] text-zinc-400 font-mono">
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">41. 營收 YoY 加速：</span>營收年增率 YoY &gt; 20% 且呈加速趨勢。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">42. 營收二階斜率：</span>營收年增率之變化斜率 (二階導數) 向上。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">43. Forward PE：</span>預估本益比 &lt; 15 倍或位於歷史區間下緣。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">44. PEG 護城河：</span>本益成長比 (PEG) &lt; 1.2，剔除純題材泡沫股。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">45. F-Score 評分：</span>財務健全度 Piotroski F-Score &gt;= 7 分。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">46. M-Score 檢測：</span>盈餘操弄造假機率檢測值 &lt; -2.22 安全區。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">47. 三率穩健提升：</span>毛利率、營益率、淨利率呈季增與年增三率三升。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">48. 殖利率底氣：</span>歷史現金殖利率 &gt; 4%，為崩跌提供抗跌防線。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">49. 佔量比防禦：</span>單一標的佔全市場成交比重 &lt; 35%，避踩踏。</div>
+                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">50. 限價伏擊紀律：</span>買進掛 ROD 限價單於 20MA+0.5%，絕不市價追。</div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+                {/* Automation SOP Section */}
+                <div className="premium-card rounded-xl p-6 shadow-lg border border-zinc-800 space-y-5">
+                  <h3 className="text-[#FFB74D] text-sm font-bold flex items-center gap-2">
+                    <ShieldAlert className="w-5 h-5 text-rose-500 animate-pulse" />
+                    🛑 鐵血出場與全自動停利停損管理規範
+                  </h3>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-rose-950/20 border border-rose-900/40 rounded-xl p-4 space-y-2">
+                      <div className="text-xs font-bold text-rose-400 flex items-center gap-1.5">
+                        <Zap className="w-4 h-4" /> 1. 20MA 絕對死線 (Stop-Loss)
+                      </div>
+                      <p className="text-[11px] text-zinc-400 leading-normal font-sans">
+                        收盤價實質跌破月線 20MA，次日開盤即執行市價砍倉平倉，絕不參與任何季線回測或自欺欺人式的逢低攤平。
+                      </p>
+                    </div>
+
+                    <div className="bg-rose-950/20 border border-rose-900/40 rounded-xl p-4 space-y-2">
+                      <div className="text-xs font-bold text-rose-400 flex items-center gap-1.5">
+                        <Flame className="w-4 h-4" /> 2. 極限停損斷頭 (-5%) & 短線打帶跑 (-3.5%)
+                      </div>
+                      <p className="text-[11px] text-zinc-400 leading-normal font-sans">
+                        短線單帳面虧損達 <strong>-3.5% 立即出清</strong>；波段部位虧損觸及 <strong>-5.0% 觸發實體斷路器</strong>，全面物理斷頭平倉。
+                      </p>
+                    </div>
+
+                    <div className="bg-amber-950/20 border border-amber-900/40 rounded-xl p-4 space-y-2">
+                      <div className="text-xs font-bold text-[#FFB74D] flex items-center gap-1.5">
+                        <Award className="w-4 h-4" /> 3. 強制減碼鎖利法 (+20%)
+                      </div>
+                      <p className="text-[11px] text-zinc-400 leading-normal font-sans">
+                        獲利觸及 <strong>+20% 時觸發自動化減碼</strong>，強制市價賣出 50% 部位。餘下 50% 移至 10MA 或 ATR 設為動態移動停利線。
+                      </p>
+                    </div>
+
+                    <div className="bg-[#1e152a] border border-[#ff5555]/30 rounded-xl p-4 space-y-2">
+                      <div className="text-xs font-bold text-rose-400 flex items-center gap-1.5">
+                        <Shield className="w-4 h-4" /> 4. 總經 VIX E-Stop 斷路機制 (VIX &gt; 30)
+                      </div>
+                      <p className="text-[11px] text-zinc-400 leading-normal font-sans">
+                        VIX 指數飆破 30 代表市場進入黑天鵝系統性風暴。系統強制進入防衛，全面清倉部位至 80% 現金退守。
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-900 space-y-2">
+                    <h4 className="text-white font-bold text-xs flex items-center gap-2">
+                      <Sliders className="w-4 h-4 text-amber-500" />
+                      🟢 獅王戰神 V8050.2 執行階梯決策說明
+                    </h4>
+                    <ul className="text-[11px] text-zinc-400 space-y-1.5 leading-relaxed font-mono">
+                      <li>🏆 <strong className="text-amber-400">🏆 S 級重倉狙擊區 (45~50分):</strong> 金字塔式建倉 (5-3-2 配置)，結合半凱利公式，沿 10MA 防守推進。</li>
+                      <li>🥇 <strong className="text-blue-400">🥇 A 級右側伏擊區 (38~44分):</strong> 嚴禁市價追單，掛「ROD 限價伏擊單」，價位鎖定為「20MA + 0.5% ~ 1.5%」區間。</li>
+                      <li>💀 <strong className="text-zinc-550">💀 X 級物理隔離區 (&lt; 38分):</strong> 前端強制不渲染任何買進建議，物理隔離阻斷資金曝險，強迫現金觀望。</li>
+                    </ul>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Right Column: Web resource links */}
+              <div className="xl:col-span-4 space-y-6">
+                
+                {/* Master Links Dashboard */}
+                <div className="premium-card rounded-xl p-6 shadow-lg border border-zinc-800 space-y-5">
+                  <div className="border-b border-zinc-800 pb-3">
+                    <h3 className="text-white text-sm font-bold flex items-center gap-2">
+                      <Link className="w-4.5 h-4.5 text-[#E5A823]" />
+                      🌐 戰神全域量化情報直連通道
+                    </h3>
+                    <p className="text-[10px] text-zinc-500 mt-1">極速開啟官方 OpenAPI 及大盤、籌碼、即時財經快訊</p>
+                  </div>
+
+                  {/* Group 1: Macro VIX */}
+                  <div className="space-y-2.5">
+                    <h4 className="text-sky-400 text-xs font-bold flex items-center gap-1.5">
+                      📊 Macro_VIX：總經與恐慌指數
+                    </h4>
+                    <div className="grid grid-cols-2 gap-1.5 text-[10px] font-mono">
+                      <a href="https://edition.cnn.com/markets/fear-and-greed" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left">
+                        CNN 恐懼貪婪
+                      </a>
+                      <a href="https://finance.yahoo.com/quote/%5EVIX/" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left">
+                        Yahoo VIX 報價
+                      </a>
+                      <a href="https://www.google.com/finance/quote/VIX:INDEXCBOE" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left">
+                        Google 財經 VIX
+                      </a>
+                      <a href="https://www.wantgoo.com/index/vixtwn" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left">
+                        玩股網恐慌指數
+                      </a>
+                      <a href="https://cn.investing.com/economic-calendar/" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left">
+                        Investing 日曆
+                      </a>
+                      <a href="https://www.macromicro.me/calendarmacro" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left">
+                        M平方財經日曆
+                      </a>
+                      <a href="https://www.macromicro.me/spotlights" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left">
+                        M平方焦點
+                      </a>
+                      <a href="https://tradingeconomics.com/united-states/indicators" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left">
+                        Trading Economics
+                      </a>
+                      <a href="https://index.ndc.gov.tw/n/zh_tw/PMI/" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left">
+                        國發會 PMI
+                      </a>
+                      <a href="https://index.ndc.gov.tw/n/zh_tw/leading/" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left">
+                        景氣領先指標
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Group 2: TW Chips */}
+                  <div className="space-y-2.5 pt-2 border-t border-zinc-900">
+                    <h4 className="text-[#FFB74D] text-xs font-bold flex items-center gap-1.5">
+                      🔥 TW_Chips：台股籌碼與期貨數據
+                    </h4>
+                    <div className="grid grid-cols-2 gap-1.5 text-[10px] font-mono">
+                      <a href="https://www.wantgoo.com/stock/institutional-investors/foreign-investor/buy-sell-rank" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left">
+                        外資買賣超排行
+                      </a>
+                      <a href="https://www.wantgoo.com/stock/institutional-investors/investment-trust/buy-sell-rank" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left">
+                        投信買賣超排行
+                      </a>
+                      <a href="https://www.twse.com.tw/zh/trading/foreign/twt43u.html" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left">
+                        證交所外資買賣
+                      </a>
+                      <a href="https://www.twse.com.tw/zh/trading/margin/mi-margn.html" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left">
+                        證交所信用交易
+                      </a>
+                      <a href="https://www.cmoney.tw/finance/f00043.aspx" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left">
+                        CMoney 籌碼快遞
+                      </a>
+                      <a href="https://goodinfo.tw/tw/StockList.asp?MARKET_CAT=%E6%99%BA%E6%85%A7%E9%81%B8%E8%82%A1" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left">
+                        Goodinfo 智慧選股
+                      </a>
+                      <a href="https://histock.tw/stock/chip.aspx" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left">
+                        HiStock 籌碼面
+                      </a>
+                      <a href="https://www.taifex.com.tw/cht/3/futContractsDate" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left">
+                        期交所結算日期
+                      </a>
+                      <a href="https://www.taifex.com.tw/cht/3/totalTableDateExcel" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left">
+                        期交所歷史資料
+                      </a>
+                      <a href="https://www.pocket.tw/school/report/SCHOOL/4389/" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left">
+                        Pocket 學校報告
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Group 3: TW News */}
+                  <div className="space-y-2.5 pt-2 border-t border-zinc-900">
+                    <h4 className="text-indigo-400 text-xs font-bold flex items-center gap-1.5">
+                      📰 TW_News：台股即時快訊與情報
+                    </h4>
+                    <div className="grid grid-cols-2 gap-1.5 text-[10px] font-mono">
+                      <a href="https://tw.stock.yahoo.com/news/" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left">
+                        Yahoo 股市新聞
+                      </a>
+                      <a href="https://news.cnyes.com/news/cat/tw_stock" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left">
+                        鉅亨網台股新聞
+                      </a>
+                      <a href="https://news.cnyes.com/news/cat/wd_macro" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left">
+                        鉅亨網國際宏觀
+                      </a>
+                      <a href="https://money.udn.com/money/index" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left">
+                        經濟日報首頁
+                      </a>
+                      <a href="https://money.udn.com/money/cate/5588" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left">
+                        經濟日報 5588
+                      </a>
+                      <a href="https://money.udn.com/money/cate/5590" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left">
+                        經濟日報 5590
+                      </a>
+                      <a href="https://ctee.com.tw/" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left">
+                        工商時報
+                      </a>
+                      <a href="https://www.digitimes.com.tw/tech/" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left">
+                        DIGITIMES 科技
+                      </a>
+                      <a href="https://technews.tw/" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left">
+                        TechNews 新報
+                      </a>
+                      <a href="https://www.technice.com.tw/" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left">
+                        TechNice 科技島
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Group 4: OpenAPI */}
+                  <div className="space-y-2.5 pt-2 border-t border-zinc-900">
+                    <h4 className="text-emerald-400 text-xs font-bold flex items-center gap-1.5">
+                      ⚡ TW_OpenAPI：官方數據直連
+                    </h4>
+                    <div className="grid grid-cols-2 gap-1.5 text-[10px] font-mono">
+                      <a href="https://openapi.twse.com.tw/v1/fund/T86" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left" title="證交所 三大法人買賣超 (張數)">
+                        三大法人張數 (T86)
+                      </a>
+                      <a href="https://openapi.twse.com.tw/v1/fund/BFI82U" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left" title="證交所 三大法人買賣金額">
+                        三大法人金額
+                      </a>
+                      <a href="https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left" title="證交所 每日收盤行情">
+                        每日收盤行情
+                      </a>
+                      <a href="https://openapi.twse.com.tw/v1/exchangeReport/BWIBBU_ALL" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left" title="證交所 個股本益比及殖利率">
+                        本益比殖利率
+                      </a>
+                      <a href="https://openapi.twse.com.tw/v1/exchangeReport/MI_INDEX" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left" title="證交所 每日市場指數">
+                        每日市場指數
+                      </a>
+                      <a href="https://openapi.twse.com.tw/v1/exchangeReport/MI_MARGN" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left" title="證交所 信用交易統計">
+                        信用交易統計
+                      </a>
+                      <a href="https://openapi.twse.com.tw/v1/fund/MI_QFIIS" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left" title="證交所 外資及陸資持股">
+                        外資陸資持股
+                      </a>
+                      <a href="https://openapi.twse.com.tw/v1/opendata/t187ap17_L" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left" title="證交所 重大訊息公告">
+                        重大訊息公告
+                      </a>
+                      <a href="https://openapi.twse.com.tw/v1/opendata/t187ap06_L_ci" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left" title="證交所 營收資訊 (ci)">
+                        營收直連 (ci)
+                      </a>
+                      <a href="https://openapi.twse.com.tw/v1/opendata/t187ap07_L_ci" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left" title="證交所 董監事持股">
+                        董監事持股 (ci)
+                      </a>
+                    </div>
+                  </div>
+
                 </div>
 
               </div>
@@ -5350,9 +5559,7 @@ export default function App() {
             </div>
 
           </div>
-        )}
-
-      </main>
+        )}      </main>
 
       {/* Footer */}
       <footer className="border-t border-zinc-850 bg-[#0d0f14] py-5 text-center text-xs text-zinc-550 font-mono mt-12">

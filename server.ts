@@ -1825,21 +1825,23 @@ async function executeAIAutoTrade() {
       const current_price = sig ? sig.close_price : h.current_price;
       const current_pnl_pct = ((current_price - h.buy_price) / h.buy_price) * 100;
       const stop_loss = sig ? sig.stop_loss_price : (h.buy_price * 0.95);
-      const vix_value = sig ? sig.vixValue : 0;
+      const vix_value = localScanResult.vixValue || (sig ? sig.vixValue : 18.5);
       
       let shouldExit = false;
       let reason = "";
 
       if (current_price <= stop_loss) {
-        shouldExit = true; reason = "觸發停損或移動防線";
-      } else if (current_pnl_pct <= -5) {
-        shouldExit = true; reason = "虧損達 -5% 止損";
-      } else if (current_pnl_pct >= 20) {
-        shouldExit = true; reason = "獲利達 20% 自動結算";
+        shouldExit = true; reason = "20MA 物理隔離：收盤價跌破生命線";
+      } else if (current_pnl_pct <= -3.5) {
+        shouldExit = true; reason = "短線打帶跑：虧損觸及 -3.5% 立即出清";
+      } else if (current_pnl_pct <= -5.0) {
+        shouldExit = true; reason = "破產防禦：虧損達 -5% 無條件斷頭";
+      } else if (current_pnl_pct >= 20.0) {
+        shouldExit = true; reason = "獲利達 +20%！黃燈強制減碼 50% 鎖利 (清倉落袋)";
       } else if (vix_value > 30) {
-        shouldExit = true; reason = "VIX > 30 系統強制物理隔離";
+        shouldExit = true; reason = "VIX > 30 黑天鵝 E-Stop！強制全面清倉防禦";
       } else if (sig && sig.score < 38) {
-        shouldExit = true; reason = "戰力評分跌破 38 分，退守防禦";
+        shouldExit = true; reason = "戰力評分跌破 38 分，物理隔離 X 級退守觀望";
       }
 
       if (shouldExit) {
@@ -1941,7 +1943,7 @@ app.get("/api/prices/realtime", async (req, res) => {
   const keyTickers = ["^VIX", "^SOX", "2330.TW", "2454.TW"];
   const otcIds = new Set(["3324","4966","3529","4979","3163","3363","4908","3081","6640","3680","3260","8299"]);
   const stockTickers = INITIAL_STOCKS.slice(0, 30).map(s => { // 首批30支，確保25s內完成
-    const id = s.stock_id;
+    const id = s.id || (s as any).stock_id;
     return { id, ticker: otcIds.has(id) ? `${id}.TWO` : `${id}.TW` };
   });
 
@@ -1987,8 +1989,41 @@ app.get("/api/prices/realtime", async (req, res) => {
     });
   }
 
+  // ⚡ V8050.2 每分鐘自動化持倉價格同步與智慧出場條件審查
+  if (prices["^VIX"]) {
+    localScanResult.vixValue = prices["^VIX"].price;
+  }
+  
+  if (dbConnected && holdingsCollection) {
+    try {
+      const db = (holdingsCollection as any).s.db;
+      const signalsCol = db.collection("strategy_signals");
+      
+      // 將爬取到的實時報價寫入資料庫，確保持倉與信號庫同步最新
+      for (const [id, data] of Object.entries(prices)) {
+        if (data.price > 0 && !id.startsWith("^")) {
+          // 更新 strategy_signals 信號庫
+          await signalsCol.updateOne(
+            { stock_id: id },
+            { $set: { close_price: data.price, change_pct: data.change } }
+          );
+          // 更新持倉 current_price
+          await holdingsCollection.updateOne(
+            { stock_id: id },
+            { $set: { current_price: data.price } }
+          );
+        }
+      }
+      
+      // 🤖 全自動觸發智能出場與風控機制！
+      await executeAIAutoTrade();
+    } catch (err) {
+      console.error("❌ [Realtime Auto Trade Error] 自動交易執行異常:", err);
+    }
+  }
+
   const elapsed = Date.now() - startTime;
-  console.log(`⚡ [Realtime] 1分鐘高頻報價爬蟲完成，耗時 ${elapsed}ms，取得 ${Object.keys(prices).length} 支股票`);
+  console.log(`⚡ [Realtime] 1分鐘高頻報價爬蟲完成並觸發智慧出場審查，耗時 ${elapsed}ms，取得 ${Object.keys(prices).length} 支股票`);
   res.json({
     success: true,
     timestamp: new Date().toISOString(),
@@ -2006,11 +2041,11 @@ app.post("/api/prices/fast", async (req, res) => {
     
     // Convert INITIAL_STOCKS to yahoo finance tickers
     const tickers = INITIAL_STOCKS.map(s => {
-      let ticker = s.stock_id;
+      let ticker = s.id || (s as any).stock_id;
       if (!ticker.startsWith("^")) {
         ticker = (ticker.length === 4 && !isNaN(Number(ticker))) ? `${ticker}.TW` : `${ticker}.TWO`;
       }
-      return { id: s.stock_id, ticker };
+      return { id: s.id || (s as any).stock_id, ticker };
     });
 
     let updated = 0;
