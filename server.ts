@@ -10,7 +10,7 @@ import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 import { exec } from "child_process";
 import YahooFinanceClass from "yahoo-finance2";
-const yahooFinance = new YahooFinanceClass();
+const yahooFinance = new ((YahooFinanceClass as any).default || YahooFinanceClass)();
 import { promisify } from "util";
 import { INITIAL_STOCKS, StockBasicInfo } from "./src/initial_stocks.js";
 import { StockSignal, ScanResult, StockSignalOption, HoldingItem, ExitLogItem } from "./src/types.js";
