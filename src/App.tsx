@@ -147,7 +147,7 @@ export default function App() {
   const [selectedStock, setSelectedStock] = useState<StockSignal | null>(null);
   
   // Tab control
-  const [activeTab, setActiveTab] = useState<"radar" | "holdings" | "exits" | "chat" | "sop" | "strategy" | "screener">("radar");
+  const [activeTab, setActiveTab] = useState<"radar" | "holdings" | "exits" | "sop" | "strategy" | "screener">("radar");
 
   // Strategy Tab States
   const [strategySummary, setStrategySummary] = useState<any>(null);
@@ -2451,7 +2451,7 @@ export default function App() {
               }`}
             >
               <Briefcase className="w-4 h-4 text-[#FFB74D]" />
-              模擬持倉 ({holdings.length})
+              持倉股票 ({holdings.length})
               {activeTab === "holdings" && (
                 <motion.div layoutId="tab-active-pill" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E5A823]" />
               )}
@@ -2468,21 +2468,6 @@ export default function App() {
               <History className="w-4 h-4 text-[#FFB74D]" />
               已出場檢討記錄 ({exits.length})
               {activeTab === "exits" && (
-                <motion.div layoutId="tab-active-pill" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E5A823]" />
-              )}
-            </button>
-
-            <button
-              onClick={() => setActiveTab("chat")}
-              className={`group py-3 px-2 sm:px-2.5 md:px-3 lg:px-4 text-[11px] sm:text-xs md:text-sm lg:text-[15px] font-black uppercase tracking-wider group transition-all flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
-                activeTab === "chat"
-                  ? "border-transparent text-white"
-                  : "border-transparent text-zinc-400 hover:text-white"
-              }`}
-            >
-              <MessageSquare className="w-4 h-4 text-[#FFB74D]" />
-              AI 避險大師對話
-              {activeTab === "chat" && (
                 <motion.div layoutId="tab-active-pill" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E5A823]" />
               )}
             </button>
@@ -4563,7 +4548,7 @@ export default function App() {
 
             {/* Right: Screener Filtered Results Table */}
             <div className="lg:col-span-8 flex flex-col gap-6">
-              <div className="screener-card-gradient-border backdrop-blur-md bg-zinc-950/40 rounded-xl shadow-2xl overflow-hidden flex-1 flex flex-col justify-between">
+              <div className="screener-card-gradient-border backdrop-blur-md bg-zinc-950/40 rounded-xl shadow-2xl overflow-hidden flex-1 flex flex-col justify-start">
                 
                 {/* Table Header / Action Strip */}
                 <div className="p-4 border-b border-zinc-800 bg-[#0e1117] flex flex-col sm:flex-row gap-4 items-center justify-between">
@@ -4571,7 +4556,7 @@ export default function App() {
                     <span className="px-2.5 py-1 text-xs font-black bg-gradient-to-r from-yellow-500 to-amber-600 text-black rounded shadow font-mono">
                       {screenerFiltered.length} 檔標的符合
                     </span>
-                    <h3 className="text-white text-xs font-bold">高 Beta 機構智能選股池</h3>
+                    <h3 className="text-white text-xs font-bold">選股池</h3>
                   </div>
 
                   <div className="flex flex-wrap items-center gap-3">
@@ -4604,7 +4589,7 @@ export default function App() {
                 </div>
 
                 {/* Filtered Table */}
-                <div className="overflow-x-auto overflow-y-auto max-h-[620px] flex-1">
+                <div className="overflow-x-auto overflow-y-auto flex-1">
                   <table className="w-full text-left border-collapse table-auto text-xs">
                     <thead>
                       <tr className="border-b border-zinc-850 bg-[#0e1117]/95 text-[10px] uppercase font-mono font-bold text-zinc-500 sticky top-0 z-10 select-none">
@@ -4719,272 +4704,314 @@ export default function App() {
         )}
 
         {/* ======================= TAB 2: HOLDINGS ======================= */}
-        {activeTab === "holdings" && (
-          <div className="space-y-6 animate-fade-in">
+        {activeTab === "holdings" && (() => {
+          const liveHoldings = holdings.map(h => {
+            const lp = realtimePrices[h.stock_id]?.price ?? h.current_price;
+            const lv = Math.round((lp - h.buy_price) * h.shares * 10) / 10;
+            const lpct = Math.round(((lp - h.buy_price) / h.buy_price) * 100 * 100) / 100;
+            const maxPrice = Math.max(h.max_price_reached || h.buy_price, lp);
+            const trailingStopPrice = Math.round(maxPrice * 0.97 * 10) / 10;
             
-            {/* 投資組合對沖風控分析矩陣 */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-              <div className="premium-card rounded-xl p-4 shadow relative overflow-hidden flex flex-col justify-between">
+            let suggestedAction = h.suggested_action;
+            if (lp <= h.stop_loss_price) {
+              suggestedAction = "🟢 強制停損 (E-Stop 物理隔離)";
+            } else if (lp <= trailingStopPrice) {
+              suggestedAction = "🔴 移動停利 (鎖定利潤出場)";
+            } else if (lpct >= 20.0 && !h.take_profit_triggered) {
+              suggestedAction = "🟡 強制減碼 (50% 本金鎖利落袋)";
+            } else {
+              suggestedAction = "🟢 續抱 (多頭發訊中)";
+            }
+
+            return {
+              ...h,
+              current_price: lp,
+              current_pnl_value: lv,
+              current_pnl_pct: lpct,
+              max_price_reached: maxPrice,
+              trailing_stop_price: trailingStopPrice,
+              suggested_action: suggestedAction
+            };
+          });
+
+          return (
+            <div className="space-y-6 animate-fade-in">
+              
+              {/* 投資組合對沖風控分析矩陣 */}
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                <div className="premium-card rounded-xl p-4 shadow relative overflow-hidden flex flex-col justify-between">
+                  <div>
+                    <span className="text-[9px] font-mono text-zinc-500 block">整體投資組合系統性 BETA 值</span>
+                    <div className="text-xl font-mono font-black text-white mt-1">1.18x</div>
+                  </div>
+                  <p className="text-[9px] text-zinc-550 leading-tight mt-2">
+                    高 Beta 板塊動態權重相乘所得，目前多頭策略偏進取配置。
+                  </p>
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
+                </div>
+
+                <div className="premium-card rounded-xl p-4 shadow relative overflow-hidden flex flex-col justify-between">
+                  <div>
+                    <span className="text-[9px] font-mono text-zinc-500 block">預估最大回撤防守限制</span>
+                    <div className="text-xl font-mono font-black text-[#10b881] mt-1">-4.5%</div>
+                  </div>
+                  <p className="text-[9px] text-zinc-550 leading-tight mt-2">
+                    受大盤物理隔離與個股剛性止損線保護之最大預估回撤下限。
+                  </p>
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
+                </div>
+
+                <div className="premium-card rounded-xl p-4 shadow relative overflow-hidden flex flex-col justify-between">
+                  <div>
+                    <span className="text-[9px] font-mono text-zinc-500 block">整體夏普比率 投資組合收益品質</span>
+                    <div className="text-xl font-mono font-black text-[#FFB74D] mt-1">2.78</div>
+                  </div>
+                  <p className="text-[9px] text-zinc-550 leading-tight mt-2">
+                    策略對沖勝率高達 78% 所得之經風險調整後報酬率穩定指標。
+                  </p>
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-500 to-orange-500"></div>
+                </div>
+
+                <div className="premium-card rounded-xl p-4 shadow relative overflow-hidden flex flex-col justify-between">
+                  <div>
+                    <span className="text-[9px] font-mono text-zinc-500 block">防守型認售權證 (PUT) 對沖比率</span>
+                    <div className="text-xl font-mono font-black text-[#f43f5e] mt-1">12%</div>
+                  </div>
+                  <p className="text-[9px] text-zinc-550 leading-tight mt-2">
+                    波動率穩定，系統維持基本期權保護比率以抵禦極端回撤。
+                  </p>
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-rose-500 to-pink-500"></div>
+                </div>
+              </div>
+
+              {/* Holdings Head card */}
+              <div className="premium-card rounded-xl p-6 shadow flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
-                  <span className="text-[9px] font-mono text-zinc-500 block">整體投資組合系統性 BETA 值</span>
-                  <div className="text-xl font-mono font-black text-white mt-1">1.18x</div>
+                  <h3 className="text-white text-lg font-bold">實時對沖持倉管理區</h3>
+                  <p className="text-xs text-zinc-450 mt-1">
+                    依據 NT$ 20,000 單檔預算上限建倉。系統盤中自動拉取收盤現價，計算即時盈虧與動態減碼出場點。
+                  </p>
                 </div>
-                <p className="text-[9px] text-zinc-550 leading-tight mt-2">
-                  高 Beta 板塊動態權重相乘所得，目前多頭策略偏進取配置。
-                </p>
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
-              </div>
 
-              <div className="premium-card rounded-xl p-4 shadow relative overflow-hidden flex flex-col justify-between">
-                <div>
-                  <span className="text-[9px] font-mono text-zinc-500 block">預估最大回撤防守限制</span>
-                  <div className="text-xl font-mono font-black text-[#10b881] mt-1">-4.5%</div>
-                </div>
-                <p className="text-[9px] text-zinc-550 leading-tight mt-2">
-                  受大盤物理隔離與個股剛性止損線保護之最大預估回撤下限。
-                </p>
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
-              </div>
-
-              <div className="premium-card rounded-xl p-4 shadow relative overflow-hidden flex flex-col justify-between">
-                <div>
-                  <span className="text-[9px] font-mono text-zinc-500 block">整體夏普比率 投資組合收益品質</span>
-                  <div className="text-xl font-mono font-black text-[#FFB74D] mt-1">2.78</div>
-                </div>
-                <p className="text-[9px] text-zinc-550 leading-tight mt-2">
-                  策略對沖勝率高達 78% 所得之經風險調整後報酬率穩定指標。
-                </p>
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-500 to-orange-500"></div>
-              </div>
-
-              <div className="premium-card rounded-xl p-4 shadow relative overflow-hidden flex flex-col justify-between">
-                <div>
-                  <span className="text-[9px] font-mono text-zinc-500 block">防守型認售權證 (PUT) 對沖比率</span>
-                  <div className="text-xl font-mono font-black text-[#f43f5e] mt-1">12%</div>
-                </div>
-                <p className="text-[9px] text-zinc-550 leading-tight mt-2">
-                  波動率穩定，系統維持基本期權保護比率以抵禦極端回撤。
-                </p>
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-rose-500 to-pink-500"></div>
-              </div>
-            </div>
-
-            {/* Holdings Head card */}
-            <div className="premium-card rounded-xl p-6 shadow flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-              <div>
-                <h3 className="text-white text-lg font-bold">實時模擬對沖持倉管理區</h3>
-                <p className="text-xs text-zinc-450 mt-1">
-                  依據 NT$ 20,000 單檔預算上限建倉。系統盤中自動拉取收盤現價，計算即時盈虧與動態減碼出場點。
-                </p>
-              </div>
-
-              <div className="flex gap-4 font-mono text-center">
-                <div className="bg-zinc-900 px-4 py-2 rounded-lg border border-zinc-850">
-                  <div className="text-[10px] text-zinc-500">當前持倉個股</div>
-                  <div className="text-xl font-bold text-white mt-0.5">{holdings.length} 檔</div>
-                </div>
-                <div className="bg-zinc-900 px-4 py-2 rounded-lg border border-zinc-850">
-                  <div className="text-[10px] text-zinc-500">持倉總價值</div>
-                  <div className="text-xl font-bold text-[#FFB74D] mt-0.5">
-                    {holdings.reduce((sum, h) => sum + h.current_price * h.shares, 0).toLocaleString()} 元
+                <div className="flex gap-4 font-mono text-center">
+                  <div className="bg-zinc-900 px-4 py-2 rounded-lg border border-zinc-850">
+                    <div className="text-[10px] text-zinc-500">當前持倉個股</div>
+                    <div className="text-xl font-bold text-white mt-0.5">{liveHoldings.length} 檔</div>
+                  </div>
+                  <div className="bg-zinc-900 px-4 py-2 rounded-lg border border-zinc-850">
+                    <div className="text-[10px] text-zinc-500">持倉總價值</div>
+                    <div className="text-xl font-bold text-[#FFB74D] mt-0.5">
+                      {liveHoldings.reduce((sum, h) => sum + h.current_price * h.shares, 0).toLocaleString()} 元
+                    </div>
+                  </div>
+                  <div className="bg-zinc-900 px-4 py-2 rounded-lg border border-zinc-850">
+                    <div className="text-[10px] text-zinc-500">預計總利潤 (P&L)</div>
+                    {(() => {
+                      const totalPnl = liveHoldings.reduce((sum, h) => sum + h.current_pnl_value, 0);
+                      return (
+                        <div className={`text-xl font-bold mt-0.5 ${totalPnl >= 0 ? "text-rose-400" : "text-emerald-400"}`}>
+                          {totalPnl >= 0 ? `+${totalPnl.toLocaleString()}` : totalPnl.toLocaleString()} 元
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
-                <div className="bg-zinc-900 px-4 py-2 rounded-lg border border-zinc-850">
-                  <div className="text-[10px] text-zinc-500">預計總利潤 (P&L)</div>
-                  {(() => {
-                    const totalPnl = holdings.reduce((sum, h) => sum + h.current_pnl_value, 0);
+              </div>
+
+              {/* Holdings Table */}
+              <div className="premium-card rounded-xl shadow-xl overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse table-auto text-xs">
+                    <thead>
+                      <tr className="border-b border-zinc-850 bg-[#0e1117] text-[10px] font-mono font-bold text-zinc-500 uppercase select-none">
+                        <th className="py-3 px-4">股票標的</th>
+                        <th className="py-3 px-3">進場根據</th>
+                        <th className="py-3 px-2 text-right">買入日期 / 時間</th>
+                        <th className="py-3 px-2 text-right">進場均價</th>
+                        <th className="py-3 px-2 text-right">持倉股數</th>
+                        <th className="py-3 px-2 text-right">現價</th>
+                        <th className="py-3 px-2 text-right text-rose-400 font-bold">停利點</th>
+                        <th className="py-3 px-2 text-right text-rose-400">移動停利</th>
+                        <th className="py-3 px-2 text-right text-emerald-400">買盤防線(止損)</th>
+                        <th className="py-3 px-2 text-right">未實現損益 (P&L)</th>
+                        <th className="py-3 px-3 text-center">指導建議</th>
+                        <th className="py-3 px-4 text-center">清倉指令</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-850/50 text-zinc-350">
+                      {liveHoldings.length === 0 ? (
+                        <tr>
+                          <td colSpan={12} className="py-16 text-center text-zinc-500 font-mono">
+                            <Sliders className="w-10 h-10 text-zinc-700 mx-auto mb-2" />
+                            當前無任何持倉股票部位
+                            <p className="text-[11px] text-[#FFB74D] mt-1 hover:underline cursor-pointer" onClick={() => setActiveTab("radar")}>
+                              👉 前往 📊 獅王全域整合監控雷達 掃描買進信號建倉
+                            </p>
+                          </td>
+                        </tr>
+                      ) : (
+                        liveHoldings.map(item => {
+                          return (
+                            <tr key={item.stock_id} className="hover:bg-zinc-900/30 transition">
+                              <td className="py-3 px-4 font-bold text-white">
+                                <div className="flex items-center gap-1">
+                                  <span className="font-mono">{item.stock_id}</span>
+                                  <span className="text-[10px] text-zinc-500 ml-1.5">{item.stock_name}</span>
+                                  {item.current_pnl_pct >= 20.0 && (
+                                    <span className="inline-block w-2 h-2 rounded-full bg-amber-500 animate-pulse ml-1.5 shadow-[0_0_8px_rgba(245,158,11,0.6)]" title="獲利 20% 強制減碼警示" />
+                                  )}
+                                  {(item.current_price <= item.stop_loss_price || item.suggested_action.includes("停損")) && (
+                                    <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse ml-1.5 shadow-[0_0_8px_rgba(16,184,129,0.6)]" title="跌破 20MA 停損隔離警示" />
+                                  )}
+                                </div>
+                              </td>
+                              <td className="py-3 px-3 text-zinc-400 font-sans max-w-[150px] truncate" title={item.buy_reason || "量化模型選股買進"}>
+                                {item.buy_reason || "量化模型選股買進"}
+                              </td>
+                              <td className="py-3 px-2 text-right font-mono text-zinc-400">
+                                {item.buy_date} {item.buy_time}
+                              </td>
+                              <td className="py-3 px-2 text-right font-mono font-semibold">{item.buy_price.toFixed(1)}</td>
+                              <td className="py-3 px-2 text-right font-mono">{item.shares} 股</td>
+                              <td className="py-3 px-2 text-right font-mono font-semibold text-white">
+                                <div className="flex flex-col items-end">
+                                  <span className="text-white font-bold">{item.current_price.toFixed(1)}</span>
+                                  {realtimePrices[item.stock_id] && (
+                                    <span className={`text-[9px] font-mono ${realtimePrices[item.stock_id].changePercent >= 0 ? "text-rose-400" : "text-emerald-400"}`}>
+                                      {realtimePrices[item.stock_id].changePercent >= 0 ? "+" : ""}{realtimePrices[item.stock_id].changePercent.toFixed(2)}%
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="py-3 px-2 text-right font-mono text-rose-400 font-bold">
+                                {item.take_profit_price ? item.take_profit_price.toFixed(1) : (Math.round(item.buy_price * 1.2 * 10) / 10).toFixed(1)} 元
+                              </td>
+                              <td className="py-3 px-2 text-right font-mono">
+                                <div className="flex flex-col items-end">
+                                  <span className="text-rose-400 font-bold">{item.trailing_stop_price?.toFixed(1) || "-"} 元</span>
+                                  <span className="text-[9px] text-zinc-500 font-mono">回落 -3.0%</span>
+                                </div>
+                              </td>
+                              <td className="py-3 px-2 text-right font-mono text-emerald-400 font-bold">
+                                {item.stop_loss_price?.toFixed(1) || "-"} 元
+                              </td>
+                              <td className={`py-3 px-2 text-right font-mono font-black ${item.current_pnl_value >= 0 ? "text-rose-400" : "text-emerald-400"}`}>
+                                <div>{item.current_pnl_pct >= 0 ? `+${item.current_pnl_pct.toFixed(2)}` : item.current_pnl_pct.toFixed(2)}%</div>
+                                <div className="text-[10px] text-zinc-500 mt-0.5">{item.current_pnl_value >= 0 ? `+${Math.round(item.current_pnl_value)}` : Math.round(item.current_pnl_value)} 元</div>
+                              </td>
+                              <td className="py-3 px-3 text-center">
+                                {renderActionBadge(item.suggested_action)}
+                              </td>
+                              <td className="py-3 px-4 text-center">
+                                <button
+                                  onClick={() => openExitModalForHolding(item)}
+                                  className="px-3 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-bold hover:opacity-90 transition active:scale-[0.96] text-[11px] shadow-[0_0_8px_rgba(16,184,129,0.2)]"
+                                >
+                                  出場結算
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Portfolio Analytics Row */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                {/* Position Concentration */}
+                <div className="premium-card rounded-xl p-4 shadow-lg">
+                  <div className="text-[10px] font-mono text-zinc-500 font-bold uppercase tracking-wider mb-3">🎯 持倉集中度 analysis</div>
+                  {liveHoldings.length === 0 ? (
+                    <p className="text-zinc-600 text-xs font-mono">持倉空白</p>
+                  ) : (() => {
+                    const categoryCounts: Record<string, number> = {};
+                    liveHoldings.forEach(h => {
+                      const sig = data?.signals?.find((s: any) => s.stock_id === h.stock_id);
+                      const cat = sig?.category || '未分類';
+                      categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
+                    });
                     return (
-                      <div className={`text-xl font-bold mt-0.5 ${totalPnl >= 0 ? "text-rose-400" : "text-emerald-400"}`}>
-                        {totalPnl >= 0 ? `+${totalPnl.toLocaleString()}` : totalPnl.toLocaleString()} 元
+                      <div className="space-y-1.5">
+                        {Object.entries(categoryCounts).map(([cat, count]) => (
+                          <div key={cat} className="flex items-center gap-2 text-[10px] font-mono">
+                            <div className="flex-1 bg-zinc-950 rounded-full h-1.5 overflow-hidden border border-zinc-900">
+                              <div className="h-full bg-gradient-to-r from-amber-600 to-amber-400" style={{ width: `${(count / liveHoldings.length) * 100}%` }} />
+                            </div>
+                            <span className="text-zinc-400 w-24 truncate">{cat}</span>
+                            <span className="text-[#FFB74D] font-bold w-6 text-right">{count}</span>
+                          </div>
+                        ))}
                       </div>
                     );
                   })()}
                 </div>
-              </div>
-            </div>
 
-            {/* Holdings Table */}
-            <div className="premium-card rounded-xl shadow-xl overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse table-auto text-xs">
-                  <thead>
-                    <tr className="border-b border-zinc-850 bg-[#0e1117] text-[10px] font-mono font-bold text-zinc-500 uppercase select-none">
-                      <th className="py-3 px-4">股票標的</th>
-                      <th className="py-3 px-3">進場根據</th>
-                      <th className="py-3 px-2 text-right">買入日期 / 時間</th>
-                      <th className="py-3 px-2 text-right">進場均價</th>
-                      <th className="py-3 px-2 text-right">持倉股數</th>
-                      <th className="py-3 px-2 text-right">現價</th>
-                      <th className="py-3 px-2 text-right text-rose-400 font-bold">預期鎖利點</th>
-                      <th className="py-3 px-2 text-right text-rose-400">移動停利</th>
-                      <th className="py-3 px-2 text-right text-emerald-400">買盤防線(止損)</th>
-                      <th className="py-3 px-2 text-right">未實現損益 (P&L)</th>
-                      <th className="py-3 px-3 text-center">指導建議</th>
-                      <th className="py-3 px-4 text-center">清倉指令</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-zinc-850/50 text-zinc-350">
-                    {holdings.length === 0 ? (
-                      <tr>
-                        <td colSpan={12} className="py-16 text-center text-zinc-500 font-mono">
-                          <Sliders className="w-10 h-10 text-zinc-700 mx-auto mb-2" />
-                          當前無任何模擬持倉部位
-                          <p className="text-[11px] text-[#FFB74D] mt-1 hover:underline cursor-pointer" onClick={() => setActiveTab("radar")}>
-                            👉 前往 📊 獅王全域整合監控雷達 掃描買進信號建倉
-                          </p>
-                        </td>
-                      </tr>
-                    ) : (
-                      holdings.map(item => {
-                        return (
-                          <tr key={item.stock_id} className="hover:bg-zinc-900/30 transition">
-                            <td className="py-3 px-4 font-bold text-white">
-                              <div className="flex items-center gap-1">
-                                <span className="font-mono">{item.stock_id}</span>
-                                <span className="text-[10px] text-zinc-500 ml-1.5">{item.stock_name}</span>
-                                {item.current_pnl_pct >= 20.0 && (
-                                  <span className="inline-block w-2 h-2 rounded-full bg-amber-500 animate-pulse ml-1.5 shadow-[0_0_8px_rgba(245,158,11,0.6)]" title="獲利 20% 強制減碼警示" />
-                                )}
-                                {(item.current_price <= item.stop_loss_price || item.suggested_action.includes("停損")) && (
-                                  <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse ml-1.5 shadow-[0_0_8px_rgba(16,184,129,0.6)]" title="跌破 20MA 停損隔離警示" />
-                                )}
-                              </div>
-                            </td>
-                            <td className="py-3 px-3 text-zinc-400 font-sans max-w-[150px] truncate" title={item.buy_reason || "量化模型選股買進"}>
-                              {item.buy_reason || "量化模型選股買進"}
-                            </td>
-                            <td className="py-3 px-2 text-right font-mono text-zinc-400">
-                              {item.buy_date} {item.buy_time}
-                            </td>
-                            <td className="py-3 px-2 text-right font-mono font-semibold">{item.buy_price.toFixed(1)}</td>
-                            <td className="py-3 px-2 text-right font-mono">{item.shares} 股</td>
-                            <td className="py-3 px-2 text-right font-mono font-semibold text-white">{item.current_price.toFixed(1)}</td>
-                            <td className="py-3 px-2 text-right font-mono text-rose-400 font-bold">
-                              {item.take_profit_price ? item.take_profit_price.toFixed(1) : (Math.round(item.buy_price * 1.2 * 10) / 10).toFixed(1)} 元
-                            </td>
-                            <td className="py-3 px-2 text-right font-mono text-rose-400">
-                              {item.trailing_stop_price?.toFixed(1) || "-"}
-                            </td>
-                            <td className="py-3 px-2 text-right font-mono text-emerald-400 font-bold">
-                              {item.stop_loss_price?.toFixed(1) || "-"} 元
-                            </td>
-                            <td className={`py-3 px-2 text-right font-mono font-black ${item.current_pnl_value >= 0 ? "text-rose-400" : "text-emerald-400"}`}>
-                              <div>{item.current_pnl_pct >= 0 ? `+${item.current_pnl_pct.toFixed(2)}` : item.current_pnl_pct.toFixed(2)}%</div>
-                              <div className="text-[10px] text-zinc-500 mt-0.5">{item.current_pnl_value >= 0 ? `+${Math.round(item.current_pnl_value)}` : Math.round(item.current_pnl_value)} 元</div>
-                            </td>
-                            <td className="py-3 px-3 text-center">
-                              {renderActionBadge(item.suggested_action)}
-                            </td>
-                            <td className="py-3 px-4 text-center">
-                              <button
-                                onClick={() => openExitModalForHolding(item)}
-                                className="px-3 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-bold hover:opacity-90 transition active:scale-[0.96] text-[11px] shadow-[0_0_8px_rgba(16,184,129,0.2)]"
-                              >
-                                出場結算
-                              </button>
-                            </td>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Portfolio Analytics Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              {/* Position Concentration */}
-              <div className="premium-card rounded-xl p-4 shadow-lg">
-                <div className="text-[10px] font-mono text-zinc-500 font-bold uppercase tracking-wider mb-3">🎯 持倉集中度分析</div>
-                {holdings.length === 0 ? (
-                  <p className="text-zinc-600 text-xs font-mono">持倉空白</p>
-                ) : (() => {
-                  const categoryCounts: Record<string, number> = {};
-                  holdings.forEach(h => {
-                    const sig = data?.signals?.find((s: any) => s.stock_id === h.stock_id);
-                    const cat = sig?.category || '未分類';
-                    categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
-                  });
-                  return (
-                    <div className="space-y-1.5">
-                      {Object.entries(categoryCounts).map(([cat, count]) => (
-                        <div key={cat} className="flex items-center gap-2 text-[10px] font-mono">
-                          <div className="flex-1 bg-zinc-950 rounded-full h-1.5 overflow-hidden border border-zinc-900">
-                            <div className="h-full bg-gradient-to-r from-amber-600 to-amber-400" style={{ width: `${(count / holdings.length) * 100}%` }} />
-                          </div>
-                          <span className="text-zinc-400 w-24 truncate">{cat}</span>
-                          <span className="text-[#FFB74D] font-bold w-6 text-right">{count}</span>
-                        </div>
-                      ))}
-                    </div>
-                  );
-                })()}
-              </div>
-
-              {/* P&L Breakdown */}
-              <div className="premium-card rounded-xl p-4 shadow-lg">
-                <div className="text-[10px] font-mono text-zinc-500 font-bold uppercase tracking-wider mb-3">📊 未實現損益分布</div>
-                {holdings.length === 0 ? (
-                  <p className="text-zinc-600 text-xs font-mono">持倉空白</p>
-                ) : (() => {
-                  const profits = holdings.filter(h => h.current_pnl_value >= 0);
-                  const losses = holdings.filter(h => h.current_pnl_value < 0);
-                  const totalVal = holdings.reduce((s, h) => s + h.current_price * h.shares, 0);
-                  const totalCost = holdings.reduce((s, h) => s + h.buy_price * h.shares, 0);
-                  return (
-                    <div className="space-y-2 text-[10px] font-mono">
-                      <div className="flex justify-between">
-                        <span className="text-zinc-500">盈利持倉</span>
-                        <span className="text-rose-400 font-bold">{profits.length} 檔</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-zinc-500">號捐持倉</span>
-                        <span className="text-emerald-400 font-bold">{losses.length} 檔</span>
-                      </div>
-                      <div className="flex justify-between border-t border-zinc-800/60 pt-2">
-                        <span className="text-zinc-500">總成本</span>
-                        <span className="text-zinc-300 font-bold">{totalCost.toLocaleString()} 元</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-zinc-500">總市値</span>
-                        <span className="text-zinc-300 font-bold">{totalVal.toLocaleString()} 元</span>
-                      </div>
-                      <div className={`flex justify-between font-bold pt-1 border-t border-zinc-800/60 ${ (totalVal-totalCost) >= 0 ? 'text-rose-400' : 'text-emerald-400'}`}>
-                        <span>結算合計</span>
-                        <span>{(totalVal-totalCost) >= 0 ? '+' : ''}{Math.round(totalVal-totalCost).toLocaleString()} 元</span>
-                      </div>
-                    </div>
-                  );
-                })()}
-              </div>
-
-              {/* Kelly Position Sizing */}
-              <div className="premium-card rounded-xl p-4 shadow-lg">
-                <div className="text-[10px] font-mono text-zinc-500 font-bold uppercase tracking-wider mb-3">🤟 半凱利動態投入建議</div>
-                <div className="space-y-2 text-[10px] font-mono">
-                  {['第一梁隊 (50%)', '第二梃隊 (30%)', '第三梃隊 (20%)'].map((tier, i) => {
-                    const amounts = [10000, 6000, 4000];
-                    const pcts = holdings.length === 0 ? ['0', '0', '0'] : [
-                      ((holdings.reduce((s,h) => s + h.buy_price * h.shares, 0) * 0.5 / 10000)).toFixed(1),
-                      ((holdings.reduce((s,h) => s + h.buy_price * h.shares, 0) * 0.3 / 10000)).toFixed(1),
-                      ((holdings.reduce((s,h) => s + h.buy_price * h.shares, 0) * 0.2 / 10000)).toFixed(1),
-                    ];
+                {/* P&L Breakdown */}
+                <div className="premium-card rounded-xl p-4 shadow-lg">
+                  <div className="text-[10px] font-mono text-zinc-500 font-bold uppercase tracking-wider mb-3">📊 未實現損益分布</div>
+                  {liveHoldings.length === 0 ? (
+                    <p className="text-zinc-600 text-xs font-mono">持倉空白</p>
+                  ) : (() => {
+                    const profits = liveHoldings.filter(h => h.current_pnl_value >= 0);
+                    const losses = liveHoldings.filter(h => h.current_pnl_value < 0);
+                    const totalVal = liveHoldings.reduce((s, h) => s + h.current_price * h.shares, 0);
+                    const totalCost = liveHoldings.reduce((s, h) => s + h.buy_price * h.shares, 0);
                     return (
-                      <div key={tier} className="flex items-center justify-between bg-zinc-950/60 p-2 rounded border border-zinc-900">
-                        <span className="text-zinc-400">{tier}</span>
-                        <span className="text-[#FFB74D] font-bold">NT$ {amounts[i].toLocaleString()}</span>
+                      <div className="space-y-2 text-[10px] font-mono">
+                        <div className="flex justify-between">
+                          <span className="text-zinc-500">盈利持倉</span>
+                          <span className="text-rose-400 font-bold">{profits.length} 檔</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-zinc-500">虧損持倉</span>
+                          <span className="text-emerald-400 font-bold">{losses.length} 檔</span>
+                        </div>
+                        <div className="flex justify-between border-t border-zinc-800/60 pt-2">
+                          <span className="text-zinc-500">總成本</span>
+                          <span className="text-zinc-300 font-bold">{totalCost.toLocaleString()} 元</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-zinc-500">總市值</span>
+                          <span className="text-zinc-300 font-bold">{totalVal.toLocaleString()} 元</span>
+                        </div>
+                        <div className={`flex justify-between font-bold pt-1 border-t border-zinc-800/60 ${ (totalVal-totalCost) >= 0 ? 'text-rose-400' : 'text-emerald-400'}`}>
+                          <span>結算合計</span>
+                          <span>{(totalVal-totalCost) >= 0 ? '+' : ''}{Math.round(totalVal-totalCost).toLocaleString()} 元</span>
+                        </div>
                       </div>
                     );
-                  })}
-                  <div className="text-[8px] text-zinc-600 font-sans mt-1">單檔上限 NT$20,000 ・ 持倉總上限 10檔</div>
+                  })()}
+                </div>
+
+                {/* Kelly Position Sizing */}
+                <div className="premium-card rounded-xl p-4 shadow-lg">
+                  <div className="text-[10px] font-mono text-zinc-500 font-bold uppercase tracking-wider mb-3">🤟 半凱利動態投入建議</div>
+                  <div className="space-y-2 text-[10px] font-mono">
+                    {['第一戰隊 (50%)', '第二戰隊 (30%)', '第三戰隊 (20%)'].map((tier, i) => {
+                      const amounts = [10000, 6000, 4000];
+                      const pcts = liveHoldings.length === 0 ? ['0', '0', '0'] : [
+                        ((liveHoldings.reduce((s,h) => s + h.buy_price * h.shares, 0) * 0.5 / 10000)).toFixed(1),
+                        ((liveHoldings.reduce((s,h) => s + h.buy_price * h.shares, 0) * 0.3 / 10000)).toFixed(1),
+                        ((liveHoldings.reduce((s,h) => s + h.buy_price * h.shares, 0) * 0.2 / 10000)).toFixed(1),
+                      ];
+                      return (
+                        <div key={tier} className="flex items-center justify-between bg-zinc-950/60 p-2 rounded border border-zinc-900">
+                          <span className="text-zinc-400">{tier}</span>
+                          <span className="text-[#FFB74D] font-bold">NT$ {amounts[i].toLocaleString()}</span>
+                        </div>
+                      );
+                    })}
+                    <div className="text-[8px] text-zinc-600 font-sans mt-1">單檔上限 NT$20,000 ・ 持倉總上限 10檔</div>
+                  </div>
                 </div>
               </div>
+
             </div>
-
-          </div>
-        )}
-
+          );
+        })()}
         {/* ======================= TAB 3: EXITS ======================= */}
         {activeTab === "exits" && (
           <div className="space-y-6 animate-fade-in">
@@ -5149,361 +5176,6 @@ export default function App() {
                   );
                 })
               )}
-            </div>
-
-          </div>
-        )}
-
-        {/* ======================= TAB 4: CHAT ======================= */}
-        {activeTab === "chat" && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-fade-in">
-            
-            {/* Left dialog window */}
-            <div className="lg:col-span-8 premium-card rounded-xl shadow-2xl flex flex-col h-[650px] overflow-hidden">
-              
-              {/* Chat room Header */}
-              <div className="p-4 bg-[#0e1117] border-b border-zinc-850 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 bg-indigo-950 rounded-full flex items-center justify-center text-indigo-400 border border-indigo-500/20">
-                    <Sparkles className="w-4.5 h-4.5 animate-pulse" />
-                  </div>
-                  <div>
-                    <h3 className="text-white font-bold text-sm">避險大師量化實戰研討會</h3>
-                    <p className="text-[10px] text-zinc-500">Gemini 3.5-Flash 自營部首席解盤大師在線</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-zinc-500 font-mono">鎖定研討標的:</span>
-                  <select
-                    value={chatStockId}
-                    onChange={(e) => setChatStockId(e.target.value)}
-                    className="bg-zinc-950 border border-zinc-850 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-[#E5A823]"
-                  >
-                    {INITIAL_STOCKS.map(s => (
-                      <option key={s.id} value={s.id}>{s.id} {s.name}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Message flow area */}
-              <div className="flex-1 p-4 overflow-y-auto space-y-4">
-                {chatMessages.map((msg, idx) => {
-                  const isUser = msg.role === "user";
-                  return (
-                    <div key={idx} className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
-                      <div className={`max-w-[80%] rounded-xl p-3.5 text-xs shadow-md leading-relaxed ${
-                        isUser 
-                          ? "bg-gradient-to-tr from-amber-600 to-yellow-600 text-black font-semibold rounded-br-none animate-fade-in" 
-                          : "bg-zinc-900 border border-zinc-850 text-zinc-150 rounded-bl-none animate-fade-in"
-                      }`}>
-                        {!isUser && (
-                          <div className="text-[9px] text-[#FFB74D] font-mono tracking-wider uppercase font-bold mb-1 flex items-center gap-1">
-                            <Sparkles className="w-3 h-3 text-[#FFB74D] animate-pulse" />
-                            🦁 獅王量化共駕大師
-                          </div>
-                        )}
-                        <div className="whitespace-pre-wrap">{msg.content}</div>
-                        
-                        {/* Attachment bubble rendering */}
-                        {msg.attachment && msg.attachment.type === "image" && (
-                          <div className="mt-2.5 rounded-lg overflow-hidden border border-zinc-800 bg-zinc-950 p-1 max-w-[260px] shadow-lg group relative">
-                            <img src={msg.attachment.data} alt={msg.attachment.name} className="w-full h-auto object-cover rounded max-h-[160px]" />
-                            <div className="absolute bottom-1 right-1 bg-black/60 px-1 py-0.5 text-[7px] text-zinc-400 font-mono rounded">
-                              📷 {msg.attachment.name.substring(0, 15)}...
-                            </div>
-                          </div>
-                        )}
-                        {msg.attachment && msg.attachment.type === "text" && (
-                          <div className="mt-2.5 p-2 rounded bg-zinc-950/60 border border-zinc-850/80 text-[10px] text-zinc-350 font-mono flex items-center gap-1.5 shadow-inner">
-                            <FileText className="w-4 h-4 text-indigo-400 shrink-0" />
-                            <div className="truncate flex-1 text-left">
-                              <div className="font-bold text-[9px] truncate text-white">{msg.attachment.name}</div>
-                              <div className="text-[7px] text-zinc-550 uppercase">📄 導入文字文件 (分析就緒)</div>
-                            </div>
-                          </div>
-                        )}
-                        {msg.attachment && msg.attachment.type === "link" && (
-                          <div className="mt-2.5 p-2 rounded bg-zinc-950/60 border border-zinc-850/80 text-[10px] text-[#FFB74D] font-mono flex items-center gap-1.5 shadow-inner">
-                            <Link className="w-4 h-4 text-amber-500 shrink-0" />
-                            <div className="truncate flex-1 text-left">
-                              <div className="font-bold text-[9px] truncate text-white underline">{msg.attachment.name}</div>
-                              <div className="text-[7px] text-zinc-550 uppercase">☁️ 雲端檔案連結</div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-                {isSendingChat && (
-                  <div className="flex justify-start">
-                    <div className="bg-zinc-900 border border-zinc-850 rounded-xl p-3.5 text-xs text-indigo-400 flex items-center gap-2 shadow-[0_4px_12px_rgba(0,0,0,0.3)] border-l-2 border-l-indigo-500">
-                      <span className="w-4 h-4 border-2 border-indigo-500 border-t-transparent animate-spin rounded-full"></span>
-                      AI 避險大師正在穿透分析文件並精算防割水準中...
-                    </div>
-                  </div>
-                )}
-                <div ref={chatBottomRef} />
-              </div>
-
-              {/* Floating Attachment Preview */}
-              {attachedFile && (
-                <div className="px-4 py-2.5 bg-[#0b0c10] border-t border-zinc-850 flex items-center justify-between animate-fade-in relative z-20">
-                  <div className="flex items-center gap-2.5">
-                    {attachedFile.type === "image" ? (
-                      <div className="w-10 h-10 rounded border border-zinc-800 overflow-hidden bg-zinc-900 shrink-0 shadow">
-                        <img src={attachedFile.data} alt="attached-preview" className="w-full h-full object-cover" />
-                      </div>
-                    ) : attachedFile.type === "text" ? (
-                      <div className="w-9 h-9 rounded bg-indigo-950/40 flex items-center justify-center border border-indigo-900/60 text-indigo-400 shrink-0 shadow">
-                        <FileText className="w-4 h-4 animate-pulse" />
-                      </div>
-                    ) : (
-                      <div className="w-9 h-9 rounded bg-amber-950/40 flex items-center justify-center border border-amber-900/60 text-[#FFB74D] shrink-0 shadow">
-                        <Link className="w-4 h-4 animate-pulse" />
-                      </div>
-                    )}
-                    <div className="text-left">
-                      <div className="text-[10px] text-white font-bold font-mono truncate max-w-xs">{attachedFile.name}</div>
-                      <div className="text-[8px] text-zinc-500 font-mono uppercase font-bold tracking-wider">
-                        {attachedFile.type === "image" ? "📷 投顧/明牌對話截圖" : attachedFile.type === "text" ? "📄 合約/量化報表文字" : "☁️ 雲端檔案連結"}
-                      </div>
-                    </div>
-                  </div>
-                  <button 
-                    onClick={() => setAttachedFile(null)}
-                    className="p-1 rounded bg-zinc-950 hover:bg-zinc-900 border border-zinc-850 hover:border-zinc-700 text-zinc-400 hover:text-white transition active:scale-[0.96]"
-                    title="移除附件"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              )}
-
-              {/* Chat Input strip */}
-              <div className="p-4 bg-[#0e1117] border-t border-zinc-850 flex gap-2 items-center relative">
-                {/* Hidden File Input Elements */}
-                <input 
-                  type="file" 
-                  id="chat-image-upload" 
-                  accept="image/*" 
-                  className="hidden" 
-                  onChange={(e) => handleFileChange(e, "image")} 
-                  onClick={(e) => { (e.target as any).value = null; }} 
-                />
-                <input 
-                  type="file" 
-                  id="chat-text-upload" 
-                  accept=".txt,.csv,.json" 
-                  className="hidden" 
-                  onChange={(e) => handleFileChange(e, "text")} 
-                  onClick={(e) => { (e.target as any).value = null; }}
-                />
-
-                {/* Attachment Selector Button */}
-                <div className="relative shrink-0">
-                  <button
-                    onClick={() => setShowAttachmentMenu(!showAttachmentMenu)}
-                    className={`w-9.5 h-9.5 rounded-lg flex items-center justify-center border transition-all ${
-                      attachedFile 
-                        ? "bg-amber-500/10 border-amber-500/40 text-[#FFB74D] shadow-[0_0_10px_rgba(245,158,11,0.2)] animate-pulse" 
-                        : "bg-zinc-950 border-zinc-850 text-zinc-450 hover:text-white hover:border-zinc-700"
-                    }`}
-                    title="匯入圖片/文件或雲端連結"
-                  >
-                    <Paperclip className="w-4.5 h-4.5" />
-                  </button>
-
-                  {/* Attachment Popover Menu */}
-                  {showAttachmentMenu && (
-                    <>
-                      <div className="fixed inset-0 z-30" onClick={() => setShowAttachmentMenu(false)}></div>
-                      <div className="absolute bottom-full left-0 mb-2 w-48 bg-[#090b10] border border-zinc-800 rounded-lg shadow-2xl p-1.5 z-40 space-y-0.5 animate-fade-in text-left">
-                        <label 
-                          htmlFor="chat-image-upload" 
-                          className="flex items-center gap-2 px-2.5 py-1.5 rounded text-xs font-semibold text-zinc-300 hover:bg-zinc-900 hover:text-white cursor-pointer transition"
-                        >
-                          <span>📷 上傳對話/明牌截圖</span>
-                        </label>
-                        <label 
-                          htmlFor="chat-text-upload" 
-                          className="flex items-center gap-2 px-2.5 py-1.5 rounded text-xs font-semibold text-zinc-300 hover:bg-zinc-900 hover:text-white cursor-pointer transition"
-                        >
-                          <span>📄 匯入合約/文字白皮書</span>
-                        </label>
-                        <button
-                          onClick={() => {
-                            setShowLinkInput(true);
-                            setShowAttachmentMenu(false);
-                          }}
-                          className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded text-xs font-semibold text-zinc-300 hover:bg-zinc-900 hover:text-white cursor-pointer transition text-left"
-                        >
-                          <span>☁️ 匯入雲端公開連結</span>
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
-
-                <input
-                  type="text"
-                  value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSendChatMessage()}
-                  placeholder={
-                    attachedFile 
-                      ? `已匯入 [${attachedFile.name.substring(0, 12)}...]，請輸入詢問細節或直接發送...`
-                      : `輸入您的問題，例如：「請幫我分析 ${chatStockId} 目前適合進場嗎？」...`
-                  }
-                  className="flex-1 bg-zinc-950 border border-zinc-850 rounded-lg px-4 py-2.5 text-xs text-white placeholder-zinc-650 focus:outline-none focus:border-[#E5A823]"
-                />
-                <button
-                  onClick={handleSendChatMessage}
-                  disabled={isSendingChat || (!chatInput.trim() && !attachedFile)}
-                  className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-[#E5A823] to-[#FFB74D] text-black font-bold text-xs hover:opacity-90 active:scale-[0.98] transition shadow"
-                >
-                  發送
-                </button>
-              </div>
-
-              {/* Cloud URL Ingestion Dialog */}
-              {showLinkInput && (
-                <div className="absolute inset-0 bg-[#090b10]/95 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                  <div className="bg-zinc-950 border border-zinc-800 rounded-xl p-5 w-full max-w-sm space-y-4 shadow-2xl relative text-left">
-                    <button 
-                      onClick={() => setShowLinkInput(false)}
-                      className="absolute top-3 right-3 p-1 rounded bg-zinc-900 border border-zinc-850 text-zinc-400 hover:text-white transition"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                    <div className="space-y-1">
-                      <h4 className="text-white text-xs font-bold font-mono uppercase flex items-center gap-1.5">
-                        <Link className="w-3.5 h-3.5 text-[#FFB74D]" />
-                        匯入雲端公開檔案連結
-                      </h4>
-                      <p className="text-[10px] text-zinc-550 leading-normal font-sans">
-                        請提供包含投顧方案、白皮書或對沖項目的公開網路 URL 連結。
-                      </p>
-                    </div>
-                    <input 
-                      type="url" 
-                      value={cloudUrlInput}
-                      onChange={(e) => setCloudUrlInput(e.target.value)}
-                      placeholder="https://example.com/report.txt"
-                      className="w-full bg-zinc-900 border border-zinc-800 rounded px-3 py-2.5 text-xs text-white placeholder-zinc-650 focus:outline-none focus:border-[#E5A823] font-mono"
-                    />
-                    <div className="flex gap-2 justify-end pt-1">
-                      <button
-                        onClick={() => setShowLinkInput(false)}
-                        className="px-3.5 py-1.5 rounded bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800 text-[10px] font-bold transition"
-                      >
-                        取消
-                      </button>
-                      <button
-                        onClick={handleCloudUrlSubmit}
-                        disabled={!cloudUrlInput.trim()}
-                        className="px-3.5 py-1.5 rounded bg-gradient-to-r from-[#E5A823] to-[#FFB74D] text-black text-[10px] font-black hover:opacity-90 transition shadow"
-                      >
-                        確認匯入
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-            </div>
-
-            {/* Right pre-loaded indicator widget */}
-            <div className="lg:col-span-4 space-y-6">
-              
-              <div className="premium-card rounded-xl p-5 shadow-lg">
-                <h3 className="text-white text-sm font-bold flex items-center gap-1.5 mb-3">
-                  <Sliders className="w-4 h-4 text-[#FFB74D]" />
-                  當前研討標的最新量化指引 ({chatStockId})
-                </h3>
-
-                {(() => {
-                  const activeSig = data?.signals.find(s => s.stock_id === chatStockId);
-                  if (!activeSig) {
-                    return <p className="text-xs text-zinc-550 italic font-mono">請先在雷達表完成一次洗價掃描</p>;
-                  }
-                  
-                  const isEStopOrStopLoss = activeSig.close_price <= activeSig.stop_loss_price || activeSig.signal === "隔離" || activeSig.action_signal.includes("停損");
-                  const holdingItem = holdings.find(h => h.stock_id === chatStockId);
-                  const isTakeProfitAlert = holdingItem && holdingItem.current_pnl_pct >= 20.0;
-                  
-                  return (
-                    <div className="space-y-3.5 text-xs font-mono">
-                      {isEStopOrStopLoss && (
-                        <div className="bg-emerald-950/70 border border-emerald-500/50 text-emerald-400 text-[10px] p-2.5 rounded-lg animate-pulse shadow-[0_0_10px_rgba(16,184,129,0.2)] leading-relaxed select-none mb-1">
-                          🟢 跌破 20MA 停損隔離警示中 - 收盤價已在月線下方，嚴禁進場且強制執行停損風控！
-                        </div>
-                      )}
-                      {isTakeProfitAlert && (
-                        <div className="bg-rose-950/70 border border-rose-500/50 text-rose-400 text-[10px] p-2.5 rounded-lg animate-pulse shadow-[0_0_10px_rgba(244,63,94,0.2)] leading-relaxed select-none mb-1">
-                          🔴 獲利 20% 減碼警示中 - 當前帳面獲利已達 {holdingItem.current_pnl_pct.toFixed(2)}%，請執行強制減碼 50% 本金回收風控！
-                        </div>
-                      )}
-                      
-                      <div className="grid grid-cols-2 gap-2 text-center text-[10px]">
-                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900">
-                          <div className="text-zinc-550">最新收盤價</div>
-                          <div className="text-sm font-bold text-white mt-0.5">{activeSig.close_price} 元</div>
-                        </div>
-                        <div className="bg-zinc-950 p-2 rounded border border-zinc-900">
-                          <div className="text-zinc-550">今日表現 %</div>
-                          <div className={`text-sm font-bold mt-0.5 ${activeSig.change_pct >= 0 ? "text-rose-400" : "text-emerald-400"}`}>
-                            {activeSig.change_pct >= 0 ? `+${activeSig.change_pct}%` : `${activeSig.change_pct}%`}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-900 space-y-2">
-                        <div className="flex justify-between text-[11px]">
-                          <span className="text-zinc-500">綜合戰力評估:</span>
-                          <span className="text-[#FFB74D] font-bold">{activeSig.score} / 50 分</span>
-                        </div>
-                        <div className="flex justify-between text-[11px] border-t border-zinc-900 pt-1.5">
-                          <span className="text-zinc-500">策略信號:</span>
-                          {renderSignalBadge(activeSig.signal)}
-                        </div>
-                        <div className="flex justify-between items-center text-[11px] border-t border-zinc-900 pt-1.5">
-                          <span className="text-zinc-500">具體行動:</span>
-                          {renderActionBadge(activeSig.action_signal)}
-                        </div>
-                        <div className="flex justify-between text-[11px] border-t border-zinc-900 pt-1.5">
-                          <span className="text-zinc-500">建議進場點:</span>
-                          <span className="text-zinc-300 font-bold">{activeSig.suggested_entry_price}</span>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-3 gap-1.5 text-center text-[9px]">
-                        <div className="bg-zinc-950 p-1.5 rounded border border-zinc-900">
-                          <div className="text-zinc-550">20% 減碼點</div>
-                          <div className="text-rose-400 font-bold mt-0.5">{activeSig.take_profit_half_price}</div>
-                        </div>
-                        <div className="bg-zinc-950 p-1.5 rounded border border-zinc-900">
-                          <div className="text-zinc-550">移動停利線</div>
-                          <div className="text-rose-400 font-bold mt-0.5">{activeSig.trailing_stop_price}</div>
-                        </div>
-                        <div className="bg-zinc-950 p-1.5 rounded border border-zinc-900">
-                          <div className="text-zinc-550">E-Stop 停損</div>
-                          <div className="text-emerald-400 font-bold mt-0.5">{activeSig.stop_loss_price}</div>
-                        </div>
-                      </div>
-
-                      <div className="bg-zinc-900/60 p-3 rounded border border-zinc-850 text-[10px] text-zinc-400 leading-relaxed font-sans">
-                        <strong>大師實操備忘：</strong><br />
-                        {activeSig.master_notes || "無註記"}
-                      </div>
-
-                    </div>
-                  );
-                })()}
-              </div>
-
             </div>
 
           </div>
