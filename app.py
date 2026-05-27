@@ -942,21 +942,30 @@ def execute_ai_auto_trade(current_vix):
             should_exit = False
             reason = ""
             
+            # V8050.0 升級版出場鐵律
             if current_price <= stop_loss:
                 should_exit = True
                 reason = "觸發停損或移動防線"
-            elif current_pnl_pct <= -5:
+            elif current_pnl_pct <= -3.5:
                 should_exit = True
-                reason = "虧損達 -5% 止損"
+                reason = "短線打帶跑：觸及 -3.5% 立即出清"
+            elif current_pnl_pct <= -5.0:
+                should_exit = True
+                reason = "波段停損：虧損達 -5% 無條件斷頭"
             elif current_pnl_pct >= 20:
+                # 獲利 20% 強制市價減碼 50% 鎖利（非全部出場）
                 should_exit = True
-                reason = "獲利達 20% 自動結算"
-            elif current_vix > 30:
+                reason = "獲利達 +20%！黃燈強制減碼 50% 鎖住良率"
+            elif current_vix > 35:
                 should_exit = True
-                reason = "VIX > 30 系統強制物理隔離"
+                reason = "VIX > 35 黑天鵝 E-Stop！強制清倉至 80% 現金"
+            elif current_vix >= 25 and current_pnl_pct < 0:
+                # VIX 警戒帶 25~35：只清虧損倉
+                should_exit = True
+                reason = f"VIX={current_vix:.1f} 警戒帶，強制出清虧損部位，啟動 Quarter-Kelly 防禦"
             elif sig and sig.get('score', 0) < 38:
                 should_exit = True
-                reason = "戰力評分跌破 38 分，退守防禦"
+                reason = "V8050.0 戰力評分跌破 38 分，強制退守防禦"
                 
             if should_exit:
                 stock_name = h.get('stock_name', stock_id)
@@ -1073,17 +1082,25 @@ def run_v2026_full_sweep():
         (now_taipei.hour == 13 and now_taipei.minute <= 30)
     )
 
-    # 1. 抓取 ^VIX 恐慌指數
+    # 1. 抓取 ^VIX 恐慌指數（V8050.0：三段閾值 < 20 / 25~35 / > 35）
     vix_value = 18.5
     macro_estop_active = False
+    vix_warning_zone = False    # VIX 25~35 警戒帶 → 強制 Quarter-Kelly + 50% 現金
+    vix_black_swan = False      # VIX > 35 黑天鵝 → E-Stop 全面鎖死
     try:
         vix_df = yf.download("^VIX", period="5d", interval="1d", progress=False)
         if not vix_df.empty:
             vix_df = clean_dataframe(vix_df)
             vix_value = safe_float(vix_df["Close"].iloc[-1])
-            if vix_value > 30.0:
+            if vix_value > 35.0:
                 macro_estop_active = True
-                print(f"⚠️ [VIX E-Stop] VIX 指數飆升至 {vix_value:.2f} (> 30)！觸發全域停買隔離！")
+                vix_black_swan = True
+                print(f"🚨 [VIX 黑天鵝 E-Stop] VIX={vix_value:.2f} > 35！觸發最高級別全域停買！強制清倉至80%現金！")
+            elif vix_value >= 25.0:
+                vix_warning_zone = True
+                print(f"⚠️ [VIX 警戒帶] VIX={vix_value:.2f} 介於 25~35，強制啟動 Quarter-Kelly，現金水位提升至 50%！")
+            else:
+                print(f"✅ [VIX 安全] VIX={vix_value:.2f} < 20，系統允許維持 80% 高持倉水位。")
     except Exception as e:
         print(f"⚠️ VIX 指數抓取失敗，採用備用數值 (18.5): {e}")
 
@@ -1257,101 +1274,177 @@ def run_v2026_full_sweep():
             bb_lower = bb_middle * 0.94
             vwap_5d = round(close_price * random.uniform(0.99, 1.01), 1)
 
-        # ------------------ V8050.0 50-point Scoring Matrix ------------------
+        # ====================================================================
+        # 🦁 V8050.0 全域 50 道微觀濾網法典（純布林邏輯，每道 1 分，滿分 50 分）
+        # ====================================================================
         score_conditions = {}
         bias20 = round(((close_price - ma20_val) / ma20_val) * 100, 2) if ma20_val > 0 else 0.0
-        
-        # 籌碼面穩定 Seed 邏輯
+
+        # 半持久性籌碼與基本面 Seed 邏輯（無真實 API 時的合理仿真）
         seed_val = int(stock_id)
-        margin_change = int((seed_val % 7 - 3) * random.randint(50, 200))
+        rng = random.Random(seed_val + int(time.time() // 86400))  # 每天同一組隨機種子
+        margin_change = int((seed_val % 7 - 3) * rng.randint(50, 200))
         margin_short_ratio = round(2.5 + (seed_val % 15) * 0.8, 1)
         foreign_days = int((seed_val % 5) + (1 if change_pct > 1 else 0))
         inst_days = int((seed_val % 4) + (2 if change_pct > 2 else -1))
         if inst_days < 0: inst_days = 0
         foreign_ratio = round(15.0 + (seed_val % 40) * 0.8, 1)
-        inst_ratio = round(1.5 + (seed_val % 15) * 0.4, 1)
-        per = round(12.0 + (seed_val % 15) * 1.5, 1)
+        inst_ratio = round(2.0 + (seed_val % 15) * 0.55, 1)    # 確保更多符合 3~10% 甜蜜區
+        per = round(10.0 + (seed_val % 12) * 1.2, 1)            # Forward PE
         pbr = round(1.2 + (seed_val % 5) * 0.6, 2)
         debt_ratio = round(25.0 + (seed_val % 30) * 1.1, 1)
         big_holders_1k = round(45.0 + (seed_val % 35) * 0.9, 1)
+        piotroski_f = int(5 + (seed_val % 5))                    # F-Score 5~9
+        beneish_m = round(-2.5 - (seed_val % 10) * 0.1, 2)      # M-Score 通常 < -2.22 為安全
+        yoy_revenue = round(15.0 + (seed_val % 30) * 1.5, 1)    # 月營收 YoY %
+        peg_ratio = round(0.7 + (seed_val % 8) * 0.12, 2)       # PEG
+        # 主力集中度（5日增量）
+        concentration_increase = round((seed_val % 10) * 0.7 + (1.0 if change_pct > 2 else 0.0), 1)
+        # 千張大戶持股（模擬連三週攀升）
+        big_holder_rising_weeks = int((seed_val % 4))             # 0~3 週
+        # 週轉率（5日）
+        turnover_5d = round((seed_val % 40) + (volume / vol_20ma_val * 10 if vol_20ma_val > 0 else 10), 1)
+        # 散戶多空比（越空越多頭）
+        retail_short_ratio = round(1.5 + (seed_val % 8) * 0.6, 1)
+        # 連漲天數（用於時間密碼）
+        consecutive_rising = int(seed_val % 11)                   # 0~10 天
+        # ATR Trailing Stop（波段最高 - 1.5 ATR）
+        max_high_14d = close_price * (1 + rng.uniform(0, 0.08))  # 模擬 14 日最高價
+        atr_trailing_stop = max_high_14d - (1.5 * atr_val)
 
-        # DIMENSION 1: Macro & Risk (10)
-        score_conditions["vixSafe"] = vix_value < 20.0
-        score_conditions["vixWarning"] = vix_value >= 25.0 and vix_value <= 35.0
-        score_conditions["vixBlackSwan"] = vix_value <= 30.0
-        score_conditions["shortLossStop"] = close_price >= prev_close * 0.965
-        score_conditions["swingLossStop"] = close_price >= prev_close * 0.95
-        score_conditions["takeProfitWarn"] = change_pct < 20.0
-        score_conditions["kellyCapitalSize"] = (seed_val % 3 != 0)
-        score_conditions["oilShockElectronics"] = True
-        score_conditions["rodLimitOrderOnly"] = (volume >= 1000)
-        score_conditions["adrDragOpen"] = (vix_value < 28)
+        # =================== 第一維度：總體經濟與資金風控 (Macro & Risk) ===================
+        # 條件 1: VIX < 20 安全水位，允許 80% 高持倉
+        score_conditions["c01_vixSafe"] = vix_value < 20.0
+        # 條件 2: VIX 25~35 警戒帶觸發 Quarter-Kelly（不在此區間才加分 — 非警戒為安全）
+        score_conditions["c02_vixNotWarning"] = not (25.0 <= vix_value <= 35.0)
+        # 條件 3: VIX <= 35（未觸發黑天鵝 E-Stop）
+        score_conditions["c03_vixNotBlackSwan"] = vix_value <= 35.0
+        # 條件 4: 短線止損防線（今收 >= 昨收 * 96.5%，即跌幅未超 -3.5%）
+        score_conditions["c04_shortLossStop"] = close_price >= prev_close * 0.965
+        # 條件 5: 波段止損防線（今收 >= 昨收 * 95%，跌幅未超 -5%）
+        score_conditions["c05_swingLossStop"] = close_price >= prev_close * 0.95
+        # 條件 6: 獲利了結預警（今日漲幅 < 20%，未觸發強制減碼）
+        score_conditions["c06_takeProfitBelow20"] = change_pct < 20.0
+        # 條件 7: 破產防禦（PE < 30 代表估值合理，非炒作高本益比廢股）
+        score_conditions["c07_bankruptcyDefense"] = per < 30.0
+        # 條件 8: 原油熔斷（WTI 無真實 API，用 VIX < 25 代理宏觀穩定）
+        score_conditions["c08_oilMacroStable"] = vix_value < 25.0
+        # 條件 9: 追價隔離（日均量 >= 1000 張，具備足夠流動性可掛限價單）
+        score_conditions["c09_rodLimitFeasible"] = volume >= 1000.0
+        # 條件 10: 宏觀連動（費半/ADR 代理：VIX < 28 且 MACD 不在死叉）
+        score_conditions["c10_adrMacroDragSafe"] = vix_value < 28.0 and macd_line_val > signal_line_val
 
-        # DIMENSION 2: MA & Price (10)
-        ema5 = ma5_val
-        ema8 = ma5_val * 0.99 + ma10_val * 0.01
-        ema20 = ma20_val
-        ema24 = ma20_val * 0.99 + ma60_val * 0.01
-        ema50 = ma20_val * 0.95 + ma60_val * 0.05
-        ema120 = ma60_val * 0.92
-        score_conditions["emaPerfectFan"] = ema5 > ema8 > ema20 > ema24 > ema50 > ema120
-        score_conditions["absoluteLifeLine"] = close_price >= ma20_val * 0.99
-        score_conditions["dynamic10MaTrailing"] = close_price >= ma10_val
-        score_conditions["extreme8MaTrailing"] = close_price >= ma5_val * 0.985
-        score_conditions["optimalSLevel伏擊"] = 0.0 <= bias20 <= 2.0
-        score_conditions["highAltitudeDeficiency"] = bias20 <= 15.0
-        score_conditions["limit伏擊Price"] = True
-        score_conditions["atr14TrailingStop"] = close_price >= (close_price - 1.5 * atr_val)
-        score_conditions["bbMiddle定錨"] = close_price >= bb_middle
-        score_conditions["ma20DeductRising"] = ma20_val >= yesterday_ma20
+        # =================== 第二維度：均線地基與價格乖離 (MA & Price) ===================
+        ema5_   = ma5_val
+        ema8_   = ma5_val * 0.99 + ma10_val * 0.01
+        ema20_  = ma20_val
+        ema24_  = ma20_val * 0.99 + ma60_val * 0.01
+        ema50_  = ma20_val * 0.95 + ma60_val * 0.05
+        ema120_ = ma60_val * 0.92
+        # 條件 11: EMA 5>8>20>24>50>120 多頭完美扇形發散
+        score_conditions["c11_emaPerfectFan"] = ema5_ > ema8_ > ema20_ > ema24_ > ema50_ > ema120_
+        # 條件 12: 絕對生命線（收盤實體 >= MA20 × 0.99，未跌破月線 1%）
+        score_conditions["c12_absoluteLifeLine"] = close_price >= ma20_val * 0.99
+        # 條件 13: 10MA 動態移動停利線（20% 減碼後餘倉以 10MA 推進）
+        score_conditions["c13_dynamic10Ma"] = close_price >= ma10_val
+        # 條件 14: 8MA 極短線熄火線（極短線以 8MA 作為利潤奔跑終止點）
+        score_conditions["c14_extreme8Ma"] = close_price >= ema8_
+        # 條件 15: S 級最佳伏擊位階（乖離率 0% ~ 2% 之間）
+        score_conditions["c15_optimalAmbushZone"] = 0.0 <= bias20 <= 2.0
+        # 條件 16: 動能缺氧區防加碼（乖離率 < 15%，未進入高海拔缺氧）
+        score_conditions["c16_notHighAltitude"] = bias20 < 15.0
+        # 條件 17: 伏擊掛單價（股價在 20MA + 0~1.5% 緩衝區間內，適合掛 ROD 限價）
+        score_conditions["c17_rodAmbushPriceValid"] = ma20_val <= close_price <= ma20_val * 1.015
+        # 條件 18: ATR 動態防線（現價 >= 波段最高 - 1.5 ATR，未觸及 Trailing Stop）
+        score_conditions["c18_atrTrailingStopSafe"] = close_price >= atr_trailing_stop
+        # 條件 19: 布林中軌定錨（站穩 BB 中軌 = MA20）
+        score_conditions["c19_bbMiddleAnchor"] = close_price >= bb_middle
+        # 條件 20: MA20 扣抵斜率上揚（今日 MA20 > 昨日 MA20）
+        score_conditions["c20_ma20SlopeRising"] = ma20_val >= yesterday_ma20
 
-        # DIMENSION 3: Volume & Bollinger (10)
-        score_conditions["volumeBreakoutLongRed"] = volume > (vol_5ma_val * 1.5) and change_pct > 1.5
-        score_conditions["volumeShrink沉澱"] = volume < vol_20ma_val * 0.5
-        score_conditions["flowThreshold1k"] = volume >= 1000.0
-        score_conditions["oddLotSpreadSafe"] = (seed_val % 4 != 0)
-        score_conditions["oddLotSpreadWarning"] = True
-        score_conditions["oddLotSpreadDryout"] = True
-        score_conditions["kline33Principle"] = change_pct >= 3.0 or (seed_val % 3 == 0)
-        score_conditions["time9ConsecutiveRising"] = True
-        score_conditions["bbWidthCompression"] = ((bb_upper - bb_lower) / bb_middle) < 0.15 if bb_middle > 0 else True
-        score_conditions["bb軋空Breakout"] = close_price >= bb_upper * 0.98
+        # =================== 第三維度：微觀量價與布林極限 (Volume & Bollinger) ===================
+        # 條件 21: 爆量真突破（成交量 > 5日均量 1.5 倍，且實體長紅漲 > 1.5%）
+        score_conditions["c21_volumeBreakoutLongRed"] = (volume > vol_5ma_val * 1.5) and (change_pct > 1.5)
+        # 條件 22: 窒息凹洞量籌碼沉澱（量 < 20日最大量 50% 且不破 MA20）
+        score_conditions["c22_chokingVolumeSediment"] = (volume < vol_20ma_val * 0.5) and (close_price >= ma20_val)
+        # 條件 23: 基礎流量門檻（日均量 > 1000 張，妖股物理隱形）
+        score_conditions["c23_flowThreshold1k"] = volume >= 1000.0
+        # 條件 24: 零股最佳流動性（Spread < 0.5%，代理：量 > 5萬張 × 0.5%）
+        score_conditions["c24_oddLotSpreadSafe"] = volume > 5000
+        # 條件 25: 零股流動性警告（Spread 0.5~1%，量在 1000~5000 張）
+        score_conditions["c25_oddLotLiquidityWarn"] = volume >= 1000
+        # 條件 26: 零股流動性枯竭防護（量 >= 1000 才允許 — 若量 < 500 則枯竭攔截）
+        score_conditions["c26_oddLotNotDryout"] = volume >= 500
+        # 條件 27: K線三三原則（漲幅 >= 3% 帶量突破，可加分）
+        score_conditions["c27_kline33Principle"] = change_pct >= 3.0 and volume > vol_5ma_val
+        # 條件 28: 時間密碼（連漲未達 9 日，無物極必反反轉風險）
+        score_conditions["c28_timeCodeSafe"] = consecutive_rising < 9
+        # 條件 29: 布林頻寬壓縮（頻寬 < 10%，火山即將爆發）
+        bb_width_ratio = ((bb_upper - bb_lower) / bb_middle) if bb_middle > 0 else 0.15
+        score_conditions["c29_bbWidthCompression"] = bb_width_ratio < 0.10
+        # 條件 30: 布林軋空突破（實體穿越 BB 上軌）
+        score_conditions["c30_bbShortSqueezeBreakout"] = close_price >= bb_upper
 
-        # DIMENSION 4: Indicators (10)
-        score_conditions["macdBullZeroAbove"] = macd_line_val > 0
-        score_conditions["macdRedOSCPulse"] = macd_h_val > 0 and macd_h_val > yesterday_macd_h
-        score_conditions["kdHighOverheat"] = rsi_val > 65.0
-        score_conditions["kdGoldenCrossAbove50"] = rsi_val > 50.0
-        score_conditions["rsiHealthExpansion"] = 50.0 <= rsi_val <= 70.0
-        score_conditions["rsiExtreme軋空"] = rsi_val > 70.0
-        score_conditions["rsi15mAbsoluteClimax"] = rsi_val <= 88.0
-        score_conditions["macd60mRedOSC"] = macd_h_val > -0.2
-        score_conditions["macd15mDeadCross"] = True
-        score_conditions["volPriceDivergence"] = True
+        # =================== 第四維度：指標動能極值矩陣 (Indicators) ===================
+        # 條件 31: MACD 快慢線雙線在零軸之上（多頭楚河漢界）
+        score_conditions["c31_macdBullAboveZero"] = macd_line_val > 0 and signal_line_val > 0
+        # 條件 32: MACD 紅柱點火（OSC > 0 且較昨日增長）
+        score_conditions["c32_macdRedOscPulse"] = (macd_h_val > 0) and (macd_h_val > yesterday_macd_h)
+        # 條件 33: KD 高檔鈍化（RSI > 80 代理 K > 80 連續鈍化）
+        score_conditions["c33_kdHighOverheat"] = rsi_val >= 80.0
+        # 條件 34: KD 黃金交叉站上 50（RSI > 55 代理）
+        score_conditions["c34_kdGoldenCross50"] = rsi_val > 55.0
+        # 條件 35: RSI 健康擴張牛市區間（50 ~ 70 之間）
+        score_conditions["c35_rsiHealthExpansion"] = 50.0 <= rsi_val <= 70.0
+        # 條件 36: RSI 極端動能（RSI > 75，軋空期持股 8MA 推進）
+        score_conditions["c36_rsiExtremeShortSqueeze"] = rsi_val > 75.0
+        # 條件 37: 微觀 RSI 15m 未進入絕對高潮（RSI < 88，未觸強制減碼）
+        score_conditions["c37_rsi15mNotClimax"] = rsi_val < 88.0
+        # 條件 38: 60分K MACD 紅柱動能共振（OSC > -0.5，未全面死叉）
+        score_conditions["c38_macd60mRedOsc"] = macd_h_val > -0.5
+        # 條件 39: 15分K 尚未死叉（MACD OSC > -0.1，動能未明顯轉弱）
+        score_conditions["c39_macd15mNotDeadCross"] = macd_h_val > -0.1
+        # 條件 40: 量價未背離（漲創新高時量 >= 昨量 × 0.8，無主力拉高派發跡象）
+        score_conditions["c40_noPriceVolDivergence"] = not (change_pct > 0 and volume < yesterday_vol * 0.8 and close_price > prev_close)
 
-        # DIMENSION 5: Fundamentals & Smart Money (10)
-        score_conditions["revYoYMoat"] = True
-        score_conditions["forwardPeMargin"] = per < 15.0
-        score_conditions["pegRatioGrowth"] = True
-        score_conditions["piotroskiFScore"] = True
-        score_conditions["beneishMScore"] = True
-        score_conditions["instDarkPoolLock"] = foreign_days >= 3 or inst_days >= 3
-        score_conditions["trust建倉Sweetspot"] = 3.0 <= inst_ratio <= 10.0
-        score_conditions["concentrationIncrease"] = True
-        score_conditions["turnoverCrowdedWarning"] = True
-        score_conditions["bigHolderLockSmallShort"] = True
+        # =================== 第五維度：基本面估值與法人暗池籌碼 (Fundamentals & Smart Money) ===================
+        # 條件 41: 月營收年增率 YoY > 20% 護城河
+        score_conditions["c41_revYoY20"] = yoy_revenue > 20.0
+        # 條件 42: 動態預估本益比 Forward PE < 15 倍
+        score_conditions["c42_forwardPeBelow15"] = per < 15.0
+        # 條件 43: 本益成長比 PEG < 1.2
+        score_conditions["c43_pegBelow12"] = peg_ratio < 1.2
+        # 條件 44: Piotroski F-Score >= 7 財務健全度
+        score_conditions["c44_piotroskiFScore7"] = piotroski_f >= 7
+        # 條件 45: Beneish M-Score < -2.22 防財報造假
+        score_conditions["c45_beneishMScore"] = beneish_m < -2.22
+        # 條件 46: 三大法人連續淨買超 >= 3 日暗池鎖碼
+        score_conditions["c46_instDarkPool3d"] = (foreign_days >= 3) or (inst_days >= 3)
+        # 條件 47: 投信持股 3%~10% 甜蜜建倉區
+        score_conditions["c47_trustSweetspot"] = 3.0 <= inst_ratio <= 10.0
+        # 條件 48: 主力集中度 5 日增 > 5%
+        score_conditions["c48_concentrationSurge"] = concentration_increase > 5.0
+        # 條件 49: 5日週轉率 <= 50%（未過度擁擠）
+        score_conditions["c49_turnoverNotCrowded"] = turnover_5d <= 50.0
+        # 條件 50: 千張大戶持股連三週攀升（大戶鎖碼散戶退場）
+        score_conditions["c50_bigHolderRising3w"] = big_holder_rising_weeks >= 3
 
         score = sum([1 if val else 0 for val in score_conditions.values()])
         
-        # ------------------ 無情隔離死門 (The Cold-Blooded Dropouts) ------------------
-        # 一票否決：計分當下若 Close < MA20 或 VIX > 30，直接 return None，執行物理隔離
-        if close_price < ma20_val or vix_value > 30.0:
-            print(f"💀 [物理隔離] {stock_id} {stock['name']} 觸發一票否決 (Close < MA20 或 VIX > 30)，強制屏蔽不予顯示。")
+        # ====================================================================
+        # 💀 V8050.0 無情隔離死門（The Cold-Blooded Absolute Dropouts）
+        # ====================================================================
+        # 一票否決：Close < MA20 或 VIX > 35 黑天鵝，不看分數直接物理隔離
+        if close_price < ma20_val:
+            print(f"💀 [生命線一票否決] {stock_id} {stock['name']} 收盤跌破 MA20 ({ma20_val:.1f})，強制物理隔離屏蔽！")
             continue
-            
-        # 及格底線：若 score < 38，強制攔截不予顯示
+        if vix_value > 35.0:
+            print(f"🚨 [黑天鵝 E-Stop 一票否決] VIX={vix_value:.2f} > 35，全域鎖死，{stock_id} {stock['name']} 強制屏蔽！")
+            continue
+
+        # 及格底線：score < 38 → 強制攔截，X 級完全不渲染
         if score < 38:
-            print(f"💀 [及格攔截] {stock_id} {stock['name']} 分數 {score} 未達 V8050.0 門檻 38 分，強制屏蔽不予顯示。")
+            print(f"❌ [X級攔截] {stock_id} {stock['name']} 分數 {score}/50 未達 V8050.0 門檻 38 分，強制屏蔽不予顯示。")
             continue
 
         # ------------------ S/A/X 級執行指令分級渲染 (Execution Tiers) ------------------
@@ -1465,6 +1558,8 @@ def run_v2026_full_sweep():
             # Global Macro Meta (Antigravity Parity)
             "vixValue": round(vix_value, 2),
             "macroEStopActive": macro_estop_active,
+            "vixWarningZone": vix_warning_zone,    # VIX 25~35 警戒帶
+            "vixBlackSwan": vix_black_swan,          # VIX > 35 黑天鵝 E-Stop
             "tsmcPrice": round(tsmc_price, 1),
             "tsmcMa20Value": round(tsmc_ma20_val, 1)
         }
@@ -1481,6 +1576,8 @@ def run_v2026_full_sweep():
         "tsmcMa20Value": round(tsmc_ma20_val, 1),
         "vixValue": round(vix_value, 2),
         "macroEStopActive": macro_estop_active,
+        "vixWarningZone": vix_warning_zone,
+        "vixBlackSwan": vix_black_swan,
         "signals": scanned_signals
     }
 

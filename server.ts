@@ -1933,7 +1933,73 @@ app.post("/api/sweep/force", async (req, res) => {
 });
 
 
-// ⚡ Vercel Cloud Fast Price Updater
+// ⚡ V8050.0 每1分鐘高頻輕量即時報價端點（GET, 不寫 DB，超快速返回）
+// 前端每 60 秒輪詢此端點取得最新報價，徹底杜絕資訊滯後盲點
+app.get("/api/prices/realtime", async (req, res) => {
+  const startTime = Date.now();
+  // 關鍵指數（VIX + TSMC + 費半）加個股
+  const keyTickers = ["^VIX", "^SOX", "2330.TW", "2454.TW"];
+  const otcIds = new Set(["3324","4966","3529","4979","3163","3363","4908","3081","6640","3680","3260","8299"]);
+  const stockTickers = INITIAL_STOCKS.slice(0, 30).map(s => { // 首批30支，確保25s內完成
+    const id = s.stock_id;
+    return { id, ticker: otcIds.has(id) ? `${id}.TWO` : `${id}.TW` };
+  });
+
+  const allItems = [
+    ...keyTickers.map(t => ({ id: t, ticker: t })),
+    ...stockTickers
+  ];
+
+  const TIMEOUT_MS = 20000; // Vercel 25s limit 內
+  const BATCH_SIZE = 8;
+  const prices: Record<string, { price: number; change: number; changePercent: number }> = {};
+
+  async function fetchWithTimeout(ticker: string, timeoutMs: number) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const q = await yahooFinance.quote(ticker);
+      clearTimeout(timer);
+      return q;
+    } catch (e) {
+      clearTimeout(timer);
+      return null;
+    }
+  }
+
+  // 分批並行爬取
+  for (let i = 0; i < allItems.length; i += BATCH_SIZE) {
+    if (Date.now() - startTime > TIMEOUT_MS) break; // 全域 timeout 保護
+    const batch = allItems.slice(i, i + BATCH_SIZE);
+    const results = await Promise.allSettled(
+      batch.map(item => fetchWithTimeout(item.ticker, 5000))
+    );
+    results.forEach((result, idx) => {
+      if (result.status === "fulfilled" && result.value) {
+        const q = result.value as any;
+        const id = batch[idx].id;
+        prices[id] = {
+          price: Number((q.regularMarketPrice || 0).toFixed(2)),
+          change: Number((q.regularMarketChange || 0).toFixed(2)),
+          changePercent: Number((q.regularMarketChangePercent || 0).toFixed(3))
+        };
+      }
+    });
+  }
+
+  const elapsed = Date.now() - startTime;
+  console.log(`⚡ [Realtime] 1分鐘高頻報價爬蟲完成，耗時 ${elapsed}ms，取得 ${Object.keys(prices).length} 支股票`);
+  res.json({
+    success: true,
+    timestamp: new Date().toISOString(),
+    elapsedMs: elapsed,
+    count: Object.keys(prices).length,
+    prices
+  });
+});
+
+
+// ⚡ Vercel Cloud Fast Price Updater（含 DB 寫入 + 並行優化）
 app.post("/api/prices/fast", async (req, res) => {
   try {
     if (!dbConnected) return res.status(500).json({ success: false, message: "DB not connected" });

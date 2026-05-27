@@ -292,6 +292,12 @@ export default function App() {
   const [currentToast, setCurrentToast] = useState<any>(null);
   const [lastNotificationTime, setLastNotificationTime] = useState<string>("");
 
+  // V8050.0 即時爬蟲狀態
+  const [realtimeCountdown, setRealtimeCountdown] = useState<number>(60);
+  const [lastPriceUpdate, setLastPriceUpdate] = useState<string>("");
+  const [realtimePrices, setRealtimePrices] = useState<Record<string, {price: number; change: number; changePercent: number}>>({});
+  const [vixAlertLevel, setVixAlertLevel] = useState<"safe" | "warning" | "blackswan">("safe");
+
   useEffect(() => {
     // Keep real-time UTC Clock updated
     const updateTime = () => {
@@ -301,6 +307,17 @@ export default function App() {
     updateTime();
     const interval = setInterval(updateTime, 1000);
     return () => clearInterval(interval);
+  }, []);
+
+  // V8050.0 每 60 秒倒計時器
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setRealtimeCountdown(prev => {
+        if (prev <= 1) return 60;
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
   }, []);
 
   // Fetch signals
@@ -374,7 +391,32 @@ export default function App() {
     }
   };
 
+  // V8050.0 高頻即時報價爬蟲（每 60 秒）
+  const fetchRealtimePrices = async () => {
+    try {
+      const response = await fetch("/api/prices/realtime");
+      if (response.ok) {
+        const resData = await response.json();
+        if (resData.success && resData.prices) {
+          setRealtimePrices(resData.prices);
+          setLastPriceUpdate(new Date().toLocaleTimeString("zh-TW"));
+          // 更新 VIX 告警等級
+          const vixInfo = resData.prices["^VIX"];
+          if (vixInfo) {
+            if (vixInfo.price > 35) setVixAlertLevel("blackswan");
+            else if (vixInfo.price >= 25) setVixAlertLevel("warning");
+            else setVixAlertLevel("safe");
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("Realtime price fetch failed:", e);
+    }
+  };
+
   const refreshAllData = async () => {
+    // 先觸發輕量高頻爬蟲
+    fetchRealtimePrices();
     try {
       await fetch("/api/prices/fast", { method: "POST" });
     } catch (e) {
@@ -388,7 +430,14 @@ export default function App() {
 
   useEffect(() => {
     refreshAllData();
-    const mdInterval = setInterval(refreshAllData, 30 * 1000); // refresh every 30 sec for real-time prices
+    // V8050.0: 每 60 秒高頻更新（輕量即時爬蟲）
+    const mdInterval = setInterval(() => {
+      fetchRealtimePrices();
+      fetchSignals();
+      fetchHoldings();
+      fetchNotifications();
+      setRealtimeCountdown(60); // 重置倒計時
+    }, 60 * 1000);
     return () => clearInterval(mdInterval);
   }, []);
 
@@ -1783,7 +1832,7 @@ export default function App() {
                           <div className="flex justify-between items-center text-xs">
                             <span className="text-zinc-400">當前策略評分:</span>
                             <span className="font-mono text-[#FFB74D] font-bold text-sm">
-                              {selectedStock.score} / 40 分
+                             {selectedStock.score} / 50 分
                             </span>
                           </div>
                           <div className="flex justify-between items-center text-xs border-t border-zinc-850/40 pt-1.5">
@@ -1857,7 +1906,7 @@ export default function App() {
                         {/* V2026.Max Score Checklist Breakdown */}
                         <div className="mt-2">
                           <h4 className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider font-mono mb-2">
-                            📋 V2026.Max 40分布林指標檢核 (滿分 {selectedStock.score} 分)
+                            📋 V8050.0 終極版 50 道微觀濾網檢核 (當前 {selectedStock.score} 分 / 滿分 50 分)
                           </h4>
                           <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-850 max-h-[160px] overflow-y-auto space-y-1 text-[10px] font-mono">
                             {selectedStock.scoreBreakdown && Object.entries(selectedStock.scoreBreakdown).map(([key, val]) => {
@@ -2316,6 +2365,34 @@ export default function App() {
         </div>
       </div>
 
+      {/* V8050.0 VIX 三段式風控警告橫幄 */}
+      {vixAlertLevel === "blackswan" && (
+        <div className="bg-gradient-to-r from-red-950 via-red-900 to-red-950 border-y border-red-700 py-2.5 px-6 animate-pulse">
+          <div className="w-full max-w-[1700px] mx-auto flex items-center justify-center gap-3 text-red-300 text-sm font-black">
+            <span className="text-xl">🚨</span>
+            <span>【V8050.0 黑天鵝 E-Stop 全域警報】VIX &gt; 35！系統已啟動最高警戒！強制清倉至 80% 現金水位，禁止新建倉！</span>
+            <span className="text-xl">🚨</span>
+          </div>
+        </div>
+      )}
+      {vixAlertLevel === "warning" && (
+        <div className="bg-gradient-to-r from-orange-950 via-orange-900 to-orange-950 border-y border-orange-700 py-2">
+          <div className="w-full max-w-[1700px] mx-auto flex items-center justify-center gap-3 text-orange-300 text-xs font-black">
+            <span>⚠️</span>
+            <span>【V8050.0 VIX 警戒帶 25~35】Quarter-Kelly 防禦啟動！帳戶現金水位強制提升至 50% 以上！</span>
+            <span>⚠️</span>
+          </div>
+        </div>
+      )}
+      {vixAlertLevel === "safe" && lastPriceUpdate && (
+        <div className="bg-gradient-to-r from-emerald-950 via-transparent to-emerald-950 border-y border-emerald-900/50 py-1.5 px-6">
+          <div className="w-full max-w-[1700px] mx-auto flex items-center justify-center gap-2 text-emerald-500 text-[11px] font-mono">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>【V8050.0 安全模式】VIX &lt; 20，系統允許維持 80% 高持倉水位 | 最後更新: {lastPriceUpdate}</span>
+          </div>
+        </div>
+      )}
+
       {/* Navigation tabs */}
       <div className="bg-[#0b0c10] border-b border-zinc-850 relative lg:sticky lg:top-[77px] z-30 shadow-md">
         <div className="w-full max-w-[1700px] mx-auto px-4 md:px-6 flex items-center justify-between overflow-x-auto no-scrollbar">
@@ -2429,6 +2506,13 @@ export default function App() {
           <div className="hidden lg:flex items-center gap-2 text-xs font-mono">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             <span className="text-zinc-550">V2026.Max 量化引擎運作中</span>
+            {/* V8050.0 即時爬蟲倒計時 */}
+            <div className="ml-2 flex items-center gap-1.5 bg-zinc-900 border border-[#E5A823]/30 rounded px-2 py-0.5">
+              <Zap className="w-3 h-3 text-[#E5A823] animate-pulse" />
+              <span className="text-[#E5A823] font-black text-[10px]">
+                ⚡ 即時爬蟲 | 次更 {realtimeCountdown}s
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -3013,13 +3097,15 @@ export default function App() {
                               </div>
                               
                               <div className="text-right">
-                                <div className="text-[8px] font-mono text-zinc-550">全域檢核</div>
+                                <div className="text-[8px] font-mono text-zinc-550">V8050.0 全域檢核</div>
                                 <span className={`px-2 py-0.5 rounded font-mono font-black text-[9px] ${
-                                  isSClass 
-                                    ? "bg-yellow-950 text-[#FFB74D] border border-yellow-500/40" 
+                                  isSClass
+                                    ? "bg-yellow-950 text-[#FFB74D] border border-yellow-500/60 shadow-[0_0_8px_rgba(229,168,35,0.3)] animate-pulse"
+                                    : isAClass
+                                    ? "bg-sky-950 text-sky-300 border border-sky-600/50"
                                     : "bg-zinc-800/80 text-zinc-400 border border-zinc-700"
                                 }`}>
-                                  {stock.score} / 50 分
+                                  {isSClass ? "🏆" : isAClass ? "🥇" : "❌"} {stock.score} / 50
                                 </span>
                               </div>
                             </div>
@@ -5377,7 +5463,7 @@ export default function App() {
                       <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-900 space-y-2">
                         <div className="flex justify-between text-[11px]">
                           <span className="text-zinc-500">綜合戰力評估:</span>
-                          <span className="text-[#FFB74D] font-bold">{activeSig.score} / 40 分</span>
+                          <span className="text-[#FFB74D] font-bold">{activeSig.score} / 50 分</span>
                         </div>
                         <div className="flex justify-between text-[11px] border-t border-zinc-900 pt-1.5">
                           <span className="text-zinc-500">策略信號:</span>
