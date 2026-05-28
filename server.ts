@@ -1437,7 +1437,17 @@ app.get("/api/holdings", async (req, res) => {
 
     if (dbConnected && holdingsCollection && exitsCollection) {
       holdings = await holdingsCollection.find({}).toArray() as any;
-      exits = await exitsCollection.find({}).sort({ exit_date: -1 }).toArray() as any;
+      const rawExits = await exitsCollection.find({}).sort({ exit_date: -1 }).toArray() as any;
+      const seenExits = new Set<string>();
+      exits = [];
+      for (const e of rawExits) {
+        if (!e.stock_id || !e.exit_date) continue;
+        const key = `${e.stock_id}_${e.exit_date}`;
+        if (!seenExits.has(key)) {
+          seenExits.add(key);
+          exits.push(e);
+        }
+      }
     } else {
       holdings = [...localHoldings];
       exits = [...localExits];

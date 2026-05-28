@@ -2567,12 +2567,11 @@ export default function App() {
 
           <div className="hidden lg:flex items-center gap-2 text-xs font-mono">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span className="text-zinc-550">V2026.Max 量化引擎運作中</span>
             {/* V8050.0 即時爬蟲倒計時 */}
             <div className="ml-2 flex items-center gap-1.5 bg-zinc-900 border border-[#E5A823]/30 rounded px-2 py-0.5">
               <Zap className="w-3 h-3 text-[#E5A823] animate-pulse" />
               <span className="text-[#E5A823] font-black text-[10px]">
-                ⚡ 即時爬蟲 | 次更 {realtimeCountdown}s
+                即時爬蟲 | 次更 {realtimeCountdown}s
               </span>
             </div>
           </div>
@@ -3144,11 +3143,11 @@ export default function App() {
                                   <span className="text-base font-mono font-black text-white">{stock.stock_id}</span>
                                   <span className="text-xs font-bold text-zinc-400">{stock.stock_name}</span>
                                 </div>
-                                <div className="flex flex-wrap gap-1 mt-1 text-[8px] font-mono">
-                                  <span className="bg-zinc-900 text-zinc-450 px-1 py-0.5 rounded border border-zinc-800">
+                                <div className="flex flex-wrap gap-1 mt-1 text-[10px] md:text-[11px] font-mono">
+                                  <span className="bg-zinc-900 text-zinc-400 px-1 py-0.5 rounded border border-zinc-800">
                                     {stock.category || "AI與權值"}
                                   </span>
-                                  <span className="bg-zinc-900 text-zinc-450 px-1 py-0.5 rounded border border-zinc-800">
+                                  <span className="bg-zinc-900 text-zinc-400 px-1 py-0.5 rounded border border-zinc-800">
                                     {actionTier}
                                   </span>
                                   {isTakeProfitWarning && (
@@ -3160,8 +3159,8 @@ export default function App() {
                               </div>
                               
                               <div className="text-right">
-                                <div className="text-[8px] font-mono text-zinc-550">V8050.0 全域檢核</div>
-                                <span className={`px-2 py-0.5 rounded font-mono font-black text-[9px] ${
+                                <div className="text-[10px] md:text-[11px] font-mono text-zinc-550">V8050.0 全域檢核</div>
+                                <span className={`px-2 py-0.5 rounded font-mono font-black text-[11px] md:text-xs ${
                                   isSClass
                                     ? "bg-yellow-950 text-[#FFB74D] border border-yellow-500/60 shadow-[0_0_8px_rgba(229,168,35,0.3)] animate-pulse"
                                     : isAClass
@@ -3174,56 +3173,56 @@ export default function App() {
                             </div>
                             
                             {/* Technical Grid (Bloomberg style 2x2 chips) */}
-                            <div className="grid grid-cols-4 gap-1 text-center font-mono text-[8px] bg-zinc-950 p-1.5 rounded-lg border border-zinc-900">
+                            <div className="grid grid-cols-4 gap-1 text-center font-mono text-[11px] md:text-xs bg-zinc-950 p-1.5 rounded-lg border border-zinc-900">
                               <div className="flex flex-col p-1 rounded bg-zinc-900/60">
-                                <span className="text-zinc-550 text-[7px]">RSI</span>
+                                <span className="text-zinc-550 text-[10px] md:text-[11px]">RSI</span>
                                 <span className="text-white font-bold">{rsiVal}</span>
                               </div>
                               <div className="flex flex-col p-1 rounded bg-zinc-900/60">
-                                <span className="text-zinc-550 text-[7px]">狀態</span>
+                                <span className="text-zinc-550 text-[10px] md:text-[11px]">狀態</span>
                                 <span className={`font-bold ${isSClass ? "text-[#f43f5e]" : "text-[#10b881]"}`}>{statusText}</span>
                               </div>
                               <div className="flex flex-col p-1 rounded bg-zinc-900/60">
-                                <span className="text-zinc-550 text-[7px]">動能</span>
+                                <span className="text-zinc-550 text-[10px] md:text-[11px]">動能</span>
                                 <span className={`font-bold ${isSClass ? "text-[#f43f5e]" : "text-[#10b881]"}`}>{momentumText}</span>
                               </div>
                               <div className="flex flex-col p-1 rounded bg-zinc-900/60">
-                                <span className="text-zinc-550 text-[7px]">量比</span>
+                                <span className="text-zinc-550 text-[10px] md:text-[11px]">量比</span>
                                 <span className="text-white font-bold">{volumeRatio}</span>
                               </div>
                             </div>
                             
                             {/* Live Headline/Notes */}
                             {stock.master_notes && (
-                              <div className="border-l-2 border-amber-400 pl-2 py-0.5 text-[9px] font-sans text-amber-300 italic truncate" title={stock.master_notes.split(" | ")[0]}>
+                              <div className="border-l-2 border-amber-400 pl-2 py-0.5 text-[11px] md:text-xs font-sans text-amber-300 italic truncate" title={stock.master_notes.split(" | ")[0]}>
                                 📰 {stock.master_notes.split(" | ")[0]}
                               </div>
                             )}
                             
                             {/* Pricing Zones */}
-                            <div className="grid grid-cols-3 gap-1 text-center font-mono text-[8px] pt-1">
+                            <div className="grid grid-cols-3 gap-1 text-center font-mono text-[10px] md:text-xs pt-1">
                               <div className="bg-zinc-900/60 p-1 rounded border border-zinc-850">
-                                <span className="text-zinc-550 text-[7px] block mb-0.5">現價建倉</span>
+                                <span className="text-zinc-550 text-[8px] md:text-[9px] block mb-0.5">現價建倉</span>
                                 <span className="text-[#FFB74D] font-extrabold">{stock.close_price.toFixed(1)}</span>
                               </div>
                               <div className="bg-zinc-900/60 p-1 rounded border border-zinc-850">
-                                <span className="text-zinc-555 text-[7px] block mb-0.5">波段支撐</span>
+                                <span className="text-zinc-555 text-[10px] md:text-[11px] block mb-0.5">波段支撐</span>
                                 <span className="text-[#10b881] font-extrabold">{stock.stop_loss_price ? stock.stop_loss_price.toFixed(1) : "-"}</span>
                               </div>
                               <div className="bg-zinc-900/60 p-1 rounded border border-zinc-850">
-                                <span className="text-zinc-555 text-[7px] block mb-0.5">波段壓力</span>
+                                <span className="text-zinc-555 text-[10px] md:text-[11px] block mb-0.5">波段壓力</span>
                                 <span className="text-[#f43f5e] font-extrabold">{stock.take_profit_half_price ? stock.take_profit_half_price.toFixed(1) : "-"}</span>
                               </div>
                             </div>
                             
                             {/* Execution Orders (Half-Kelly Pyramid or ROD limits) */}
                             {isSClass ? (
-                              <div className="bg-zinc-950 p-2 rounded-lg border border-amber-500/20 text-[8px] font-mono space-y-1">
-                                <div className="flex justify-between items-center text-zinc-450">
+                              <div className="bg-zinc-950 p-2 rounded-lg border border-amber-500/20 text-[10px] md:text-[11px] font-mono space-y-1">
+                                <div className="flex justify-between items-center text-zinc-400">
                                   <span className="text-[#FFB74D] font-bold">🏆 S級 半凱利金字塔建倉 (5-3-2)</span>
                                   <span className="text-white font-bold">約 NT$ {orderAmount.toLocaleString()}</span>
                                 </div>
-                                <div className="grid grid-cols-3 gap-1 text-center text-[7px] pt-1 border-t border-zinc-900">
+                                <div className="grid grid-cols-3 gap-1 text-center text-[9px] md:text-[10px] pt-1 border-t border-zinc-900">
                                   <div className="bg-zinc-900/40 p-0.5 rounded">
                                     <span className="text-zinc-500 block">首批(50%)</span>
                                     <span className="text-[#f43f5e] font-bold">{p1} 股</span>
@@ -3239,8 +3238,8 @@ export default function App() {
                                 </div>
                               </div>
                             ) : (
-                              <div className="bg-zinc-950 p-2 rounded-lg border border-zinc-900 text-[8px] font-mono space-y-1">
-                                <div className="flex justify-between items-center text-zinc-450">
+                              <div className="bg-zinc-950 p-2 rounded-lg border border-zinc-900 text-[10px] md:text-[11px] font-mono space-y-1">
+                                <div className="flex justify-between items-center text-zinc-400">
                                   <span className="text-[#FFB74D]">🎯 A級 ROD限價伏擊單 (20MA)</span>
                                   <span className="text-white font-bold">約 NT$ {orderAmount.toLocaleString()}</span>
                                 </div>
@@ -3248,7 +3247,7 @@ export default function App() {
                                   <span className="text-zinc-550">伏擊價格區間:</span>
                                   <span className="text-[#10b881] font-extrabold">{(stock.close_price * 0.985).toFixed(1)} ~ {(stock.close_price * 0.995).toFixed(1)}</span>
                                 </div>
-                                <div className="flex justify-between items-center text-[7px] pt-1 border-t border-zinc-900 text-zinc-500">
+                                <div className="flex justify-between items-center text-[9px] md:text-[10px] pt-1 border-t border-zinc-900 text-zinc-500">
                                   <span>建議買入: <span className="text-[#FFB74D] font-bold">{orderShares} 股</span></span>
                                   <span>防呆停損: <span className="text-[#10b881] font-bold">{stock.stop_loss_price ? stock.stop_loss_price.toFixed(1) : "-"}</span></span>
                                 </div>
@@ -3260,7 +3259,7 @@ export default function App() {
                               <button
                                 onClick={() => openBuyModalForStock(stock)}
                                 disabled={data?.macroEStopActive}
-                                className={`flex-1 py-1.5 text-[9px] font-bold rounded shadow transition active:scale-[0.96] text-center ${
+                                className={`flex-1 py-1.5 text-[11px] md:text-xs font-bold rounded shadow transition active:scale-[0.96] text-center ${
                                   data?.macroEStopActive 
                                     ? "bg-zinc-800 text-zinc-550 border border-zinc-850 cursor-not-allowed"
                                     : "bg-rose-950/90 text-rose-350 border border-rose-700/40 hover:bg-rose-900"
@@ -3273,7 +3272,7 @@ export default function App() {
                                   setSelectedStock(stock);
                                   setNotesText(stock.master_notes || "");
                                 }}
-                                className="px-2.5 py-1.5 text-[9px] font-bold rounded bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 transition"
+                                className="px-2.5 py-1.5 text-[11px] md:text-xs font-bold rounded bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 transition"
                               >
                                 實戰解盤
                               </button>
