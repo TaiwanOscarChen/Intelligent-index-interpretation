@@ -23,15 +23,29 @@
   background: #3e455d;
 }
 
+html {
+  font-size: 16px;
+  transition: font-size 0.2s ease;
+}
+
+@media (min-width: 1024px) {
+  html { font-size: 17px; } /* Slightly larger desktop font size to easily view data */
+}
+
+@media (min-width: 1400px) {
+  html { font-size: 18px; } /* Ultra-clear layout on larger screens */
+}
+
+@media (max-width: 768px) {
+  html { font-size: 14px; } /* Compact base size for mobile & tablet to avoid cramped cards */
+}
+
 body {
   background-color: #08090c;
   color: #d1d4dc;
   font-family: var(--font-sans);
-  font-size: 1rem; /* base font size */
-}
-
-@media (max-width: 640px) {
-  body { font-size: 1.125rem; }
+  font-size: 1rem; /* base font size, scales dynamically with html rem */
+  line-height: 1.5;
 }
 
 /* Premium Glassmorphism and Gold Hover glow utility classes */

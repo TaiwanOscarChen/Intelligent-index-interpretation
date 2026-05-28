@@ -315,7 +315,7 @@ export default function App() {
   const [lastNotificationTime, setLastNotificationTime] = useState<string>("");
 
   // V8050.0 即時爬蟲狀態
-  const [realtimeCountdown, setRealtimeCountdown] = useState<number>(60);
+  const [realtimeCountdown, setRealtimeCountdown] = useState<number>(15);
   const [lastPriceUpdate, setLastPriceUpdate] = useState<string>("");
   const [realtimePrices, setRealtimePrices] = useState<Record<string, {price: number; change: number; changePercent: number}>>({});
   const [vixAlertLevel, setVixAlertLevel] = useState<"safe" | "warning" | "blackswan">("safe");
@@ -337,11 +337,11 @@ export default function App() {
     return () => clearInterval(interval);
   }, []);
 
-  // V8050.0 每 60 秒倒計時器
+  // V8050.0 每 15 秒倒計時器
   useEffect(() => {
     const timer = setInterval(() => {
       setRealtimeCountdown(prev => {
-        if (prev <= 1) return 60;
+        if (prev <= 1) return 15;
         return prev - 1;
       });
     }, 1000);
@@ -458,14 +458,14 @@ export default function App() {
 
   useEffect(() => {
     refreshAllData();
-    // V8050.0: 每 60 秒高頻更新（輕量即時爬蟲）
+    // V8050.0: 每 15 秒高頻更新（輕量即時爬蟲）
     const mdInterval = setInterval(() => {
       fetchRealtimePrices();
       fetchSignals();
       fetchHoldings();
       fetchNotifications();
-      setRealtimeCountdown(60); // 重置倒計時
-    }, 60 * 1000);
+      setRealtimeCountdown(15); // 重置倒計時
+    }, 15 * 1000);
     return () => clearInterval(mdInterval);
   }, []);
 
@@ -1362,26 +1362,37 @@ export default function App() {
     return (
                   <div className="p-5 flex flex-col gap-4">
                     
-                    {/* Selected stock core info */}
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-2xl font-mono font-black text-white">{selectedStock.stock_id}</span>
-                          <span className="text-sm font-bold text-zinc-400">{selectedStock.stock_name}</span>
-                        </div>
-                        <div className="text-[10px] text-zinc-500 font-mono mt-1">
-                          行業: {selectedStock.industry} | {selectedStock.category}
-                        </div>
-                      </div>
+                    {/* Selected stock core info with high frequency auto-update */}
+                    {(() => {
+                      const lp = realtimePrices[selectedStock.stock_id]?.price ?? selectedStock.close_price;
+                      const lpct = realtimePrices[selectedStock.stock_id]?.changePercent ?? selectedStock.change_pct;
+                      return (
+                        <div className="flex items-start justify-between bg-zinc-950/30 p-3 rounded-lg border border-zinc-850/50 shadow-inner">
+                          <div>
+                            <div className="flex items-baseline gap-2">
+                              <span className="text-2xl font-mono font-black text-[#E5A823] tracking-tight">{selectedStock.stock_id}</span>
+                              <span className="text-sm font-bold text-white">{selectedStock.stock_name}</span>
+                            </div>
+                            <div className="text-[10px] text-zinc-400 font-mono mt-1.5 flex items-center gap-1.5">
+                              <span className="bg-zinc-900 px-1.5 py-0.5 rounded border border-zinc-800">{selectedStock.industry}</span>
+                              <span className="bg-zinc-900 px-1.5 py-0.5 rounded border border-zinc-800">{selectedStock.category}</span>
+                            </div>
+                          </div>
 
-                      <div className="text-right">
-                        <span className="text-lg font-mono font-black text-white">{selectedStock.close_price.toFixed(1)}</span>
-                        <span className="text-[10px] text-zinc-450 ml-0.5">元</span>
-                        <div className={`text-xs font-bold font-mono mt-0.5 ${selectedStock.change_pct >= 0 ? "text-rose-400" : "text-emerald-400"}`}>
-                          {selectedStock.change_pct >= 0 ? `+${selectedStock.change_pct.toFixed(2)}` : selectedStock.change_pct.toFixed(2)}%
+                          <div className="text-right select-none">
+                            <span className="text-xl font-mono font-black text-white">{lp.toFixed(1)}</span>
+                            <span className="text-[9px] text-zinc-450 ml-0.5">元</span>
+                            <div className={`text-xs font-black font-mono mt-1.5 px-2 py-0.5 rounded-full inline-block ${
+                              lpct >= 0 
+                                ? "bg-rose-950/80 text-rose-400 border border-rose-900/50" 
+                                : "bg-emerald-950/80 text-emerald-400 border border-emerald-900/50"
+                            }`}>
+                              {lpct >= 0 ? `+${lpct.toFixed(2)}` : lpct.toFixed(2)}%
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
+                      );
+                    })()}
 
                     <hr className="border-zinc-850" />
 
@@ -1507,7 +1518,8 @@ export default function App() {
                       const squeeze = Math.round(((selectedStock.score * 3) % 30) + 15);
                       const bullTrap = Math.round(selectedStock.change_pct > 3 ? 65 : 15 + (selectedStock.score % 5) * 5);
                       const bearTrap = Math.round(selectedStock.change_pct < -2 ? 60 : 10 + (selectedStock.score % 3) * 6);
-                      const biasVwap = Math.round(((selectedStock.close_price - selectedStock.dynamicTiers.vwap5d) / selectedStock.dynamicTiers.vwap5d) * 100 * 10) / 10;
+                      const lpVal = realtimePrices[selectedStock.stock_id]?.price ?? selectedStock.close_price;
+                      const biasVwap = Math.round(((lpVal - selectedStock.dynamicTiers.vwap5d) / selectedStock.dynamicTiers.vwap5d) * 100 * 10) / 10;
 
                       // Traffic light active state
                       let activeLight = "green"; // green, yellow, red
@@ -1699,30 +1711,41 @@ export default function App() {
 
                             <div className="grid grid-cols-2 gap-3">
                               
-                              {/* W Bottom Column */}
-                              <div className="bg-zinc-900/40 p-2.5 rounded border border-zinc-900/80 flex flex-col items-center gap-1.5 text-center">
-                                <span className="text-[8px] font-bold text-zinc-450 uppercase">W底 (多頭爆發型態)</span>
+                              {/* W Bottom Column - Beautified */}
+                              <div className="bg-gradient-to-br from-zinc-900/80 to-zinc-950/95 p-3 rounded-xl border border-zinc-800/80 flex flex-col items-center gap-2 text-center shadow-lg transition-all hover:border-emerald-500/30">
+                                <span className="text-[9px] font-bold text-zinc-300 uppercase tracking-wider font-mono">W底 (多頭爆發型態)</span>
                                 
-                                <div className="relative w-24 h-12 bg-zinc-950 rounded border border-zinc-900/50 flex items-center justify-center p-1">
+                                <div className="relative w-full h-14 bg-black/50 rounded-lg border border-zinc-900 flex items-center justify-center p-1.5">
                                   <svg className="w-full h-full" viewBox="0 0 100 50">
+                                    {/* Technical Grid Overlay */}
+                                    <line x1="0" y1="12" x2="100" y2="12" stroke="rgba(255,255,255,0.03)" strokeWidth="0.5" />
+                                    <line x1="0" y1="25" x2="100" y2="25" stroke="rgba(255,255,255,0.03)" strokeWidth="0.5" />
+                                    <line x1="0" y1="37" x2="100" y2="37" stroke="rgba(255,255,255,0.03)" strokeWidth="0.5" />
+                                    <line x1="25" y1="0" x2="25" y2="50" stroke="rgba(255,255,255,0.03)" strokeWidth="0.5" />
+                                    <line x1="50" y1="0" x2="50" y2="50" stroke="rgba(255,255,255,0.03)" strokeWidth="0.5" />
+                                    <line x1="75" y1="0" x2="75" y2="50" stroke="rgba(255,255,255,0.03)" strokeWidth="0.5" />
+                                    
                                     {/* Neckline */}
-                                    <line x1="10" y1="20" x2="90" y2="20" stroke="#f43f5e" strokeWidth="1" strokeDasharray="2,2" />
-                                    <text x="80" y="16" fill="#f43f5e" fontSize="6" fontFamily="sans-serif">頸線</text>
+                                    <line x1="10" y1="20" x2="90" y2="20" stroke="#f43f5e" strokeWidth="1" strokeDasharray="3,3" opacity="0.8" />
+                                    <text x="80" y="16" fill="#f43f5e" fontSize="5.5" fontWeight="bold" fontFamily="monospace">頸線</text>
                                     
                                     {/* W Path */}
                                     <path 
                                       d="M 15 15 L 30 40 L 45 25 L 60 40 L 80 10" 
                                       fill="none" 
-                                      stroke={selectedStock.score >= 35 ? "#10b881" : "#2a2f3f"} 
-                                      strokeWidth="2" 
+                                      stroke={selectedStock.score >= 35 ? "#10b881" : "#3f3f46"} 
+                                      strokeWidth="2.5" 
                                       strokeLinecap="round"
                                       strokeLinejoin="round"
+                                      style={{ filter: selectedStock.score >= 35 ? "drop-shadow(0 0 4px #10b881)" : "none" }}
                                       className={selectedStock.score >= 35 ? "animate-pulse" : ""}
                                     />
                                   </svg>
                                 </div>
                                 
-                                <span className={`text-[7px] font-bold leading-tight ${selectedStock.score >= 35 ? "text-[#10b881]" : "text-zinc-500"}`}>
+                                <span className={`text-[8px] font-bold leading-tight font-sans px-1.5 py-0.5 rounded ${
+                                  selectedStock.score >= 35 ? "bg-emerald-950/60 text-[#10b881]" : "bg-zinc-900/60 text-zinc-500"
+                                }`}>
                                   {selectedStock.score >= 35 ? "✓ 多頭強勢，頸線突破中" : "✕ 標準W底未成形"}
                                 </span>
                               </div>
@@ -1764,15 +1787,16 @@ export default function App() {
                               {/* ================= NEW: CORPORATE NET BUY TABLE & PATH PREDICTION ================= */}
                               {(() => {
                                 const flows = generateInstitutionalFlow(selectedStock.stock_id);
-                                const targetPrice = selectedStock.close_price * 1.05;
-                                const supportPrice = selectedStock.close_price * 0.95;
-                                const strongSupport = selectedStock.close_price * 0.90;
+                                const lpValFlow = realtimePrices[selectedStock.stock_id]?.price ?? selectedStock.close_price;
+                      const targetPrice = lpValFlow * 1.05;
+                                const supportPrice = lpValFlow * 0.95;
+                                const strongSupport = lpValFlow * 0.90;
                                 return (
                                   <>
                                     {/* 三大法人近 5 日籌碼動向 */}
                                     <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-850 space-y-1.5">
                                       <h4 className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider font-mono flex items-center gap-1.5">
-                                        <Sliders className="w-3 h-3 text-[#FFB74D]" />
+                                        <Activity className="w-3 h-3 text-[#FFB74D]" />
                                         📊 三大法人近 5 日籌碼動態 (張)
                                       </h4>
                                       <div className="overflow-x-auto">
@@ -1843,7 +1867,8 @@ export default function App() {
 
                                     {/* 月線/VWAP 大戶乖離率儀表盤 */}
                                     {(() => {
-                                      const biasVwap = Math.round(((selectedStock.close_price - selectedStock.dynamicTiers.vwap5d) / selectedStock.dynamicTiers.vwap5d) * 100 * 10) / 10;
+                                      const lpVal = realtimePrices[selectedStock.stock_id]?.price ?? selectedStock.close_price;
+                      const biasVwap = Math.round(((lpVal - selectedStock.dynamicTiers.vwap5d) / selectedStock.dynamicTiers.vwap5d) * 100 * 10) / 10;
                                       const clampedBias = Math.min(10, Math.max(-10, biasVwap));
                                       return (
                                         <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-850 space-y-2 flex flex-col items-center">
@@ -3425,7 +3450,6 @@ export default function App() {
 
                 {/* 老司機操盤四字訣 Panel */}
                 <div className="border-t border-zinc-850 p-4 bg-[#0a0b0f]">
-                  <div className="border-t border-zinc-850 p-4 bg-[#0a0b0f]">
                   <div className="flex items-center gap-2 mb-3">
                     <Flame className="w-4 h-4 text-[#E5A823] animate-pulse shrink-0" />
                     <h4 className="text-white text-xs md:text-sm font-bold font-mono tracking-wider">老司機操盤四字訣 (輪・空・殺・早)</h4>
@@ -3630,7 +3654,6 @@ export default function App() {
 
             </div>
 
-          </div>
         )}
 
         {/* ======================= TAB: STRATEGY ======================= */}
@@ -5107,8 +5130,8 @@ export default function App() {
                 </div>
               )}
 
-              {/* Holdings Table */}
-              <div className="premium-card rounded-xl shadow-xl overflow-hidden">
+              {/* Holdings Table - Desktop View */}
+              <div className="hidden md:block premium-card rounded-xl shadow-xl overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse table-auto text-xs">
                     <thead>
@@ -5245,6 +5268,134 @@ export default function App() {
                     </tbody>
                   </table>
                 </div>
+              </div>
+
+              {/* Mobile Cards (Visible only on mobile/tablet) - Premium Layout */}
+              <div className="md:hidden space-y-4">
+                {liveHoldings.length === 0 ? (
+                  <div className="premium-card rounded-xl p-8 text-center text-zinc-500 font-mono">
+                    <Sliders className="w-10 h-10 text-zinc-700 mx-auto mb-2" />
+                    當前無任何持倉股票部位
+                    <p className="text-[11px] text-[#FFB74D] mt-2 hover:underline cursor-pointer" onClick={() => setActiveTab("radar")}>
+                      👉 前往整合監控雷達建倉
+                    </p>
+                  </div>
+                ) : (
+                  liveHoldings.map(item => {
+                    const isSelected = selectedHoldingIds.includes(item.stock_id);
+                    const lp = item.current_price;
+                    const lv = item.current_pnl_value;
+                    const lpct = item.current_pnl_pct;
+                    
+                    return (
+                      <div 
+                        key={item.stock_id} 
+                        className={`premium-card rounded-xl p-4 shadow-lg border relative overflow-hidden flex flex-col gap-3 transition-all ${
+                          isSelected ? "border-amber-500/60 bg-amber-500/5" : "border-zinc-800/80 bg-zinc-950/40"
+                        }`}
+                        onClick={isHoldingSelectMode ? () => {
+                          setSelectedHoldingIds(prev =>
+                            prev.includes(item.stock_id)
+                              ? prev.filter(id => id !== item.stock_id)
+                              : [...prev, item.stock_id]
+                          );
+                        } : undefined}
+                      >
+                        {/* Header Row: Stock info & Checkbox */}
+                        <div className="flex justify-between items-start">
+                          <div className="flex items-center gap-2">
+                            {isHoldingSelectMode && (
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => {}}
+                                className="w-4 h-4 rounded accent-amber-500 mr-1"
+                              />
+                            )}
+                            <div>
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-mono text-base font-bold text-white">{item.stock_id}</span>
+                                <span className="text-xs text-zinc-400 font-bold bg-zinc-900 px-2 py-0.5 rounded border border-zinc-850">{item.stock_name}</span>
+                              </div>
+                              <div className="text-[10px] text-zinc-500 mt-1">
+                                進場根據: <span className="text-zinc-400 font-sans">{item.buy_reason || "量化模型選股"}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex flex-col items-end gap-1">
+                            {renderActionBadge(item.suggested_action)}
+                            <span className="text-[9px] text-zinc-550 font-mono">{item.buy_date} {item.buy_time}</span>
+                          </div>
+                        </div>
+
+                        <div className="border-t border-zinc-850/50 my-1"></div>
+
+                        {/* Pricing Grid */}
+                        <div className="grid grid-cols-3 gap-2 text-center text-[11px] font-mono">
+                          <div className="bg-zinc-900/50 p-2 rounded border border-zinc-850 flex flex-col justify-center">
+                            <span className="text-zinc-550 block text-[9px]">進場均價</span>
+                            <span className="text-zinc-350 font-bold mt-0.5 block">{item.buy_price.toFixed(1)}</span>
+                          </div>
+                          <div className="bg-zinc-900/50 p-2 rounded border border-zinc-850 flex flex-col justify-center">
+                            <span className="text-zinc-550 block text-[9px]">現價</span>
+                            <span className="text-white font-bold mt-0.5 block">{lp.toFixed(1)}</span>
+                            {realtimePrices[item.stock_id] && (
+                              <span className={`text-[9px] block mt-0.5 ${realtimePrices[item.stock_id].changePercent >= 0 ? "text-rose-400 font-bold" : "text-emerald-400 font-bold"}`}>
+                                {realtimePrices[item.stock_id].changePercent >= 0 ? "+" : ""}{realtimePrices[item.stock_id].changePercent.toFixed(2)}%
+                              </span>
+                            )}
+                          </div>
+                          <div className={`p-2 rounded border transition flex flex-col justify-center ${lv >= 0 ? "bg-rose-950/20 border-rose-900/30 text-rose-400" : "bg-emerald-950/20 border-emerald-900/30 text-emerald-400"}`}>
+                            <span className="text-zinc-500 block text-[9px] font-bold">未實現盈虧</span>
+                            <span className="font-black mt-0.5 block">{lpct >= 0 ? "+" : ""}{lpct.toFixed(2)}%</span>
+                            <span className="text-[9px] block font-bold mt-0.5">{lv >= 0 ? "+" : ""}{Math.round(lv).toLocaleString()} 元</span>
+                          </div>
+                        </div>
+
+                        {/* Exit / Stop Loss Guidelines Grid */}
+                        <div className="grid grid-cols-3 gap-2 text-center text-[10px] font-mono border-t border-zinc-900 pt-2">
+                          <div className="bg-zinc-900/30 p-1.5 rounded">
+                            <span className="text-rose-400/80 block text-[8px] font-bold">🎯 停利目標</span>
+                            <span className="text-rose-300 font-bold block mt-0.5">{item.take_profit_price ? item.take_profit_price.toFixed(1) : (item.buy_price * 1.2).toFixed(1)}</span>
+                          </div>
+                          <div className="bg-zinc-900/30 p-1.5 rounded">
+                            <span className="text-amber-400/80 block text-[8px] font-bold">🛡️ 移動停利</span>
+                            <span className="text-amber-300 font-bold block mt-0.5">{item.trailing_stop_price?.toFixed(1) || "-"}</span>
+                          </div>
+                          <div className="bg-zinc-900/30 p-1.5 rounded">
+                            <span className="text-emerald-400/80 block text-[8px] font-bold">🟢 買盤止損</span>
+                            <span className="text-emerald-300 font-bold block mt-0.5">{item.stop_loss_price?.toFixed(1) || "-"}</span>
+                          </div>
+                        </div>
+
+                        {/* Shares / Size */}
+                        <div className="flex justify-between items-center text-[10px] font-mono bg-zinc-900/40 px-3 py-1.5 rounded text-zinc-400">
+                          <span>持倉股數: <span className="text-white font-bold">{item.shares} 股</span></span>
+                          <span>市值: <span className="text-[#FFB74D] font-bold">{(lp * item.shares).toLocaleString()} 元</span></span>
+                        </div>
+
+                        {/* Action Row */}
+                        {!isHoldingSelectMode && (
+                          <div className="flex gap-2 mt-1">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); openEditHoldingModal(item); }}
+                              className="flex-1 py-2 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 font-bold text-xs transition border border-indigo-500/20 flex items-center justify-center gap-1 cursor-pointer"
+                            >
+                              <Edit3 className="w-3.5 h-3.5" />
+                              編輯資料
+                            </button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); openExitModalForHolding(item); }}
+                              className="flex-1 py-2 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 font-bold text-xs transition border border-emerald-500/20 flex items-center justify-center gap-1 cursor-pointer"
+                            >
+                              出場平倉
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
+                )}
               </div>
 
 
