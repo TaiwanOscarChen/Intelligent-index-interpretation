@@ -5,7 +5,7 @@
 
 import express from "express";
 import path from "path";
-import { MongoClient, Db, Collection } from "mongodb";
+import { MongoClient, Db, Collection, ObjectId } from "mongodb";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 import { exec } from "child_process";
@@ -62,6 +62,7 @@ let db: Db | null = null;
 let signalsCollection: Collection<any> | null = null;
 let holdingsCollection: Collection<any> | null = null;
 let exitsCollection: Collection<any> | null = null;
+let notificationsCollection: Collection<any> | null = null;
 let dbConnected = false;
 let connectingPromise: Promise<void> | null = null;
 
@@ -136,6 +137,7 @@ function seedInitialSignals() {
     const ma10_val = Math.round(stock.basePrice * 0.99 * 10) / 10;
     const ma5_val = Math.round(stock.basePrice * 0.98 * 10) / 10;
     const yesterday_ma20 = Math.round(stock.basePrice * 0.998 * 10) / 10;
+    const ma60_val = Math.round(stock.basePrice * 0.95 * 10) / 10;
     
     const bias20 = Math.round(((close_price - ma20_val) / ma20_val) * 100 * 100) / 100;
     const vix_value = 16.5;
@@ -1647,6 +1649,65 @@ app.post("/api/holdings/exit", async (req, res) => {
 });
 
 
+// 1. Edit Exited Trade post-mortem notes & reason
+app.post("/api/exits/edit", async (req, res) => {
+  try {
+    const { id, exit_reason, review_summary } = req.body;
+    if (!id) return res.status(400).json({ success: false, message: "Missing exited log ID" });
+
+    if (dbConnected && exitsCollection) {
+      // ObjectId imported at top
+      let query: any = {};
+      try {
+        query = { _id: new ObjectId(id) };
+      } catch (e) {
+        query = { stock_id: id }; // fallback if id is not ObjectId
+      }
+      await exitsCollection.updateOne(query, {
+        $set: { exit_reason, review_summary }
+      });
+    } else {
+      const idx = localExits.findIndex(e => e.stock_id === id || (e as any)._id === id);
+      if (idx !== -1) {
+        localExits[idx].exit_reason = exit_reason;
+        localExits[idx].review_summary = review_summary;
+      }
+    }
+    res.json({ success: true, message: "Exited log review successfully updated." });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+
+// 2. Batch Delete Exited Trade logs
+app.post("/api/exits/delete-batch", async (req, res) => {
+  try {
+    const { ids } = req.body; // Array of IDs or stock_ids
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ success: false, message: "Missing or empty ids selection array." });
+    }
+
+    if (dbConnected && exitsCollection) {
+      // ObjectId imported at top
+      const queries = ids.map(id => {
+        try {
+          return { _id: new ObjectId(id) };
+        } catch (e) {
+          return { stock_id: id };
+        }
+      });
+      await exitsCollection.deleteMany({ $or: queries });
+    } else {
+      localExits = localExits.filter(e => !ids.includes(e.stock_id) && !ids.includes((e as any)._id));
+    }
+    res.json({ success: true, message: "Exited logs successfully deleted in batch." });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+
 // ==============================================================================
 // 💬 INTERACTIVE AI ADVISOR CHAT API
 // ==============================================================================
@@ -1949,35 +2010,158 @@ async function executeAIAutoTrade() {
       }
     }
 
-    // 2. Process Entries
-    const currentHoldings = await holdingsCollection.find({}).toArray();
-    for (const sig of signals) {
-      if (sig.score >= 38) {
-        const exists = currentHoldings.find((h: any) => h.stock_id === (sig.id || sig.stock_id));
-        if (!exists) {
-          console.log(`🤖 [AI Auto Trade] 發現 S/A 級標的 ${sig.stock_name} (${sig.stock_id}) 分數: ${sig.score}。自動建倉！`);
+    // 2. Process Entries with max 5 holdings limit, 100k budget, and dynamic swap logic
+    let currentHoldings = await holdingsCollection.find({}).toArray();
+    let activeHoldings = [...currentHoldings];
+    let activeHoldingsCount = activeHoldings.length;
+
+    // Filter candidate signals (score >= 38 and not already in activeHoldings)
+    const candidates = signals
+      .filter((sig: any) => sig.score >= 38 && !activeHoldings.some((h: any) => h.stock_id === sig.stock_id))
+      .sort((a: any, b: any) => b.score - a.score);
+
+    const getScore = (h: any) => {
+      const sig = signals.find((s: any) => s.stock_id === h.stock_id);
+      return sig ? (sig.score || 0) : 0;
+    };
+
+    for (const sig of candidates) {
+      const stock_id = sig.stock_id;
+      const stock_name = sig.stock_name;
+      const close_price = sig.close_price;
+      if (!close_price || close_price === 0) continue;
+
+      if (activeHoldingsCount < 5) {
+        console.log(`➕ [AI Auto Trade] Buy new signal stock: ${stock_name} (${stock_id}) with score: ${sig.score}`);
+        const nowTaipei = new Date(Date.now() + 8 * 60 * 60 * 1000);
+        const shares = Math.floor(20000 / close_price) || 1;
+        const newH = {
+          stock_id,
+          stock_name,
+          buy_price: close_price,
+          buy_date: nowTaipei.toISOString().split('T')[0],
+          buy_time: nowTaipei.toISOString().split('T')[1].substring(0, 8),
+          shares,
+          current_price: close_price,
+          current_pnl_pct: 0,
+          current_pnl_value: 0,
+          max_price_reached: close_price,
+          take_profit_triggered: false,
+          stop_loss_price: sig.stop_loss_price,
+          trailing_stop_price: sig.trailing_stop_price,
+          suggested_action: "💡 AI 進場"
+        };
+        await holdingsCollection.updateOne(
+          { stock_id },
+          { $set: newH },
+          { upsert: true }
+        );
+        activeHoldings.push(newH);
+        activeHoldingsCount++;
+
+        // Log buy notification
+        await db.collection("trade_notifications").insertOne({
+          type: "BUY",
+          stock_id,
+          stock_name,
+          price: close_price,
+          reason: `評分達 ${sig.score} 分，AI 定向買入部位`,
+          timestamp: nowTaipei.toISOString()
+        });
+      } else {
+        // Swap logic: compare with the lowest score holding in activeHoldings
+        let hMin = activeHoldings[0];
+        let minScore = getScore(hMin);
+        for (const h of activeHoldings) {
+          const sVal = getScore(h);
+          if (sVal < minScore) {
+            minScore = sVal;
+            hMin = h;
+          }
+        }
+
+        if (sig.score > minScore) {
+          const hMinId = hMin.stock_id;
+          const hMinName = hMin.stock_name;
+          const exitReason = `換股操作：由更高效益評分股票(${stock_name}: ${sig.score}分)替換得分最低持股(${hMinName}: ${minScore}分)`;
+          console.log(`🔄 [AI Auto Trade] Swapping: exit ${hMinName} (${minScore} score) and enter ${stock_name} (${sig.score} score)`);
+
           const nowTaipei = new Date(Date.now() + 8 * 60 * 60 * 1000);
+          const hMinBuyPrice = hMin.buy_price;
+          const hMinCurrentPrice = hMin.current_price || hMinBuyPrice;
+          const hMinPnlPct = hMinBuyPrice ? ((hMinCurrentPrice - hMinBuyPrice) / hMinBuyPrice) * 100 : 0;
+
+          // 1. Write exited log
+          const exitItem = {
+            stock_id: hMinId,
+            stock_name: hMinName,
+            buy_price: hMinBuyPrice,
+            buy_date: hMin.buy_date,
+            exit_price: hMinCurrentPrice,
+            exit_date: nowTaipei.toISOString().split('T')[0],
+            exit_time: nowTaipei.toISOString().split('T')[1].substring(0, 8),
+            shares: hMin.shares || 1,
+            pnl_value: Math.round((hMinCurrentPrice - hMinBuyPrice) * (hMin.shares || 1)),
+            pnl_pct: Math.round(hMinPnlPct * 100) / 100,
+            exit_reason: exitReason,
+            review_notes: "AI 換股平衡操作"
+          };
+          await exitsCollection.insertOne(exitItem);
+
+          // 2. Remove lowest holding from database
+          await holdingsCollection.deleteOne({ stock_id: hMinId });
+
+          // 3. Log sell notification
+          await db.collection("trade_notifications").insertOne({
+            type: "SELL",
+            stock_id: hMinId,
+            stock_name: hMinName,
+            price: hMinCurrentPrice,
+            reason: exitReason,
+            timestamp: nowTaipei.toISOString()
+          });
+
+          // 4. Buy candidate stock
+          const shares = Math.floor(20000 / close_price) || 1;
           const newH = {
-            stock_id: sig.stock_id,
-            stock_name: sig.stock_name,
-            buy_price: sig.close_price,
+            stock_id,
+            stock_name,
+            buy_price: close_price,
             buy_date: nowTaipei.toISOString().split('T')[0],
             buy_time: nowTaipei.toISOString().split('T')[1].substring(0, 8),
-            shares: Math.floor(20000 / sig.close_price) || 1,
-            current_price: sig.close_price,
+            shares,
+            current_price: close_price,
             current_pnl_pct: 0,
             current_pnl_value: 0,
-            max_price_reached: sig.close_price,
+            max_price_reached: close_price,
             take_profit_triggered: false,
             stop_loss_price: sig.stop_loss_price,
             trailing_stop_price: sig.trailing_stop_price,
-            suggested_action: "🟢 AI 自動買入"
+            suggested_action: "💡 AI 進場"
           };
           await holdingsCollection.updateOne(
-            { stock_id: sig.stock_id },
+            { stock_id },
             { $set: newH },
             { upsert: true }
           );
+
+          // 5. Update local tracking lists
+          activeHoldings = activeHoldings.filter(h => h.stock_id !== hMinId);
+          activeHoldings.push(newH);
+
+          // 6. Log buy notification
+          await db.collection("trade_notifications").insertOne({
+            type: "BUY",
+            stock_id,
+            stock_name,
+            price: close_price,
+            reason: `評分達 ${sig.score} 分，高於汰換門檻`,
+            timestamp: nowTaipei.toISOString()
+          });
+        } else {
+          // Since candidates are sorted by score descending, if this candidate cannot beat the min_score,
+          // no other candidate can. Break the loop.
+          break;
         }
       }
     }
