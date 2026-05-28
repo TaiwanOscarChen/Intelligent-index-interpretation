@@ -1165,7 +1165,7 @@ export default function App() {
   const renderSignalBadge = (sig: StockSignalOption) => {
     if (sig === "多") {
       return (
-        <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-rose-950/70 border border-rose-500/50 text-rose-400 inline-flex items-center gap-1 shadow-[0_0_8px_rgba(244,63,94,0.12)]">
+        <span className="px-2 py-0.5 text-[0.725rem] font-bold rounded bg-rose-950/70 border border-rose-500/50 text-rose-400 inline-flex items-center gap-1 shadow-[0_0_8px_rgba(244,63,94,0.12)]">
           <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
           🔴 多頭信號
         </span>
@@ -1173,7 +1173,7 @@ export default function App() {
     }
     if (sig === "空") {
       return (
-        <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-950/70 border border-emerald-500/50 text-emerald-400 inline-flex items-center gap-1 shadow-[0_0_8px_rgba(16,185,129,0.12)]">
+        <span className="px-2 py-0.5 text-[0.725rem] font-bold rounded bg-emerald-950/70 border border-emerald-500/50 text-emerald-400 inline-flex items-center gap-1 shadow-[0_0_8px_rgba(16,185,129,0.12)]">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
           🟢 空頭訊號
         </span>
@@ -1181,14 +1181,14 @@ export default function App() {
     }
     if (sig === "隔離") {
       return (
-        <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-950/70 border border-emerald-500/50 text-emerald-400 inline-flex items-center gap-1 shadow-[0_0_8px_rgba(16,185,129,0.12)]">
+        <span className="px-2 py-0.5 text-[0.725rem] font-bold rounded bg-emerald-950/70 border border-emerald-500/50 text-emerald-400 inline-flex items-center gap-1 shadow-[0_0_8px_rgba(16,185,129,0.12)]">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
           🟢 物理隔離
         </span>
       );
     }
     return (
-      <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-zinc-800 border border-zinc-700 text-zinc-400 inline-flex items-center gap-1">
+      <span className="px-2 py-0.5 text-[0.725rem] font-bold rounded bg-zinc-800 border border-zinc-700 text-zinc-400 inline-flex items-center gap-1">
         ⚪ 觀望持倉
       </span>
     );
@@ -1205,7 +1205,7 @@ export default function App() {
       className = "bg-emerald-950 text-emerald-400 border border-emerald-500/40 shadow-[0_0_8px_rgba(16,185,129,0.15)]";
     }
     return (
-      <span className={`px-2 py-0.5 rounded text-[10px] font-bold inline-flex items-center gap-1 ${className}`}>
+      <span className={`px-2 py-0.5 rounded text-[0.725rem] font-bold inline-flex items-center gap-1 ${className}`}>
         {action}
       </span>
     );
@@ -1373,7 +1373,7 @@ export default function App() {
                               <span className="text-2xl font-mono font-black text-[#E5A823] tracking-tight">{selectedStock.stock_id}</span>
                               <span className="text-sm font-bold text-white">{selectedStock.stock_name}</span>
                             </div>
-                            <div className="text-[10px] text-zinc-400 font-mono mt-1.5 flex items-center gap-1.5">
+                            <div className="text-[0.725rem] text-zinc-400 font-mono mt-1.5 flex items-center gap-1.5">
                               <span className="bg-zinc-900 px-1.5 py-0.5 rounded border border-zinc-800">{selectedStock.industry}</span>
                               <span className="bg-zinc-900 px-1.5 py-0.5 rounded border border-zinc-800">{selectedStock.category}</span>
                             </div>
@@ -1381,7 +1381,7 @@ export default function App() {
 
                           <div className="text-right select-none">
                             <span className="text-xl font-mono font-black text-white">{lp.toFixed(1)}</span>
-                            <span className="text-[9px] text-zinc-450 ml-0.5">元</span>
+                            <span className="text-[0.65rem] text-zinc-450 ml-0.5">元</span>
                             <div className={`text-xs font-black font-mono mt-1.5 px-2 py-0.5 rounded-full inline-block ${
                               lpct >= 0 
                                 ? "bg-rose-950/80 text-rose-400 border border-rose-900/50" 
@@ -1400,7 +1400,7 @@ export default function App() {
                     <div className="grid grid-cols-4 gap-1 bg-zinc-950 p-1 rounded-lg border border-zinc-850 text-center font-bold font-mono my-2 shadow-[inset_0_1px_2px_rgba(0,0,0,0.4)]">
                       <button
                         onClick={() => setDetailTab("notes")}
-                        className={`py-2 text-[9px] rounded transition-all flex flex-col items-center justify-center gap-0.5 ${
+                        className={`py-2 text-[0.65rem] rounded transition-all flex flex-col items-center justify-center gap-0.5 ${
                           detailTab === "notes"
                             ? "bg-[#E5A823] text-black shadow font-black"
                             : "text-zinc-450 hover:text-white"
@@ -1411,7 +1411,7 @@ export default function App() {
                       </button>
                       <button
                         onClick={() => setDetailTab("financials")}
-                        className={`py-2 text-[9px] rounded transition-all flex flex-col items-center justify-center gap-0.5 ${
+                        className={`py-2 text-[0.65rem] rounded transition-all flex flex-col items-center justify-center gap-0.5 ${
                           detailTab === "financials"
                             ? "bg-[#E5A823] text-black shadow font-black"
                             : "text-zinc-450 hover:text-white"
@@ -1422,7 +1422,7 @@ export default function App() {
                       </button>
                       <button
                         onClick={() => setDetailTab("insiders")}
-                        className={`py-2 text-[9px] rounded transition-all flex flex-col items-center justify-center gap-0.5 ${
+                        className={`py-2 text-[0.65rem] rounded transition-all flex flex-col items-center justify-center gap-0.5 ${
                           detailTab === "insiders"
                             ? "bg-[#E5A823] text-black shadow font-black"
                             : "text-zinc-450 hover:text-white"
@@ -1433,7 +1433,7 @@ export default function App() {
                       </button>
                       <button
                         onClick={() => setDetailTab("filings")}
-                        className={`py-2 text-[9px] rounded transition-all flex flex-col items-center justify-center gap-0.5 ${
+                        className={`py-2 text-[0.65rem] rounded transition-all flex flex-col items-center justify-center gap-0.5 ${
                           detailTab === "filings"
                             ? "bg-[#E5A823] text-black shadow font-black"
                             : "text-zinc-450 hover:text-white"
@@ -1474,15 +1474,15 @@ export default function App() {
                                     />
                                   </svg>
                                   <div className="absolute flex flex-col items-center justify-center">
-                                    <span className="text-[10px] font-mono font-black text-white">{quant.winRate}%</span>
-                                    <span className="text-[6px] text-zinc-500 scale-90">勝率</span>
+                                    <span className="text-[0.725rem] font-mono font-black text-white">{quant.winRate}%</span>
+                                    <span className="text-[0.4rem] text-zinc-500 scale-90">勝率</span>
                                   </div>
                                 </div>
                                 
-                                <div className="flex-1 space-y-1 text-[10px]">
+                                <div className="flex-1 space-y-1 text-[0.725rem]">
                                   <div className="flex justify-between items-center">
                                     <span className="text-zinc-500 font-bold">量化短線勝率</span>
-                                    <span className={`font-bold font-mono px-1.5 py-0.5 rounded text-[8px] ${
+                                    <span className={`font-bold font-mono px-1.5 py-0.5 rounded text-[0.55rem] ${
                                       quant.winRate >= 70 ? "bg-rose-950/70 text-[#f43f5e]" : quant.winRate >= 50 ? "bg-yellow-950/70 text-[#FFB74D]" : "bg-emerald-950/70 text-[#10b881]"
                                     }`}>
                                       {quant.winRate >= 70 ? "🔥 偏高 (極佳)" : quant.winRate >= 50 ? "⚡ 中等 (觀望)" : "🟢 偏低 (防禦)"}
@@ -1496,12 +1496,12 @@ export default function App() {
                                         const isActive = star <= quant.exitStars;
                                         const starColor = quant.exitStars >= 4 ? "text-[#10b881]" : quant.exitStars <= 2 ? "text-[#f43f5e]" : "text-[#FFB74D]";
                                         return (
-                                          <span key={star} className={`font-bold text-[10px] ${isActive ? starColor : "text-zinc-800"}`}>
+                                          <span key={star} className={`font-bold text-[0.725rem] ${isActive ? starColor : "text-zinc-800"}`}>
                                             ★
                                           </span>
                                         );
                                       })}
-                                      <span className="text-[7px] text-zinc-500 ml-1">
+                                      <span className="text-[0.45rem] text-zinc-500 ml-1">
                                         ({quant.exitStars >= 4 ? "極高風險" : quant.exitStars <= 2 ? "安全低危" : "中度觀察"})
                                       </span>
                                     </div>
@@ -1512,13 +1512,14 @@ export default function App() {
 
                     {/* ================= NEW: AI TRAFFIC LIGHTS & INTENTION BARS (PROFESSIONAL SPEC) ================= */}
                     {(() => {
+                      const lpVal = realtimePrices[selectedStock.stock_id]?.price ?? selectedStock.close_price;
+                      const lpct = realtimePrices[selectedStock.stock_id]?.changePercent ?? selectedStock.change_pct;
                       const washout = Math.round(((selectedStock.score * 7 + 13) % 45) + 30);
                       const accum = Math.round(selectedStock.score >= 35 ? (((selectedStock.score - 30) * 8) + 20) : ((selectedStock.score % 5) * 6 + 10));
                       const distrib = Math.round(quant.exitStars * 20);
                       const squeeze = Math.round(((selectedStock.score * 3) % 30) + 15);
-                      const bullTrap = Math.round(selectedStock.change_pct > 3 ? 65 : 15 + (selectedStock.score % 5) * 5);
-                      const bearTrap = Math.round(selectedStock.change_pct < -2 ? 60 : 10 + (selectedStock.score % 3) * 6);
-                      const lpVal = realtimePrices[selectedStock.stock_id]?.price ?? selectedStock.close_price;
+                      const bullTrap = Math.round(lpct > 3 ? 65 : 15 + (selectedStock.score % 5) * 5);
+                      const bearTrap = Math.round(lpct < -2 ? 60 : 10 + (selectedStock.score % 3) * 6);
                       const biasVwap = Math.round(((lpVal - selectedStock.dynamicTiers.vwap5d) / selectedStock.dynamicTiers.vwap5d) * 100 * 10) / 10;
 
                       // Traffic light active state
@@ -1530,7 +1531,7 @@ export default function App() {
                       }
 
                       // Probability calculation
-                      const upProb = Math.min(95, Math.max(10, Math.round((selectedStock.score / 40) * 65 + (selectedStock.change_pct > 0 ? 10 : -5))));
+                      const upProb = Math.min(95, Math.max(10, Math.round((selectedStock.score / 40) * 65 + (lpct > 0 ? 10 : -5))));
                       const downProb = Math.min(90, Math.max(5, Math.round((100 - upProb) * 0.65)));
                       const flatProb = 100 - upProb - downProb;
 
@@ -1541,7 +1542,7 @@ export default function App() {
                             
                             {/* Left: Indicator Lights */}
                             <div className="flex flex-col items-center justify-between border-r border-zinc-900 pr-1 select-none">
-                              <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider font-mono mb-1 w-full text-center">AI 飆股預警燈號系統</span>
+                              <span className="text-[0.65rem] text-zinc-500 font-bold uppercase tracking-wider font-mono mb-1 w-full text-center">AI 飆股預警燈號系統</span>
                               
                               <div className="w-10 bg-zinc-900 p-1.5 rounded-xl border border-zinc-850 flex flex-col gap-2 items-center shadow-inner">
                                 {/* Red Light */}
@@ -1551,7 +1552,7 @@ export default function App() {
                                       ? "bg-rose-500 shadow-[0_0_12px_#f43f5e]" 
                                       : "bg-zinc-800 opacity-20"
                                   }`} />
-                                  {activeLight === "red" && <span className="absolute left-7 top-1 text-[8px] font-bold text-rose-400 whitespace-nowrap">主力出貨</span>}
+                                  {activeLight === "red" && <span className="absolute left-7 top-1 text-[0.55rem] font-bold text-rose-400 whitespace-nowrap">主力出貨</span>}
                                 </div>
                                 
                                 {/* Yellow Light */}
@@ -1561,7 +1562,7 @@ export default function App() {
                                       ? "bg-amber-500 shadow-[0_0_12px_#ffb74d]" 
                                       : "bg-zinc-800 opacity-20"
                                   }`} />
-                                  {activeLight === "yellow" && <span className="absolute left-7 top-1 text-[8px] font-bold text-amber-400 whitespace-nowrap">過熱整理</span>}
+                                  {activeLight === "yellow" && <span className="absolute left-7 top-1 text-[0.55rem] font-bold text-amber-400 whitespace-nowrap">過熱整理</span>}
                                 </div>
                                 
                                 {/* Green Light */}
@@ -1571,20 +1572,20 @@ export default function App() {
                                       ? "bg-emerald-500 shadow-[0_0_12px_#10b881]" 
                                       : "bg-zinc-800 opacity-20"
                                   }`} />
-                                  {activeLight === "green" && <span className="absolute left-7 top-1 text-[8px] font-bold text-emerald-400 whitespace-nowrap">安全買點</span>}
+                                  {activeLight === "green" && <span className="absolute left-7 top-1 text-[0.55rem] font-bold text-emerald-400 whitespace-nowrap">安全買點</span>}
                                 </div>
                               </div>
 
-                              <span className="text-[7px] text-zinc-500 font-mono mt-1 text-center scale-90">
+                              <span className="text-[0.45rem] text-zinc-500 font-mono mt-1 text-center scale-90">
                                 狀態: {activeLight === "red" ? "高檔震盪，留意回檔" : activeLight === "yellow" ? "過熱修正，多頭調整" : "結構安全，低檔蓄勢"}
                               </span>
                             </div>
 
                             {/* Right: Tomorrow probability prediction */}
                             <div className="flex flex-col justify-between pl-1">
-                              <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider font-mono mb-1 text-center">明日漲跌機率預測 (AI)</span>
+                              <span className="text-[0.65rem] text-zinc-500 font-bold uppercase tracking-wider font-mono mb-1 text-center">明日漲跌機率預測 (AI)</span>
                               
-                              <div className="space-y-1.5 font-mono text-[9px] py-1">
+                              <div className="space-y-1.5 font-mono text-[0.65rem] py-1">
                                 {/* Up Probability */}
                                 <div className="space-y-0.5">
                                   <div className="flex justify-between text-zinc-400">
@@ -1619,7 +1620,7 @@ export default function App() {
                                 </div>
                               </div>
 
-                              <span className="text-[7px] text-zinc-550 mt-1 text-center scale-90">
+                              <span className="text-[0.45rem] text-zinc-550 mt-1 text-center scale-90">
                                 大數據模擬多空對抗結論
                               </span>
                             </div>
@@ -1628,12 +1629,12 @@ export default function App() {
 
                           {/* AI Main Force Intention Bars */}
                           <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-850 space-y-2">
-                            <h4 className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider font-mono flex items-center gap-1.5">
+                            <h4 className="text-[0.65rem] text-zinc-500 font-bold uppercase tracking-wider font-mono flex items-center gap-1.5">
                               <Sparkles className="w-3 h-3 text-[#FFB74D]" />
                               🤖 AI 主力意圖與多空能量分析
                             </h4>
                             
-                            <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[8px] font-mono">
+                            <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[0.55rem] font-mono">
                               {/* Intention 1: Washout */}
                               <div className="space-y-0.5">
                                 <div className="flex justify-between text-zinc-400">
@@ -1704,7 +1705,7 @@ export default function App() {
 
                           {/* SVG Pattern Analysis Diagram */}
                           <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-850 space-y-2 select-none">
-                            <h4 className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider font-mono flex items-center gap-1.5">
+                            <h4 className="text-[0.65rem] text-zinc-500 font-bold uppercase tracking-wider font-mono flex items-center gap-1.5">
                               <Sliders className="w-3 h-3 text-[#FFB74D]" />
                               📐 關鍵K線型態分析 (SVG Pattern Preview)
                             </h4>
@@ -1713,7 +1714,7 @@ export default function App() {
                               
                               {/* W Bottom Column - Beautified */}
                               <div className="bg-gradient-to-br from-zinc-900/80 to-zinc-950/95 p-3 rounded-xl border border-zinc-800/80 flex flex-col items-center gap-2 text-center shadow-lg transition-all hover:border-emerald-500/30">
-                                <span className="text-[9px] font-bold text-zinc-300 uppercase tracking-wider font-mono">W底 (多頭爆發型態)</span>
+                                <span className="text-[0.65rem] font-bold text-zinc-300 uppercase tracking-wider font-mono">W底 (多頭爆發型態)</span>
                                 
                                 <div className="relative w-full h-14 bg-black/50 rounded-lg border border-zinc-900 flex items-center justify-center p-1.5">
                                   <svg className="w-full h-full" viewBox="0 0 100 50">
@@ -1743,7 +1744,7 @@ export default function App() {
                                   </svg>
                                 </div>
                                 
-                                <span className={`text-[8px] font-bold leading-tight font-sans px-1.5 py-0.5 rounded ${
+                                <span className={`text-[0.55rem] font-bold leading-tight font-sans px-1.5 py-0.5 rounded ${
                                   selectedStock.score >= 35 ? "bg-emerald-950/60 text-[#10b881]" : "bg-zinc-900/60 text-zinc-500"
                                 }`}>
                                   {selectedStock.score >= 35 ? "✓ 多頭強勢，頸線突破中" : "✕ 標準W底未成形"}
@@ -1752,7 +1753,7 @@ export default function App() {
 
                               {/* M Top Column */}
                               <div className="bg-zinc-900/40 p-2.5 rounded border border-zinc-900/80 flex flex-col items-center gap-1.5 text-center">
-                                <span className="text-[8px] font-bold text-zinc-450 uppercase">M頭 (轉弱風險型態)</span>
+                                <span className="text-[0.55rem] font-bold text-zinc-450 uppercase">M頭 (轉弱風險型態)</span>
                                 
                                 <div className="relative w-24 h-12 bg-zinc-950 rounded border border-zinc-900/50 flex items-center justify-center p-1">
                                   <svg className="w-full h-full" viewBox="0 0 100 50">
@@ -1773,7 +1774,7 @@ export default function App() {
                                   </svg>
                                 </div>
                                 
-                                <span className={`text-[7px] font-bold leading-tight ${quant.exitStars >= 4 || selectedStock.score < 32 ? "text-[#f43f5e]" : "text-zinc-500"}`}>
+                                <span className={`text-[0.45rem] font-bold leading-tight ${quant.exitStars >= 4 || selectedStock.score < 32 ? "text-[#f43f5e]" : "text-zinc-500"}`}>
                                   {quant.exitStars >= 4 || selectedStock.score < 32 ? "⚠ 警惕高檔震盪跌破頸線" : "✓ 未成形，安全無虞"}
                                 </span>
                               </div>
@@ -1795,12 +1796,12 @@ export default function App() {
                                   <>
                                     {/* 三大法人近 5 日籌碼動向 */}
                                     <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-850 space-y-1.5">
-                                      <h4 className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider font-mono flex items-center gap-1.5">
+                                      <h4 className="text-[0.65rem] text-zinc-500 font-bold uppercase tracking-wider font-mono flex items-center gap-1.5">
                                         <Activity className="w-3 h-3 text-[#FFB74D]" />
                                         📊 三大法人近 5 日籌碼動態 (張)
                                       </h4>
                                       <div className="overflow-x-auto">
-                                        <table className="w-full text-left border-collapse text-[8px] font-mono">
+                                        <table className="w-full text-left border-collapse text-[0.55rem] font-mono">
                                           <thead>
                                             <tr className="border-b border-zinc-850 text-zinc-500 uppercase pb-0.5">
                                               <th className="py-1">日期</th>
@@ -1835,7 +1836,7 @@ export default function App() {
 
                                     {/* 三大法人近 5 日合計買賣超直方圖 */}
                                     <div className="bg-zinc-950/60 p-2.5 rounded-lg border border-zinc-900/60 space-y-1">
-                                      <div className="flex justify-between items-center text-[8px] text-zinc-500 font-mono">
+                                      <div className="flex justify-between items-center text-[0.55rem] text-zinc-500 font-mono">
                                         <span>籌碼總量直方圖 (合計買賣超)</span>
                                         <span className="text-[#FFB74D] font-bold">近 5 日趨勢</span>
                                       </div>
@@ -1847,7 +1848,7 @@ export default function App() {
                                           return (
                                             <div key={idx} className="flex flex-col items-center flex-1 group relative">
                                               {/* Tooltip */}
-                                              <div className="absolute bottom-full mb-1 opacity-0 group-hover:opacity-100 transition-opacity bg-zinc-950 border border-zinc-800 text-[6px] font-mono font-bold text-white px-1 py-0.5 rounded pointer-events-none z-10 whitespace-nowrap shadow-xl">
+                                              <div className="absolute bottom-full mb-1 opacity-0 group-hover:opacity-100 transition-opacity bg-zinc-950 border border-zinc-800 text-[0.4rem] font-mono font-bold text-white px-1 py-0.5 rounded pointer-events-none z-10 whitespace-nowrap shadow-xl">
                                                 {isPositive ? "+" : ""}{f.total} 張
                                               </div>
                                               {/* Bar Column */}
@@ -1858,7 +1859,7 @@ export default function App() {
                                                   <div className="w-full bg-gradient-to-b from-emerald-400 to-emerald-600 rounded-b-sm shadow-[0_0_6px_rgba(16,185,129,0.3)]" style={{ height: `${heightPct * 0.5}%` }}></div>
                                                 )}
                                               </div>
-                                              <span className="text-[6px] text-zinc-550 mt-1 font-mono">{f.date}</span>
+                                              <span className="text-[0.4rem] text-zinc-550 mt-1 font-mono">{f.date}</span>
                                             </div>
                                           );
                                         })}
@@ -1872,7 +1873,7 @@ export default function App() {
                                       const clampedBias = Math.min(10, Math.max(-10, biasVwap));
                                       return (
                                         <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-850 space-y-2 flex flex-col items-center">
-                                          <div className="flex justify-between items-center w-full text-[9px] text-zinc-500 font-mono">
+                                          <div className="flex justify-between items-center w-full text-[0.65rem] text-zinc-500 font-mono">
                                             <span>大戶成本乖離率儀表板 (VWAP)</span>
                                             <span className={`font-bold ${biasVwap >= 2 ? "text-[#f43f5e]" : biasVwap <= -2 ? "text-[#10b881]" : "text-[#FFB74D]"}`}>
                                               {biasVwap > 0 ? "+" : ""}{biasVwap}%
@@ -1911,13 +1912,13 @@ export default function App() {
                                                 style={{ transformOrigin: "50px 50px", transition: "transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)" }}
                                               />
                                             </svg>
-                                            <div className="absolute bottom-0 text-[8px] text-zinc-500 font-mono flex justify-between w-full px-2">
+                                            <div className="absolute bottom-0 text-[0.55rem] text-zinc-500 font-mono flex justify-between w-full px-2">
                                               <span>超跌(-10%)</span>
                                               <span className="font-bold text-zinc-400">大戶平價</span>
                                               <span>過熱(+10%)</span>
                                             </div>
                                           </div>
-                                          <div className="text-[8px] text-zinc-550 leading-tight text-center font-sans mt-1">
+                                          <div className="text-[0.55rem] text-zinc-550 leading-tight text-center font-sans mt-1">
                                             當前價位與大戶成本 {selectedStock.dynamicTiers.vwap5d} 元之偏離率。
                                             {biasVwap > 5 ? (
                                               <span className="text-[#f43f5e] font-bold block mt-0.5">⚠️ 乖離偏高，嚴防追高，等待拉回！</span>
@@ -1933,39 +1934,39 @@ export default function App() {
 
                                     {/* 關鍵價位區與可能路徑動態預測 */}
                                     <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-850 space-y-2">
-                                      <h4 className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider font-mono flex items-center gap-1.5">
+                                      <h4 className="text-[0.65rem] text-zinc-500 font-bold uppercase tracking-wider font-mono flex items-center gap-1.5">
                                         <Zap className="w-3 h-3 text-[#FFB74D]" />
                                         🗺️ 關鍵價位與主力沙盤路徑預測
                                       </h4>
                                       
                                       {/* Key Levels Grid */}
-                                      <div className="grid grid-cols-4 gap-1 text-center font-mono text-[7px] bg-zinc-900/20 p-1 rounded-lg border border-zinc-900">
+                                      <div className="grid grid-cols-4 gap-1 text-center font-mono text-[0.45rem] bg-zinc-900/20 p-1 rounded-lg border border-zinc-900">
                                         <div className="flex flex-col p-0.5 rounded">
-                                          <span className="text-zinc-550 text-[6px]">壓力參考</span>
+                                          <span className="text-zinc-550 text-[0.4rem]">壓力參考</span>
                                           <span className="text-[#f43f5e] font-extrabold">{targetPrice.toFixed(1)}</span>
                                         </div>
                                         <div className="flex flex-col p-0.5 rounded">
-                                          <span className="text-zinc-550 text-[6px]">支撐參考</span>
+                                          <span className="text-zinc-550 text-[0.4rem]">支撐參考</span>
                                           <span className="text-[#FFB74D] font-extrabold">{supportPrice.toFixed(1)}</span>
                                         </div>
                                         <div className="flex flex-col p-0.5 rounded">
-                                          <span className="text-zinc-550 text-[6px]">強支撐區</span>
+                                          <span className="text-zinc-550 text-[0.4rem]">強支撐區</span>
                                           <span className="text-[#10b881] font-extrabold">{strongSupport.toFixed(1)}</span>
                                         </div>
                                         <div className="flex flex-col p-0.5 rounded">
-                                          <span className="text-[#10b881] text-[6px] font-bold">防呆停損</span>
+                                          <span className="text-[#10b881] text-[0.4rem] font-bold">防呆停損</span>
                                           <span className="text-[#10b881] font-extrabold">{selectedStock.stop_loss_price?.toFixed(1) || "-"}</span>
                                         </div>
                                       </div>
                                       
                                       {/* Predicted Paths */}
-                                      <div className="space-y-1.5 text-[9px] leading-relaxed">
+                                      <div className="space-y-1.5 text-[0.65rem] leading-relaxed">
                                         <div className="p-1.5 rounded bg-rose-950/20 border border-rose-900/30">
                                           <div className="font-bold text-[#f43f5e] flex items-center gap-1">
                                             <span className="w-1 h-1 rounded-full bg-[#f43f5e]"></span>
                                             📈 上漲路徑 (多頭突破點火)
                                           </div>
-                                          <p className="text-zinc-400 text-[8px] mt-0.5">
+                                          <p className="text-zinc-400 text-[0.55rem] mt-0.5">
                                             量能擴增站穩壓力 {targetPrice.toFixed(1)} 元，多頭將啟動新一輪波段上攻，挑戰波段停利目標。
                                           </p>
                                         </div>
@@ -1975,7 +1976,7 @@ export default function App() {
                                             <span className="w-1 h-1 rounded-full bg-[#FFB74D]"></span>
                                             🔄 回檔路徑 (量縮回踩月線)
                                           </div>
-                                          <p className="text-zinc-400 text-[8px] mt-0.5">
+                                          <p className="text-zinc-400 text-[0.55rem] mt-0.5">
                                             高檔買盤滯漲，若跌破現價，可能回測 20MA 支撐區 {supportPrice.toFixed(1)} 元進行高密籌碼洗盤。
                                           </p>
                                         </div>
@@ -1985,7 +1986,7 @@ export default function App() {
                                             <span className="w-1 h-1 rounded-full bg-[#10b881]"></span>
                                             🛡️ 轉弱路徑 (跌破強支撐防禦)
                                           </div>
-                                          <p className="text-zinc-400 text-[8px] mt-0.5">
+                                          <p className="text-zinc-400 text-[0.55rem] mt-0.5">
                                             若不幸失守強支撐 {strongSupport.toFixed(1)} 元並跌破防呆停損 {(selectedStock.stop_loss_price || 0).toFixed(1)} 元，多頭結構轉向，系統無條件執行清倉防守。
                                           </p>
                                         </div>
@@ -1997,33 +1998,33 @@ export default function App() {
 
                               {/* Shape and K-line Analysis */}
                               <div className="bg-zinc-950 p-2.5 rounded-lg border border-zinc-850 space-y-1.5">
-                                <h4 className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider font-mono flex items-center gap-1.5">
-                                  <Sliders className="w-3 h-3 text-[#FFB74D]" />
+                                <h4 className="text-[0.65rem] text-zinc-500 font-bold uppercase tracking-wider font-mono flex items-center gap-1.5">
+                                  <Cpu className="w-3 h-3 text-[#FFB74D] shrink-0" />
                                   🤖 AI 形態與 K 線結論
                                 </h4>
-                                <div className="grid grid-cols-2 gap-1.5 text-[8px] font-mono">
+                                <div className="grid grid-cols-2 gap-1.5 text-[0.55rem] font-mono">
                                   <div className="bg-zinc-900/40 p-1 rounded border border-zinc-900">
-                                    <div className="text-zinc-500 text-[7px] mb-0.5">W底 (多頭型態) 機率</div>
-                                    <div className="text-[10px] font-black text-[#f43f5e]">{quant.wBottomProb}%</div>
+                                    <div className="text-zinc-500 text-[0.45rem] mb-0.5">W底 (多頭型態) 機率</div>
+                                    <div className="text-[0.725rem] font-black text-[#f43f5e]">{quant.wBottomProb}%</div>
                                     <div className="w-full h-0.5 bg-zinc-850 rounded-full overflow-hidden mt-0.5">
                                       <div className="h-full bg-[#f43f5e]" style={{ width: `${quant.wBottomProb}%` }}></div>
                                     </div>
                                   </div>
                                   
                                   <div className="bg-zinc-900/40 p-1 rounded border border-zinc-900">
-                                    <div className="text-zinc-500 text-[7px] mb-0.5">M頭 (轉向型態) 機率</div>
-                                    <div className="text-[10px] font-black text-[#10b881]">{quant.mTopProb}%</div>
+                                    <div className="text-zinc-500 text-[0.45rem] mb-0.5">M頭 (轉向型態) 機率</div>
+                                    <div className="text-[0.725rem] font-black text-[#10b881]">{quant.mTopProb}%</div>
                                     <div className="w-full h-0.5 bg-zinc-850 rounded-full overflow-hidden mt-0.5">
                                       <div className="h-full bg-[#10b881]" style={{ width: `${quant.mTopProb}%` }}></div>
                                     </div>
                                   </div>
                                 </div>
                                 
-                                <div className="bg-zinc-900/25 p-1.5 rounded border border-zinc-900 text-[9px] font-sans text-zinc-300 flex items-start gap-1">
+                                <div className="bg-zinc-900/25 p-1.5 rounded border border-zinc-900 text-[0.65rem] font-sans text-zinc-300 flex items-start gap-1">
                                   <span className="text-[#FFB74D]">💡</span>
                                   <div>
                                     <span className="font-bold text-white">K線特徵：{quant.klinePattern.name}</span>
-                                    <p className="text-[8px] text-zinc-550 mt-0.5">{quant.klinePattern.desc}</p>
+                                    <p className="text-[0.55rem] text-zinc-550 mt-0.5">{quant.klinePattern.desc}</p>
                                   </div>
                                 </div>
                               </div>
@@ -2044,7 +2045,7 @@ export default function App() {
                           </div>
                           <div className="flex justify-between items-center text-xs border-t border-zinc-850/40 pt-1.5">
                             <span className="text-zinc-400">5檔動態定價:</span>
-                            <span className="font-mono text-white text-[10px]">
+                            <span className="font-mono text-white text-[0.725rem]">
                               成本: {selectedStock.dynamicTiers?.vwap5d} | 漲停: {selectedStock.dynamicTiers?.limitUp}
                             </span>
                           </div>
@@ -2053,15 +2054,15 @@ export default function App() {
                         {/* Gemini intelligent notes generation section */}
                         <div className="flex flex-col gap-2">
                           <div className="flex justify-between items-center">
-                            <h4 className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider font-mono flex items-center gap-1.5">
-                              <Edit3 className="w-3.5 h-3.5" />
+                            <h4 className="text-[0.725rem] text-zinc-500 font-bold uppercase tracking-wider font-mono flex items-center gap-1.5">
+                              <FileText className="w-3.5 h-3.5 text-[#FFB74D] shrink-0" />
                               操盤手機構備忘錄
                             </h4>
                             
                             <button
                               onClick={generateAiNotesWithGemini}
                               disabled={isGeneratingNotes}
-                              className="px-2.5 py-1 text-[9px] font-bold rounded-full bg-indigo-950 text-indigo-300 border border-indigo-500/40 hover:bg-indigo-900 transition flex items-center gap-1"
+                              className="px-2.5 py-1 text-[0.65rem] font-bold rounded-full bg-indigo-950 text-indigo-300 border border-indigo-500/40 hover:bg-indigo-900 transition flex items-center gap-1"
                             >
                               {isGeneratingNotes ? (
                                 <span className="w-2.5 h-2.5 border-t-2 border-indigo-400 animate-spin rounded-full"></span>
@@ -2108,10 +2109,11 @@ export default function App() {
 
                         {/* V2026.Max Score Checklist Breakdown */}
                         <div className="mt-2">
-                          <h4 className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider font-mono mb-2">
-                            📋 V8050.0 終極版 50 道微觀濾網檢核 (當前 {selectedStock.score} 分 / 滿分 50 分)
+                          <h4 className="text-[0.725rem] text-zinc-500 font-bold uppercase tracking-wider font-mono mb-2 flex items-center gap-1.5">
+                            <Shield className="w-3.5 h-3.5 text-[#FFB74D] shrink-0" />
+                            V8050.0 終極版 50 道微觀濾網檢核 (當前 {selectedStock.score} 分 / 滿分 50 分)
                           </h4>
-                          <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-850 max-h-[160px] overflow-y-auto space-y-1 text-[10px] font-mono">
+                          <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-850 max-h-[160px] overflow-y-auto space-y-1 text-[0.725rem] font-mono">
                             {selectedStock.scoreBreakdown && Object.entries(selectedStock.scoreBreakdown).map(([key, val]) => {
                               return (
                                 <div key={key} className="flex justify-between items-center py-0.5 border-b border-zinc-900/50">
@@ -2142,33 +2144,33 @@ export default function App() {
                           <div className="flex flex-col gap-4 text-xs">
                             {/* Profile */}
                             <div className="bg-zinc-950 p-3.5 rounded-lg border border-zinc-850/80 space-y-2">
-                              <h4 className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider font-mono">
+                              <h4 className="text-[0.725rem] text-zinc-500 font-bold uppercase tracking-wider font-mono">
                                 🏢 公司基本資訊 (Profile)
                               </h4>
-                              <div className="grid grid-cols-2 gap-2 text-[10px] font-mono">
+                              <div className="grid grid-cols-2 gap-2 text-[0.725rem] font-mono">
                                 <div><span className="text-zinc-500">板塊:</span> <span className="text-white font-bold">{extendedDetails.profile?.sector || selectedStock.category}</span></div>
                                 <div><span className="text-zinc-500">行業:</span> <span className="text-white font-bold">{extendedDetails.profile?.industry || selectedStock.industry}</span></div>
                                 <div><span className="text-zinc-500">員工:</span> <span className="text-white font-bold">{extendedDetails.profile?.employees ? extendedDetails.profile.employees.toLocaleString() : "無數據"} 人</span></div>
                                 <div><span className="text-zinc-500">地區:</span> <span className="text-white font-bold">{extendedDetails.profile?.country || "Taiwan"}</span></div>
                               </div>
                               {extendedDetails.profile?.website && (
-                                <div className="text-[9px] font-mono text-zinc-500 truncate pt-1 border-t border-zinc-900/50">
+                                <div className="text-[0.65rem] font-mono text-zinc-500 truncate pt-1 border-t border-zinc-900/50">
                                   官網: <a href={extendedDetails.profile.website} target="_blank" rel="noopener noreferrer" className="text-[#FFB74D] hover:underline">{extendedDetails.profile.website}</a>
                                 </div>
                               )}
-                              <div className="text-[10px] text-zinc-400 font-sans leading-relaxed pt-2 border-t border-zinc-900 max-h-36 overflow-y-auto pr-1">
+                              <div className="text-[0.725rem] text-zinc-400 font-sans leading-relaxed pt-2 border-t border-zinc-900 max-h-36 overflow-y-auto pr-1">
                                 {extendedDetails.profile?.summary || "無詳細公司介紹數據。"}
                               </div>
                             </div>
 
                             {/* Financials Table */}
                             <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-850/80 space-y-2">
-                              <h4 className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider font-mono">
+                              <h4 className="text-[0.725rem] text-zinc-500 font-bold uppercase tracking-wider font-mono">
                                 📊 近四季財務表現 (Financials)
                               </h4>
                               {extendedDetails.financials && extendedDetails.financials.length > 0 ? (
                                 <div className="overflow-x-auto">
-                                  <table className="w-full text-left border-collapse table-auto text-[9px] font-mono">
+                                  <table className="w-full text-left border-collapse table-auto text-[0.65rem] font-mono">
                                     <thead>
                                       <tr className="border-b border-zinc-850 text-zinc-500 uppercase pb-1">
                                         <th className="py-1">季度</th>
@@ -2194,17 +2196,17 @@ export default function App() {
                                   </table>
                                 </div>
                               ) : (
-                                <div className="text-center py-4 text-zinc-550 font-mono text-[9px]">
+                                <div className="text-center py-4 text-zinc-550 font-mono text-[0.65rem]">
                                   ⚠️ 暫無近四季季報數據 (OTC 無揭露或 yfinance 解析限制)
                                 </div>
                               )}
                             </div>
                           </div>
                         ) : (
-                          <div className="text-center py-8 text-zinc-550 font-mono text-[10px] border border-zinc-850 rounded-lg p-4 bg-zinc-950">
+                          <div className="text-center py-8 text-zinc-550 font-mono text-[0.725rem] border border-zinc-850 rounded-lg p-4 bg-zinc-950">
                             <AlertTriangle className="w-8 h-8 text-zinc-650 mx-auto mb-2" />
                             無法取得本股的財務資訊
-                            <p className="text-[9px] text-zinc-600 mt-1">請重新點選或重啟後台爬蟲</p>
+                            <p className="text-[0.65rem] text-zinc-600 mt-1">請重新點選或重啟後台爬蟲</p>
                           </div>
                         )}
                       </div>
@@ -2223,11 +2225,11 @@ export default function App() {
                           <div className="flex flex-col gap-4 text-xs">
                             {/* Local Chips Analysis */}
                             <div className="bg-zinc-950 p-3.5 rounded-lg border border-zinc-850/80 space-y-3">
-                              <h4 className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider font-mono">
+                              <h4 className="text-[0.725rem] text-zinc-500 font-bold uppercase tracking-wider font-mono">
                                 🇹🇼 台北本體籌碼動態 (Local Chips)
                               </h4>
                               
-                              <div className="space-y-2 text-[10px] font-mono">
+                              <div className="space-y-2 text-[0.725rem] font-mono">
                                 {/* Foreign holdings bar */}
                                 <div>
                                   <div className="flex justify-between items-center mb-1">
@@ -2252,7 +2254,7 @@ export default function App() {
 
                                 <div className="grid grid-cols-2 gap-3 pt-1">
                                   <div className="bg-zinc-900/40 p-2 rounded border border-zinc-900">
-                                    <div className="text-[9px] text-zinc-500">外資鎖碼連天</div>
+                                    <div className="text-[0.65rem] text-zinc-500">外資鎖碼連天</div>
                                     <div className={`text-xs font-bold font-mono mt-0.5 ${
                                       selectedStock.foreignDays > 0 ? "text-[#f43f5e]" : selectedStock.foreignDays < 0 ? "text-[#10b881]" : "text-zinc-400"
                                     }`}>
@@ -2261,7 +2263,7 @@ export default function App() {
                                   </div>
                                   
                                   <div className="bg-zinc-900/40 p-2 rounded border border-zinc-900">
-                                    <div className="text-[9px] text-zinc-500">投信鎖碼連天</div>
+                                    <div className="text-[0.65rem] text-zinc-500">投信鎖碼連天</div>
                                     <div className={`text-xs font-bold font-mono mt-0.5 ${
                                       selectedStock.instDays > 0 ? "text-[#f43f5e]" : selectedStock.instDays < 0 ? "text-[#10b881]" : "text-zinc-400"
                                     }`}>
@@ -2270,7 +2272,7 @@ export default function App() {
                                   </div>
 
                                   <div className="bg-zinc-900/40 p-2 rounded border border-zinc-900">
-                                    <div className="text-[9px] text-zinc-500">融資單日變化</div>
+                                    <div className="text-[0.65rem] text-zinc-500">融資單日變化</div>
                                     <div className={`text-xs font-bold font-mono mt-0.5 ${
                                       selectedStock.marginChange < 0 ? "text-[#10b881]" : selectedStock.marginChange > 0 ? "text-[#f43f5e]" : "text-zinc-400"
                                     }`}>
@@ -2279,7 +2281,7 @@ export default function App() {
                                   </div>
 
                                   <div className="bg-zinc-900/40 p-2 rounded border border-zinc-900">
-                                    <div className="text-[9px] text-zinc-500">券資比 (空頭壓制)</div>
+                                    <div className="text-[0.65rem] text-zinc-500">券資比 (空頭壓制)</div>
                                     <div className="text-xs font-bold font-mono text-white mt-0.5">
                                       {selectedStock.marginShortRatio?.toFixed(2)}%
                                     </div>
@@ -2293,12 +2295,12 @@ export default function App() {
                               {/* Insider Transactions */}
                               <div className="bg-zinc-950 p-3.5 rounded-lg border border-zinc-850/80 space-y-2">
                                 <div className="flex justify-between items-center">
-                                  <h4 className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider font-mono">
+                                  <h4 className="text-[0.725rem] text-zinc-500 font-bold uppercase tracking-wider font-mono">
                                     {extendedDetails.has_adr 
                                       ? `🇺🇸 美股 ${extendedDetails.adr_symbol} 內線交易 (Insiders)` 
                                       : `🇹🇼 台北董監事與大股東持股變動 (Insiders)`}
                                   </h4>
-                                  <span className={`text-[8px] border px-1.5 py-0.5 rounded font-mono ${
+                                  <span className={`text-[0.55rem] border px-1.5 py-0.5 rounded font-mono ${
                                     extendedDetails.has_adr 
                                       ? "bg-indigo-950 text-indigo-400 border-indigo-500/30" 
                                       : "bg-amber-950 text-amber-400 border-amber-500/30"
@@ -2315,16 +2317,16 @@ export default function App() {
                                                     item.type?.includes("買進") ||
                                                     item.type?.includes("配股");
                                       return (
-                                        <div key={idx} className="bg-zinc-900/50 p-2 rounded border border-zinc-900 text-[10px] flex justify-between items-start gap-1 font-mono">
+                                        <div key={idx} className="bg-zinc-900/50 p-2 rounded border border-zinc-900 text-[0.725rem] flex justify-between items-start gap-1 font-mono">
                                           <div className="truncate max-w-[140px]">
                                             <div className="text-white font-bold truncate">{item.name}</div>
-                                            <div className="text-zinc-500 text-[9px] truncate">{item.position}</div>
+                                            <div className="text-zinc-500 text-[0.65rem] truncate">{item.position}</div>
                                           </div>
                                           <div className="text-right">
                                             <div className={`font-bold ${isBuy ? "text-[#f43f5e]" : "text-[#10b881]"}`}>
                                               {item.type}
                                             </div>
-                                            <div className="text-zinc-400 text-[9px] mt-0.5">
+                                            <div className="text-zinc-400 text-[0.65rem] mt-0.5">
                                               {extendedDetails.has_adr 
                                                 ? `${item.shares ? item.shares.toLocaleString() : "0"} 股` 
                                                 : `${item.shares ? (item.shares / 1000).toFixed(0) : "0"} 張`}
@@ -2333,14 +2335,14 @@ export default function App() {
                                                 ? `$${item.value ? item.value.toLocaleString() : "0"}` 
                                                 : `NT$ ${item.value ? item.value.toLocaleString() : "0"}`}
                                             </div>
-                                            <div className="text-zinc-500 text-[8px] mt-0.5">{item.date}</div>
+                                            <div className="text-zinc-500 text-[0.55rem] mt-0.5">{item.date}</div>
                                           </div>
                                         </div>
                                       );
                                     })}
                                   </div>
                                 ) : (
-                                  <div className="text-center py-4 text-zinc-650 font-mono text-[9px]">
+                                  <div className="text-center py-4 text-zinc-650 font-mono text-[0.65rem]">
                                     ⚠️ 暫無近期申報數據。
                                   </div>
                                 )}
@@ -2348,7 +2350,7 @@ export default function App() {
 
                               {/* Institutional Holders */}
                               <div className="bg-zinc-950 p-3.5 rounded-lg border border-zinc-850/80 space-y-2">
-                                <h4 className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider font-mono">
+                                <h4 className="text-[0.725rem] text-zinc-500 font-bold uppercase tracking-wider font-mono">
                                   {extendedDetails.has_adr 
                                     ? `🏛️ 美股 ${extendedDetails.adr_symbol} 大資金機構 (Institutions)` 
                                     : `🏛️ 台北法人與本地大型機構持股 (Institutions)`}
@@ -2357,10 +2359,10 @@ export default function App() {
                                 {extendedDetails.institutions && extendedDetails.institutions.length > 0 ? (
                                   <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                                     {extendedDetails.institutions.map((item: any, idx: number) => (
-                                      <div key={idx} className="bg-zinc-900/50 p-2 rounded border border-zinc-900 text-[10px] flex justify-between items-start gap-1 font-mono">
+                                      <div key={idx} className="bg-zinc-900/50 p-2 rounded border border-zinc-900 text-[0.725rem] flex justify-between items-start gap-1 font-mono">
                                         <div className="truncate max-w-[150px]">
                                           <div className="text-white font-bold truncate">{item.name}</div>
-                                          <div className="text-zinc-500 text-[9px]">持股比: {item.pct ? item.pct.toFixed(2) : "0.00"}%</div>
+                                          <div className="text-zinc-500 text-[0.65rem]">持股比: {item.pct ? item.pct.toFixed(2) : "0.00"}%</div>
                                         </div>
                                         <div className="text-right">
                                           <div className="text-zinc-300 font-bold">
@@ -2368,7 +2370,7 @@ export default function App() {
                                               ? `${item.shares ? item.shares.toLocaleString() : "0"} 股` 
                                               : `${item.shares ? (item.shares / 1000).toFixed(0) : "0"} 張`}
                                           </div>
-                                          <div className={`text-[9px] mt-0.5 font-bold ${item.pctChange >= 0 ? "text-[#f43f5e]" : "text-[#10b881]"}`}>
+                                          <div className={`text-[0.65rem] mt-0.5 font-bold ${item.pctChange >= 0 ? "text-[#f43f5e]" : "text-[#10b881]"}`}>
                                             異動: {item.pctChange >= 0 ? `+${item.pctChange.toFixed(2)}%` : `${item.pctChange.toFixed(2)}%`}
                                           </div>
                                         </div>
@@ -2376,7 +2378,7 @@ export default function App() {
                                     ))}
                                   </div>
                                 ) : (
-                                  <div className="text-center py-4 text-zinc-650 font-mono text-[9px]">
+                                  <div className="text-center py-4 text-zinc-650 font-mono text-[0.65rem]">
                                     ⚠️ 暫無大型機構持股變動申報。
                                   </div>
                                 )}
@@ -2400,9 +2402,9 @@ export default function App() {
                           <div className="flex flex-col gap-4 text-xs">
                             {/* SEC Filings / TWSE Disclosures (Dual-Mode) */}
                             <div className="bg-zinc-950 p-3.5 rounded-lg border border-zinc-850/80 space-y-2">
-                              <h4 className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider font-mono flex items-center justify-between">
+                              <h4 className="text-[0.725rem] text-zinc-500 font-bold uppercase tracking-wider font-mono flex items-center justify-between">
                                 <span>{extendedDetails.has_adr ? "📂 SEC 備案與揭露 (SEC Filings)" : "📂 TWSE / MOPs 交易所重大訊息 (Disclosures)"}</span>
-                                <span className="text-[9px] text-[#FFB74D] font-mono">{extendedDetails.has_adr ? "EDGAR" : "公開資訊觀測站"}</span>
+                                <span className="text-[0.65rem] text-[#FFB74D] font-mono">{extendedDetails.has_adr ? "EDGAR" : "公開資訊觀測站"}</span>
                               </h4>
                               
                               {extendedDetails.sec_filings && extendedDetails.sec_filings.length > 0 ? (
@@ -2413,20 +2415,20 @@ export default function App() {
                                       href={filing.url}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="block bg-zinc-900/50 hover:bg-zinc-900/80 p-2 rounded border border-zinc-900 text-[10px] font-mono transition group"
+                                      className="block bg-zinc-900/50 hover:bg-zinc-900/80 p-2 rounded border border-zinc-900 text-[0.725rem] font-mono transition group"
                                     >
                                       <div className="flex justify-between items-center text-zinc-400 group-hover:text-[#FFB74D] font-bold">
                                         <span>{filing.type} - {extendedDetails.has_adr ? "申報檔案" : "公告公告"}</span>
-                                        <span className="text-[8px] text-zinc-550">{filing.date}</span>
+                                        <span className="text-[0.55rem] text-zinc-550">{filing.date}</span>
                                       </div>
-                                      <div className="text-[9px] text-zinc-500 mt-1 truncate group-hover:text-zinc-300">
+                                      <div className="text-[0.65rem] text-zinc-500 mt-1 truncate group-hover:text-zinc-300">
                                         {filing.title}
                                       </div>
                                     </a>
                                   ))}
                                 </div>
                               ) : (
-                                <div className="text-center py-4 text-zinc-660 font-mono text-[9px]">
+                                <div className="text-center py-4 text-zinc-660 font-mono text-[0.65rem]">
                                   ⚠️ 暫無近期申報紀錄。
                                 </div>
                               )}
@@ -2434,7 +2436,7 @@ export default function App() {
 
                             {/* Market News Section */}
                             <div className="bg-zinc-950 p-3.5 rounded-lg border border-zinc-850/80 space-y-2">
-                              <h4 className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider font-mono">
+                              <h4 className="text-[0.725rem] text-zinc-500 font-bold uppercase tracking-wider font-mono">
                                 📰 盤中市場熱點與新聞動態 (Market News)
                               </h4>
                               
@@ -2448,10 +2450,10 @@ export default function App() {
                                       rel="noopener noreferrer"
                                       className="block bg-zinc-900/50 hover:bg-zinc-900/80 p-2.5 rounded border border-zinc-900 transition group"
                                     >
-                                      <div className="text-[10px] text-white font-bold leading-snug group-hover:text-[#FFB74D] line-clamp-2 font-sans">
+                                      <div className="text-[0.725rem] text-white font-bold leading-snug group-hover:text-[#FFB74D] line-clamp-2 font-sans">
                                         {item.title}
                                       </div>
-                                      <div className="flex justify-between items-center text-[8px] text-zinc-500 font-mono mt-1.5">
+                                      <div className="flex justify-between items-center text-[0.55rem] text-zinc-500 font-mono mt-1.5">
                                         <span>{item.publisher}</span>
                                         <span>{item.date ? new Date(item.date).toLocaleString(undefined, {hour12: false}).substring(5, 16) : "即時"}</span>
                                       </div>
@@ -2459,7 +2461,7 @@ export default function App() {
                                   ))}
                                 </div>
                               ) : (
-                                <div className="text-center py-6 text-zinc-600 font-mono text-[9px]">
+                                <div className="text-center py-6 text-zinc-600 font-mono text-[0.65rem]">
                                   ⚠️ 暫無近期市場新聞，系統將自動隨盤勢更新
                                 </div>
                               )}
@@ -2488,11 +2490,11 @@ export default function App() {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="font-display font-black text-xl text-white tracking-tight">智能判讀指數_大一統</h1>
-                <span className="text-[10px] bg-gradient-to-r from-yellow-500 to-amber-600 text-black font-black px-2 py-0.5 rounded shadow">
+                <span className="text-[0.725rem] bg-gradient-to-r from-yellow-500 to-amber-600 text-black font-black px-2 py-0.5 rounded shadow">
                   終極大一統版
                 </span>
               </div>
-              <p className="text-[10px] text-zinc-500 font-mono tracking-wider mt-0.5">
+              <p className="text-[0.725rem] text-zinc-500 font-mono tracking-wider mt-0.5">
                 WALL STREET ELITE QUANT DECISION SYSTEM & SIMULATOR
               </p>
             </div>
@@ -2505,7 +2507,7 @@ export default function App() {
           </div>
 
           {/* Time & DB indicators */}
-          <div className="flex flex-wrap items-center gap-3 text-[11px] font-mono">
+          <div className="flex flex-wrap items-center gap-3 text-[0.8rem] font-mono">
             <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded-md px-3 py-1.5 shadow">
               <span className="w-1.5 h-1.5 bg-sky-400 rounded-full animate-ping"></span>
               <span className="text-zinc-500">TAIPEI:</span>
@@ -2534,34 +2536,34 @@ export default function App() {
       <div className="bg-[#0c0e12] border-b border-zinc-850 py-2.5 px-6">
         <div className="w-full max-w-[1700px] mx-auto flex flex-wrap items-center justify-between gap-4 font-mono text-xs font-bold">
           <div className="flex items-center gap-6 overflow-x-auto py-1">
-            <span className="text-zinc-500 text-[10px] tracking-wider uppercase font-bold">🌐 全球總經避險監控:</span>
+            <span className="text-zinc-500 text-[0.725rem] tracking-wider uppercase font-bold">🌐 全球總經避險監控:</span>
             
             <div className="flex items-center gap-1.5 bg-zinc-950/60 border border-zinc-850 rounded px-2.5 py-1 text-sky-400">
               <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse"></span>
               <span>VIX 恐慌指數:</span>
-              <span className="text-white font-extrabold text-[13px]">{data ? data.vixValue?.toFixed(2) : "16.70"}</span>
+              <span className="text-white font-extrabold text-[0.875rem]">{data ? data.vixValue?.toFixed(2) : "16.70"}</span>
             </div>
 
             <div className="flex items-center gap-1.5 bg-zinc-950/60 border border-zinc-850 rounded px-2.5 py-1 text-[#f43f5e]">
               <span className="w-1.5 h-1.5 rounded-full bg-[#f43f5e] animate-pulse"></span>
               <span>SOX 費半指數:</span>
-              <span className="text-white font-extrabold text-[13px]">12202.54</span>
+              <span className="text-white font-extrabold text-[0.875rem]">12202.54</span>
             </div>
 
             <div className="flex items-center gap-1.5 bg-zinc-950/60 border border-zinc-850 rounded px-2.5 py-1 text-[#f43f5e]">
               <span className="w-1.5 h-1.5 rounded-full bg-[#f43f5e] animate-pulse"></span>
               <span>WTI 原油價格:</span>
-              <span className="text-white font-extrabold text-[13px]">$97.00</span>
+              <span className="text-white font-extrabold text-[0.875rem]">$97.00</span>
             </div>
 
             <div className="flex items-center gap-1.5 bg-zinc-950/60 border border-zinc-850 rounded px-2.5 py-1 text-[#10b881]">
               <span className="w-1.5 h-1.5 rounded-full bg-[#10b881]"></span>
               <span>現金水位持籌:</span>
-              <span className="text-white font-extrabold text-[13px]">30%</span>
+              <span className="text-white font-extrabold text-[0.875rem]">30%</span>
             </div>
           </div>
           
-          <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider flex items-center gap-1.5">
+          <div className="text-[0.725rem] text-zinc-500 font-bold uppercase tracking-wider flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-[#10b881] animate-ping"></span>
             <span>主力大資金盤中安全預警</span>
           </div>
@@ -2589,7 +2591,7 @@ export default function App() {
       )}
       {vixAlertLevel === "safe" && lastPriceUpdate && (
         <div className="bg-gradient-to-r from-emerald-950 via-transparent to-emerald-950 border-y border-emerald-900/50 py-1.5 px-6">
-          <div className="w-full max-w-[1700px] mx-auto flex items-center justify-center gap-2 text-emerald-500 text-[11px] font-mono">
+          <div className="w-full max-w-[1700px] mx-auto flex items-center justify-center gap-2 text-emerald-500 text-[0.8rem] font-mono">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
             <span>【V8050.0 安全模式】VIX &lt; 20，系統允許維持 80% 高持倉水位 | 最後更新: {lastPriceUpdate}</span>
           </div>
@@ -2602,7 +2604,7 @@ export default function App() {
           <div className="flex gap-0.5 sm:gap-1.5 md:gap-2.5 py-1 shrink-0">
             <button
               onClick={() => setActiveTab("radar")}
-              className={`group py-3 px-2 sm:px-2.5 md:px-3 lg:px-4 text-[11px] sm:text-xs md:text-sm lg:text-[15px] font-black uppercase tracking-wider group transition-all flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
+              className={`group py-3 px-2 sm:px-2.5 md:px-3 lg:px-4 text-[0.8rem] sm:text-xs md:text-sm lg:text-[0.95rem] font-black uppercase tracking-wider group transition-all flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
                 activeTab === "radar"
                   ? "border-transparent text-white"
                   : "border-transparent text-zinc-400 hover:text-white"
@@ -2617,7 +2619,7 @@ export default function App() {
 
             <button
               onClick={() => setActiveTab("strategy")}
-              className={`group py-3 px-2 sm:px-2.5 md:px-3 lg:px-4 text-[11px] sm:text-xs md:text-sm lg:text-[15px] font-black uppercase tracking-wider group transition-all flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
+              className={`group py-3 px-2 sm:px-2.5 md:px-3 lg:px-4 text-[0.8rem] sm:text-xs md:text-sm lg:text-[0.95rem] font-black uppercase tracking-wider group transition-all flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
                 activeTab === "strategy"
                   ? "border-transparent text-white"
                   : "border-transparent text-zinc-400 hover:text-white"
@@ -2632,7 +2634,7 @@ export default function App() {
 
             <button
               onClick={() => setActiveTab("screener")}
-              className={`group py-3 px-2 sm:px-2.5 md:px-3 lg:px-4 text-[11px] sm:text-xs md:text-sm lg:text-[15px] font-black uppercase tracking-wider group transition-all flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
+              className={`group py-3 px-2 sm:px-2.5 md:px-3 lg:px-4 text-[0.8rem] sm:text-xs md:text-sm lg:text-[0.95rem] font-black uppercase tracking-wider group transition-all flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
                 activeTab === "screener"
                   ? "border-transparent text-white"
                   : "border-transparent text-zinc-400 hover:text-white"
@@ -2647,7 +2649,7 @@ export default function App() {
 
             <button
               onClick={() => setActiveTab("holdings")}
-              className={`group py-3 px-2 sm:px-2.5 md:px-3 lg:px-4 text-[11px] sm:text-xs md:text-sm lg:text-[15px] font-black uppercase tracking-wider group transition-all flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
+              className={`group py-3 px-2 sm:px-2.5 md:px-3 lg:px-4 text-[0.8rem] sm:text-xs md:text-sm lg:text-[0.95rem] font-black uppercase tracking-wider group transition-all flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
                 activeTab === "holdings"
                   ? "border-transparent text-white"
                   : "border-transparent text-zinc-400 hover:text-white"
@@ -2662,7 +2664,7 @@ export default function App() {
 
             <button
               onClick={() => setActiveTab("exits")}
-              className={`group py-3 px-2 sm:px-2.5 md:px-3 lg:px-4 text-[11px] sm:text-xs md:text-sm lg:text-[15px] font-black uppercase tracking-wider group transition-all flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
+              className={`group py-3 px-2 sm:px-2.5 md:px-3 lg:px-4 text-[0.8rem] sm:text-xs md:text-sm lg:text-[0.95rem] font-black uppercase tracking-wider group transition-all flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
                 activeTab === "exits"
                   ? "border-transparent text-white"
                   : "border-transparent text-zinc-400 hover:text-white"
@@ -2677,7 +2679,7 @@ export default function App() {
 
             <button
               onClick={() => setActiveTab("sop")}
-              className={`group py-3 px-2 sm:px-2.5 md:px-3 lg:px-4 text-[11px] sm:text-xs md:text-sm lg:text-[15px] font-black uppercase tracking-wider group transition-all flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
+              className={`group py-3 px-2 sm:px-2.5 md:px-3 lg:px-4 text-[0.8rem] sm:text-xs md:text-sm lg:text-[0.95rem] font-black uppercase tracking-wider group transition-all flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
                 activeTab === "sop"
                   ? "border-transparent text-white"
                   : "border-transparent text-zinc-400 hover:text-white"
@@ -2696,7 +2698,7 @@ export default function App() {
             {/* V8050.0 即時爬蟲倒計時 */}
             <div className="ml-2 flex items-center gap-1.5 bg-zinc-900 border border-[#E5A823]/30 rounded px-2 py-0.5">
               <Zap className="w-3 h-3 text-[#E5A823] animate-pulse" />
-              <span className="text-[#E5A823] font-black text-[10px]">
+              <span className="text-[#E5A823] font-black text-[0.725rem]">
                 即時爬蟲 | 次更 {realtimeCountdown}s
               </span>
             </div>
@@ -2721,7 +2723,7 @@ export default function App() {
                 <div className="premium-card rounded-xl p-3 md:p-4 shadow relative overflow-hidden group">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h3 className="text-[9px] md:text-[10px] text-zinc-500 font-black tracking-wider uppercase font-mono">台積電生命線 (20MA)</h3>
+                      <h3 className="text-[0.65rem] md:text-[0.725rem] text-zinc-500 font-black tracking-wider uppercase font-mono">台積電生命線 (20MA)</h3>
                       <div className="text-2xl font-mono font-bold text-white mt-1.5 flex items-baseline gap-1">
                         {data ? data.tsmcPrice : 1045.0} <span className="text-xs text-zinc-500">元</span>
                       </div>
@@ -2730,7 +2732,7 @@ export default function App() {
                       <Zap className="w-4 h-4 animate-pulse" />
                     </div>
                   </div>
-                  <div className="mt-3.5 text-[11px] text-zinc-400 flex items-center justify-between">
+                  <div className="mt-3.5 text-[0.8rem] text-zinc-400 flex items-center justify-between">
                     <span>月線水位: {data ? data.tsmcMa20Value : 1030.0} 元</span>
                     <span className={`font-bold font-mono ${data && data.tsmcPrice >= data.tsmcMa20Value ? "text-rose-400" : "text-emerald-400"}`}>
                       {data && data.tsmcPrice >= data.tsmcMa20Value ? "🔴 買點開放" : "🟢 全面停買隔離"}
@@ -2743,7 +2745,7 @@ export default function App() {
                 <div className="premium-card rounded-xl p-3 md:p-4 shadow relative overflow-hidden group">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h3 className="text-[9px] md:text-[10px] text-zinc-500 font-black tracking-wider uppercase font-mono">台北交易時間防線</h3>
+                      <h3 className="text-[0.65rem] md:text-[0.725rem] text-zinc-500 font-black tracking-wider uppercase font-mono">台北交易時間防線</h3>
                       <div className="mt-2.5">
                         <span className="px-2.5 py-1 text-xs font-bold rounded-md bg-zinc-900 border border-zinc-800 text-[#FFB74D] inline-flex items-center gap-1.5">
                           <Sliders className="w-3.5 h-3.5" />
@@ -2755,29 +2757,29 @@ export default function App() {
                       <ShieldAlert className="w-4 h-4" />
                     </div>
                   </div>
-                  <div className="mt-3 text-[11px] text-zinc-500 leading-tight">
+                  <div className="mt-3 text-[0.8rem] text-zinc-500 leading-tight">
                     僅限台北時間 09:00 - 13:30 允許觸發買進，其餘自動觀望。
                   </div>
                 </div>
 
                 {/* Score Stats */}
                 <div className="premium-card rounded-xl p-3 md:p-4 shadow relative overflow-hidden group">
-                  <h3 className="text-[9px] md:text-[10px] text-zinc-500 font-black tracking-wider uppercase font-mono mb-2">86 檔純高 Beta 分佈</h3>
+                  <h3 className="text-[0.65rem] md:text-[0.725rem] text-zinc-500 font-black tracking-wider uppercase font-mono mb-2">86 檔純高 Beta 分佈</h3>
                   <div className="grid grid-cols-4 gap-1 text-center font-mono">
                     <div className="bg-zinc-900/60 p-1.5 rounded border border-zinc-850">
-                      <div className="text-[9px] text-rose-400 font-bold">多</div>
+                      <div className="text-[0.65rem] text-rose-400 font-bold">多</div>
                       <div className="text-sm font-bold text-white mt-0.5">{longCount}</div>
                     </div>
                     <div className="bg-zinc-900/60 p-1.5 rounded border border-zinc-850">
-                      <div className="text-[9px] text-emerald-400 font-bold">空</div>
+                      <div className="text-[0.65rem] text-emerald-400 font-bold">空</div>
                       <div className="text-sm font-bold text-white mt-0.5">{shortCount}</div>
                     </div>
                     <div className="bg-zinc-900/60 p-1.5 rounded border border-zinc-850">
-                      <div className="text-[9px] text-zinc-400">持</div>
+                      <div className="text-[0.65rem] text-zinc-400">持</div>
                       <div className="text-sm font-bold text-zinc-300 mt-0.5">{holdCount}</div>
                     </div>
                     <div className="bg-zinc-900/60 p-1.5 rounded border border-zinc-850">
-                      <div className="text-[9px] text-emerald-400 font-bold">隔</div>
+                      <div className="text-[0.65rem] text-emerald-400 font-bold">隔</div>
                       <div className="text-sm font-bold text-white mt-0.5">{quarantinedCount}</div>
                     </div>
                   </div>
@@ -2786,31 +2788,31 @@ export default function App() {
                 {/* Override testing */}
                 <div className="premium-card rounded-xl p-3 md:p-4 shadow relative overflow-hidden flex flex-col justify-between">
                   <div>
-                    <h3 className="text-[10px] text-[#FFB74D] font-black tracking-wider uppercase font-mono flex items-center gap-1.5">
+                    <h3 className="text-[0.725rem] text-[#FFB74D] font-black tracking-wider uppercase font-mono flex items-center gap-1.5">
                       <Sliders className="w-3.5 h-3.5" /> 大盤剛性回測
                     </h3>
                     <div className="grid grid-cols-3 gap-1 mt-2.5">
                       <button 
                         onClick={() => handleTsmcOverrideChange("force_green")}
-                        className={`py-1 text-[10px] rounded transition-all font-mono font-bold ${overrideTsmcState === "force_green" ? "bg-rose-600 text-white shadow-[0_0_8px_rgba(244,63,94,0.3)]" : "bg-zinc-900 text-zinc-400 border border-zinc-850 hover:text-white"}`}
+                        className={`py-1 text-[0.725rem] rounded transition-all font-mono font-bold ${overrideTsmcState === "force_green" ? "bg-rose-600 text-white shadow-[0_0_8px_rgba(244,63,94,0.3)]" : "bg-zinc-900 text-zinc-400 border border-zinc-850 hover:text-white"}`}
                       >
                         紅燈(買點)
                       </button>
                       <button 
                         onClick={() => handleTsmcOverrideChange("force_red")}
-                        className={`py-1 text-[10px] rounded transition-all font-mono font-bold ${overrideTsmcState === "force_red" ? "bg-emerald-600 text-white shadow-[0_0_8px_rgba(16,184,129,0.3)]" : "bg-zinc-900 text-zinc-400 border border-zinc-850 hover:text-white"}`}
+                        className={`py-1 text-[0.725rem] rounded transition-all font-mono font-bold ${overrideTsmcState === "force_red" ? "bg-emerald-600 text-white shadow-[0_0_8px_rgba(16,184,129,0.3)]" : "bg-zinc-900 text-zinc-400 border border-zinc-850 hover:text-white"}`}
                       >
                         綠燈(隔離)
                       </button>
                       <button 
                         onClick={() => handleTsmcOverrideChange("auto")}
-                        className={`py-1 text-[10px] rounded transition-all font-mono font-bold ${overrideTsmcState === "auto" ? "bg-zinc-700 text-white" : "bg-zinc-900 text-zinc-400 border border-zinc-850 hover:text-white"}`}
+                        className={`py-1 text-[0.725rem] rounded transition-all font-mono font-bold ${overrideTsmcState === "auto" ? "bg-zinc-700 text-white" : "bg-zinc-900 text-zinc-400 border border-zinc-850 hover:text-white"}`}
                       >
                         自動
                       </button>
                     </div>
                   </div>
-                  <div className="text-[9px] text-zinc-550 mt-1.5 font-mono">
+                  <div className="text-[0.65rem] text-zinc-550 mt-1.5 font-mono">
                     提供手動測試紅燈(跌破20MA)與綠燈狀態
                   </div>
                 </div>
@@ -2826,12 +2828,12 @@ export default function App() {
                       <TrendingUp className="w-4 h-4 text-[#FFB74D] shrink-0" />
                       <h4 className="text-white text-xs font-bold font-sans">三大法人期指淨未平倉對沖監控牆</h4>
                     </div>
-                    <span className="text-[9px] font-mono bg-rose-950/60 border border-rose-500/30 px-1.5 py-0.5 rounded text-[#f43f5e] font-extrabold animate-pulse">
+                    <span className="text-[0.65rem] font-mono bg-rose-950/60 border border-rose-500/30 px-1.5 py-0.5 rounded text-[#f43f5e] font-extrabold animate-pulse">
                       避險加強
                     </span>
                   </div>
 
-                  <div className="space-y-2 text-[11px] font-mono">
+                  <div className="space-y-2 text-[0.8rem] font-mono">
                     <div className="flex justify-between items-center py-1 border-b border-zinc-900/40">
                       <span className="text-zinc-500">外資台指期未平倉</span>
                       <span className="text-[#f43f5e] font-bold">-18,450 口 (空單避險)</span>
@@ -2845,7 +2847,7 @@ export default function App() {
                       <span className="text-amber-500 font-bold">-1,890 口 (選擇權對沖)</span>
                     </div>
                   </div>
-                  <div className="mt-3.5 p-2 rounded bg-zinc-950/40 border border-zinc-900/60 text-[9px] text-zinc-400 leading-relaxed font-sans flex items-start gap-1.5">
+                  <div className="mt-3.5 p-2 rounded bg-zinc-950/40 border border-zinc-900/60 text-[0.65rem] text-zinc-400 leading-relaxed font-sans flex items-start gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                     <span>外資期指未平倉空單維持在一萬八千口高位，主力大資金持續進行高防禦避險配置。</span>
                   </div>
@@ -2858,12 +2860,12 @@ export default function App() {
                       <ShieldAlert className="w-4 h-4 text-[#FFB74D] shrink-0" />
                       <h4 className="text-white text-xs font-bold font-sans">盤中大單大筆成交防線檢索區</h4>
                     </div>
-                    <span className="text-[9px] font-mono bg-emerald-950/60 border border-emerald-500/30 px-1.5 py-0.5 rounded text-[#10b881] font-extrabold">
+                    <span className="text-[0.65rem] font-mono bg-emerald-950/60 border border-emerald-500/30 px-1.5 py-0.5 rounded text-[#10b881] font-extrabold">
                       防線穩固
                     </span>
                   </div>
 
-                  <div className="space-y-2 text-[11px] font-mono">
+                  <div className="space-y-2 text-[0.8rem] font-mono">
                     <div className="flex justify-between items-center mb-1">
                       <span className="text-zinc-500">盤中大單主力買盤比率</span>
                       <span className="text-[#f43f5e] font-extrabold">48.5% (大單集中)</span>
@@ -2878,7 +2880,7 @@ export default function App() {
                       <span className="text-[#f43f5e] font-bold">+12.4 億元 (拉抬期)</span>
                     </div>
                   </div>
-                  <div className="mt-3.5 p-2 rounded bg-zinc-950/40 border border-zinc-900/60 text-[9px] text-zinc-400 leading-relaxed font-sans flex items-start gap-1.5">
+                  <div className="mt-3.5 p-2 rounded bg-zinc-950/40 border border-zinc-900/60 text-[0.65rem] text-zinc-400 leading-relaxed font-sans flex items-start gap-1.5">
                     <Zap className="w-3.5 h-3.5 text-rose-400 shrink-0" />
                     <span>盤中大單佔比維持 48% 以上，買盤防禦線結構穩健，大戶洗盤後再次呈現吸籌力道。</span>
                   </div>
@@ -2940,7 +2942,7 @@ export default function App() {
                   <div className="absolute top-0 right-0 w-16 h-16 bg-emerald-500/5 rounded-full blur-xl"></div>
                   <div className="flex justify-between items-start">
                     <div>
-                      <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider font-mono">AI 避險資金部署水位</span>
+                      <span className="text-[0.65rem] text-zinc-500 font-bold uppercase tracking-wider font-mono">AI 避險資金部署水位</span>
                       <div className="text-xl font-bold text-white mt-1 font-mono">
                         NT$ {(holdings.length * 20000).toLocaleString()} <span className="text-xs text-zinc-500">/ 100,000 元</span>
                       </div>
@@ -2952,7 +2954,7 @@ export default function App() {
                   
                   {/* Progress Bar */}
                   <div className="mt-4">
-                    <div className="flex justify-between text-[9px] text-zinc-455 font-mono mb-1">
+                    <div className="flex justify-between text-[0.65rem] text-zinc-455 font-mono mb-1">
                       <span>持股檔數: {holdings.length} / 5 檔</span>
                       <span>{Math.round((holdings.length / 5) * 100)}% 曝險比率</span>
                     </div>
@@ -2972,10 +2974,10 @@ export default function App() {
                       <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
                       <h4 className="text-white text-xs font-bold font-sans">AI 量化自動交易實時情報流</h4>
                     </div>
-                    <span className="text-[8px] font-mono text-[#FFB74D] uppercase font-bold">實時廣播</span>
+                    <span className="text-[0.55rem] font-mono text-[#FFB74D] uppercase font-bold">實時廣播</span>
                   </div>
 
-                  <div className="space-y-1.5 max-h-[70px] overflow-y-auto pr-1 no-scrollbar font-mono text-[9px]">
+                  <div className="space-y-1.5 max-h-[70px] overflow-y-auto pr-1 no-scrollbar font-mono text-[0.65rem]">
                     {tradeNotifications.length === 0 ? (
                       <div className="text-center py-4 text-zinc-650">📡 等候背景量化洗價訊號觸發...</div>
                     ) : (
@@ -2986,7 +2988,7 @@ export default function App() {
                           </span>
                           <span className="text-zinc-300 font-bold truncate max-w-[80px]">{item.stock_name}</span>
                           <span className="text-zinc-500">{item.price} 元</span>
-                          <span className="text-zinc-600 text-[8px]">{new Date(item.timestamp).toLocaleTimeString('zh-TW', { hour12: false })}</span>
+                          <span className="text-zinc-600 text-[0.55rem]">{new Date(item.timestamp).toLocaleTimeString('zh-TW', { hour12: false })}</span>
                         </div>
                       ))
                     )}
@@ -3027,14 +3029,14 @@ export default function App() {
 
                   {/* Signal pills */}
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[11px] text-zinc-500 font-mono">裁決:</span>
+                    <span className="text-[0.8rem] text-zinc-500 font-mono">裁決:</span>
                     {(["多", "空", "持倉", "隔離"] as StockSignalOption[]).map(sig => {
                       const active = selectedSignalFilters.includes(sig);
                       return (
                         <button
                           key={sig}
                           onClick={() => toggleSignalFilter(sig)}
-                          className={`text-[10px] font-bold px-2.5 py-1 rounded transition ${
+                          className={`text-[0.725rem] font-bold px-2.5 py-1 rounded transition ${
                             active 
                               ? sig === "多" 
                                 ? "bg-rose-950/70 border border-rose-500/50 text-rose-400" 
@@ -3054,7 +3056,7 @@ export default function App() {
 
                   {/* Sort dropdown */}
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] text-zinc-500 font-mono">排序:</span>
+                    <span className="text-[0.8rem] text-zinc-500 font-mono">排序:</span>
                     <select 
                       value={sortBy}
                       onChange={(e) => setSortBy(e.target.value)}
@@ -3073,7 +3075,7 @@ export default function App() {
                   <div className="flex items-center gap-1 bg-zinc-900 border border-zinc-850 rounded p-1">
                     <button
                       onClick={() => setViewMode("table")}
-                      className={`px-2.5 py-1 text-[10px] font-bold rounded transition-all select-none ${
+                      className={`px-2.5 py-1 text-[0.725rem] font-bold rounded transition-all select-none ${
                         viewMode === "table" 
                           ? "bg-[#E5A823] text-black shadow font-black" 
                           : "text-zinc-400 hover:text-white"
@@ -3083,7 +3085,7 @@ export default function App() {
                     </button>
                     <button
                       onClick={() => setViewMode("cards")}
-                      className={`px-2.5 py-1 text-[10px] font-bold rounded transition-all select-none ${
+                      className={`px-2.5 py-1 text-[0.725rem] font-bold rounded transition-all select-none ${
                         viewMode === "cards" 
                           ? "bg-[#E5A823] text-black shadow font-black" 
                           : "text-zinc-400 hover:text-white"
@@ -3100,7 +3102,7 @@ export default function App() {
                   <div className="overflow-x-auto max-h-[550px] overflow-y-auto">
                     <table className="w-full text-left border-collapse table-auto text-xs">
                     <thead>
-                      <tr className="border-b border-zinc-850 bg-[#0e1117]/95 text-[10px] uppercase font-mono font-bold text-zinc-500 sticky top-0 z-10 select-none">
+                      <tr className="border-b border-zinc-850 bg-[#0e1117]/95 text-[0.725rem] uppercase font-mono font-bold text-zinc-500 sticky top-0 z-10 select-none">
                         <th className="py-2.5 px-3">代號 / 股名</th>
                         <th className="py-2.5 px-2 text-right">現價</th>
                         <th className="py-2.5 px-2 text-right">漲跌%</th>
@@ -3120,7 +3122,7 @@ export default function App() {
                             <AlertTriangle className="w-9 h-9 text-amber-500/35 mx-auto mb-2" />
                             沒有符合篩選條件的黃金標的
                             {eliteOnly && (
-                              <p className="text-[11px] text-zinc-650 mt-1">💡 當前開啟了 Score &gt;= 38 限制，試著關閉以檢視更多</p>
+                              <p className="text-[0.8rem] text-zinc-650 mt-1">💡 當前開啟了 Score &gt;= 38 限制，試著關閉以檢視更多</p>
                             )}
                           </td>
                         </tr>
@@ -3143,7 +3145,7 @@ export default function App() {
                                   {stock.stock_id}
                                   {stock.liquidity_warning && <span className="text-amber-500" title="流動性警告">⚠️</span>}
                                 </div>
-                                <div className="text-[10px] text-zinc-500 mt-0.5">{stock.stock_name}</div>
+                                <div className="text-[0.725rem] text-zinc-500 mt-0.5">{stock.stock_name}</div>
                               </td>
                               <td className="py-2 px-2 text-right font-mono font-semibold">
                                 {stock.close_price.toFixed(1)}
@@ -3160,7 +3162,7 @@ export default function App() {
                                   {stock.score}
                                 </span>
                               </td>
-                              <td className="py-2 px-3 text-left font-mono text-[10px] text-zinc-350 max-w-[210px] truncate" title={stock.suggested_entry_price}>
+                              <td className="py-2 px-3 text-left font-mono text-[0.725rem] text-zinc-350 max-w-[210px] truncate" title={stock.suggested_entry_price}>
                                 {stock.suggested_entry_price}
                               </td>
                               <td className="py-2 px-2 text-right font-mono text-rose-400 font-bold">
@@ -3180,7 +3182,7 @@ export default function App() {
                                   <button
                                     onClick={() => openBuyModalForStock(stock)}
                                     disabled={data?.macroEStopActive}
-                                    className={`px-2.5 py-1 text-[10px] font-bold rounded shadow transition active:scale-[0.96] ${
+                                    className={`px-2.5 py-1 text-[0.725rem] font-bold rounded shadow transition active:scale-[0.96] ${
                                       data?.macroEStopActive 
                                         ? "bg-zinc-800 text-zinc-550 border border-zinc-850 cursor-not-allowed"
                                         : "bg-rose-900/90 text-rose-300 border border-rose-600/40 hover:bg-rose-800"
@@ -3193,7 +3195,7 @@ export default function App() {
                                       setSelectedStock(stock);
                                       setNotesText(stock.master_notes || "");
                                     }}
-                                    className="px-2.5 py-1 text-[10px] font-bold rounded bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 transition"
+                                    className="px-2.5 py-1 text-[0.725rem] font-bold rounded bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 transition"
                                   >
                                     解盤
                                   </button>
@@ -3269,7 +3271,7 @@ export default function App() {
                                   <span className="text-base font-mono font-black text-white">{stock.stock_id}</span>
                                   <span className="text-xs font-bold text-zinc-400">{stock.stock_name}</span>
                                 </div>
-                                <div className="flex flex-wrap gap-1 mt-1 text-[10px] md:text-[11px] font-mono">
+                                <div className="flex flex-wrap gap-1 mt-1 text-[0.725rem] md:text-[0.8rem] font-mono">
                                   <span className="bg-zinc-900 text-zinc-400 px-1 py-0.5 rounded border border-zinc-800">
                                     {stock.category || "AI與權值"}
                                   </span>
@@ -3285,8 +3287,8 @@ export default function App() {
                               </div>
                               
                               <div className="text-right">
-                                <div className="text-[10px] md:text-[11px] font-mono text-zinc-550">V8050.0 全域檢核</div>
-                                <span className={`px-2 py-0.5 rounded font-mono font-black text-[11px] md:text-xs ${
+                                <div className="text-[0.725rem] md:text-[0.8rem] font-mono text-zinc-550">V8050.0 全域檢核</div>
+                                <span className={`px-2 py-0.5 rounded font-mono font-black text-[0.8rem] md:text-xs ${
                                   isSClass
                                     ? "bg-yellow-950 text-[#FFB74D] border border-yellow-500/60 shadow-[0_0_8px_rgba(229,168,35,0.3)] animate-pulse"
                                     : isAClass
@@ -3299,56 +3301,56 @@ export default function App() {
                             </div>
                             
                             {/* Technical Grid (Bloomberg style 2x2 chips) */}
-                            <div className="grid grid-cols-4 gap-1 text-center font-mono text-[11px] md:text-xs bg-zinc-950 p-1.5 rounded-lg border border-zinc-900">
+                            <div className="grid grid-cols-4 gap-1 text-center font-mono text-[0.8rem] md:text-xs bg-zinc-950 p-1.5 rounded-lg border border-zinc-900">
                               <div className="flex flex-col p-1 rounded bg-zinc-900/60">
-                                <span className="text-zinc-550 text-[10px] md:text-[11px]">RSI</span>
+                                <span className="text-zinc-550 text-[0.725rem] md:text-[0.8rem]">RSI</span>
                                 <span className="text-white font-bold">{rsiVal}</span>
                               </div>
                               <div className="flex flex-col p-1 rounded bg-zinc-900/60">
-                                <span className="text-zinc-550 text-[10px] md:text-[11px]">狀態</span>
+                                <span className="text-zinc-550 text-[0.725rem] md:text-[0.8rem]">狀態</span>
                                 <span className={`font-bold ${isSClass ? "text-[#f43f5e]" : "text-[#10b881]"}`}>{statusText}</span>
                               </div>
                               <div className="flex flex-col p-1 rounded bg-zinc-900/60">
-                                <span className="text-zinc-550 text-[10px] md:text-[11px]">動能</span>
+                                <span className="text-zinc-550 text-[0.725rem] md:text-[0.8rem]">動能</span>
                                 <span className={`font-bold ${isSClass ? "text-[#f43f5e]" : "text-[#10b881]"}`}>{momentumText}</span>
                               </div>
                               <div className="flex flex-col p-1 rounded bg-zinc-900/60">
-                                <span className="text-zinc-550 text-[10px] md:text-[11px]">量比</span>
+                                <span className="text-zinc-550 text-[0.725rem] md:text-[0.8rem]">量比</span>
                                 <span className="text-white font-bold">{volumeRatio}</span>
                               </div>
                             </div>
                             
                             {/* Live Headline/Notes */}
                             {stock.master_notes && (
-                              <div className="border-l-2 border-amber-400 pl-2 py-0.5 text-[11px] md:text-xs font-sans text-amber-300 italic truncate" title={stock.master_notes.split(" | ")[0]}>
+                              <div className="border-l-2 border-amber-400 pl-2 py-0.5 text-[0.8rem] md:text-xs font-sans text-amber-300 italic truncate" title={stock.master_notes.split(" | ")[0]}>
                                 📰 {stock.master_notes.split(" | ")[0]}
                               </div>
                             )}
                             
                             {/* Pricing Zones */}
-                            <div className="grid grid-cols-3 gap-1 text-center font-mono text-[10px] md:text-xs pt-1">
+                            <div className="grid grid-cols-3 gap-1 text-center font-mono text-[0.725rem] md:text-xs pt-1">
                               <div className="bg-zinc-900/60 p-1 rounded border border-zinc-850">
-                                <span className="text-zinc-550 text-[8px] md:text-[9px] block mb-0.5">現價建倉</span>
+                                <span className="text-zinc-550 text-[0.55rem] md:text-[0.65rem] block mb-0.5">現價建倉</span>
                                 <span className="text-[#FFB74D] font-extrabold">{stock.close_price.toFixed(1)}</span>
                               </div>
                               <div className="bg-zinc-900/60 p-1 rounded border border-zinc-850">
-                                <span className="text-zinc-555 text-[10px] md:text-[11px] block mb-0.5">波段支撐</span>
+                                <span className="text-zinc-555 text-[0.725rem] md:text-[0.8rem] block mb-0.5">波段支撐</span>
                                 <span className="text-[#10b881] font-extrabold">{stock.stop_loss_price ? stock.stop_loss_price.toFixed(1) : "-"}</span>
                               </div>
                               <div className="bg-zinc-900/60 p-1 rounded border border-zinc-850">
-                                <span className="text-zinc-555 text-[10px] md:text-[11px] block mb-0.5">波段壓力</span>
+                                <span className="text-zinc-555 text-[0.725rem] md:text-[0.8rem] block mb-0.5">波段壓力</span>
                                 <span className="text-[#f43f5e] font-extrabold">{stock.take_profit_half_price ? stock.take_profit_half_price.toFixed(1) : "-"}</span>
                               </div>
                             </div>
                             
                             {/* Execution Orders (Half-Kelly Pyramid or ROD limits) */}
                             {isSClass ? (
-                              <div className="bg-zinc-950 p-2 rounded-lg border border-amber-500/20 text-[10px] md:text-[11px] font-mono space-y-1">
+                              <div className="bg-zinc-950 p-2 rounded-lg border border-amber-500/20 text-[0.725rem] md:text-[0.8rem] font-mono space-y-1">
                                 <div className="flex justify-between items-center text-zinc-400">
                                   <span className="text-[#FFB74D] font-bold">🏆 S級 半凱利金字塔建倉 (5-3-2)</span>
                                   <span className="text-white font-bold">約 NT$ {orderAmount.toLocaleString()}</span>
                                 </div>
-                                <div className="grid grid-cols-3 gap-1 text-center text-[9px] md:text-[10px] pt-1 border-t border-zinc-900">
+                                <div className="grid grid-cols-3 gap-1 text-center text-[0.65rem] md:text-[0.725rem] pt-1 border-t border-zinc-900">
                                   <div className="bg-zinc-900/40 p-0.5 rounded">
                                     <span className="text-zinc-500 block">首批(50%)</span>
                                     <span className="text-[#f43f5e] font-bold">{p1} 股</span>
@@ -3364,7 +3366,7 @@ export default function App() {
                                 </div>
                               </div>
                             ) : (
-                              <div className="bg-zinc-950 p-2 rounded-lg border border-zinc-900 text-[10px] md:text-[11px] font-mono space-y-1">
+                              <div className="bg-zinc-950 p-2 rounded-lg border border-zinc-900 text-[0.725rem] md:text-[0.8rem] font-mono space-y-1">
                                 <div className="flex justify-between items-center text-zinc-400">
                                   <span className="text-[#FFB74D]">🎯 A級 ROD限價伏擊單 (20MA)</span>
                                   <span className="text-white font-bold">約 NT$ {orderAmount.toLocaleString()}</span>
@@ -3373,7 +3375,7 @@ export default function App() {
                                   <span className="text-zinc-550">伏擊價格區間:</span>
                                   <span className="text-[#10b881] font-extrabold">{(stock.close_price * 0.985).toFixed(1)} ~ {(stock.close_price * 0.995).toFixed(1)}</span>
                                 </div>
-                                <div className="flex justify-between items-center text-[9px] md:text-[10px] pt-1 border-t border-zinc-900 text-zinc-500">
+                                <div className="flex justify-between items-center text-[0.65rem] md:text-[0.725rem] pt-1 border-t border-zinc-900 text-zinc-500">
                                   <span>建議買入: <span className="text-[#FFB74D] font-bold">{orderShares} 股</span></span>
                                   <span>防呆停損: <span className="text-[#10b881] font-bold">{stock.stop_loss_price ? stock.stop_loss_price.toFixed(1) : "-"}</span></span>
                                 </div>
@@ -3385,7 +3387,7 @@ export default function App() {
                               <button
                                 onClick={() => openBuyModalForStock(stock)}
                                 disabled={data?.macroEStopActive}
-                                className={`flex-1 py-1.5 text-[11px] md:text-xs font-bold rounded shadow transition active:scale-[0.96] text-center ${
+                                className={`flex-1 py-1.5 text-[0.8rem] md:text-xs font-bold rounded shadow transition active:scale-[0.96] text-center ${
                                   data?.macroEStopActive 
                                     ? "bg-zinc-800 text-zinc-550 border border-zinc-850 cursor-not-allowed"
                                     : "bg-rose-950/90 text-rose-350 border border-rose-700/40 hover:bg-rose-900"
@@ -3398,7 +3400,7 @@ export default function App() {
                                   setSelectedStock(stock);
                                   setNotesText(stock.master_notes || "");
                                 }}
-                                className="px-2.5 py-1.5 text-[11px] md:text-xs font-bold rounded bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 transition"
+                                className="px-2.5 py-1.5 text-[0.8rem] md:text-xs font-bold rounded bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 transition"
                               >
                                 實戰解盤
                               </button>
@@ -3413,7 +3415,7 @@ export default function App() {
                   </div>
                 )}
 
-                <div className="p-3.5 bg-[#0e1117] border-t border-zinc-850 text-[10px] font-mono text-zinc-500 flex flex-col sm:flex-row justify-between items-center gap-2">
+                <div className="p-3.5 bg-[#0e1117] border-t border-zinc-850 text-[0.725rem] font-mono text-zinc-500 flex flex-col sm:flex-row justify-between items-center gap-2">
                   <span>精英戰線已過濾符合 {processedSignals.length} 檔標的</span>
                   <span>最後盤中洗價時間: {data ? data.scanTime : "讀取中..."}</span>
                 </div>
@@ -3433,7 +3435,7 @@ export default function App() {
                     <Award className="w-5 h-5 text-[#FFB74D]" />
                     <h3 className="font-bold text-white text-sm">獅王戰神實戰解盤與註記</h3>
                   </div>
-                  <span className="text-[10px] font-mono tracking-widest text-[#FFB74D] uppercase font-bold">
+                  <span className="text-[0.725rem] font-mono tracking-widest text-[#FFB74D] uppercase font-bold">
                     V2026.Max
                   </span>
                 </div>
@@ -3444,7 +3446,7 @@ export default function App() {
                   <div className="p-8 text-center text-zinc-550 font-mono">
                     <AlertTriangle className="w-10 h-10 text-amber-500/20 mx-auto mb-3" />
                     請點選左側表格中的股票代號
-                    <p className="text-[11px] text-zinc-650 mt-1">開啟該個股對沖與風控戰情面板</p>
+                    <p className="text-[0.8rem] text-zinc-650 mt-1">開啟該個股對沖與風控戰情面板</p>
                   </div>
                 )}
 
@@ -3468,7 +3470,7 @@ export default function App() {
                     };
 
                     return (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[10px] md:text-xs">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[0.725rem] md:text-xs">
                         {/* 輪 */}
                         <div className="bg-gradient-to-br from-rose-950/30 via-rose-950/10 to-zinc-950/60 border border-rose-500/20 hover:border-rose-500/40 rounded-xl p-3 hover:scale-[1.01] hover:shadow-lg transition-all duration-300 flex flex-col justify-between">
                           <div>
@@ -3476,7 +3478,7 @@ export default function App() {
                               <span className="w-5.5 h-5.5 rounded-full bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-rose-400 text-xs font-black shrink-0">輪</span>
                               <span className="text-rose-300 font-bold text-xs md:text-sm">板塊輪動訊號</span>
                             </div>
-                            <p className="text-zinc-400 leading-relaxed text-[10px] md:text-xs font-sans">
+                            <p className="text-zinc-400 leading-relaxed text-[0.725rem] md:text-xs font-sans">
                               PCB主升 (欣興/南電) 帶動 DRAM 與被動元件。
                               <span className="text-amber-400 font-bold ml-1">⚠️ 妖股噴出則散場</span>
                             </p>
@@ -3492,7 +3494,7 @@ export default function App() {
                                 key={s.id}
                                 type="button"
                                 onClick={() => selectStockById(s.id)}
-                                className="text-[9px] md:text-xs bg-rose-950/60 border border-rose-500/30 hover:bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded font-mono transition cursor-pointer shadow-sm shrink-0"
+                                className="text-[0.65rem] md:text-xs bg-rose-950/60 border border-rose-500/30 hover:bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded font-mono transition cursor-pointer shadow-sm shrink-0"
                               >
                                 {s.name} {s.id}
                               </button>
@@ -3507,13 +3509,13 @@ export default function App() {
                               <span className="w-5.5 h-5.5 rounded-full bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-indigo-450 text-xs font-black shrink-0">空</span>
                               <span className="text-indigo-300 font-bold text-xs md:text-sm">套牢與真空區</span>
                             </div>
-                            <p className="text-zinc-400 leading-relaxed text-[10px] md:text-xs font-sans">
+                            <p className="text-zinc-400 leading-relaxed text-[0.725rem] md:text-xs font-sans">
                               大量套牢區為泥沼禁地。<span className="text-emerald-400 font-bold">突破後即是強勢真空飆速路段</span>。
                             </p>
                           </div>
                           
                           <div className="mt-2 space-y-1">
-                            <div className="text-[9px] font-bold text-zinc-500">🔥 當前符合野放股（布林突破）：</div>
+                            <div className="text-[0.65rem] font-bold text-zinc-500">🔥 當前符合野放股（布林突破）：</div>
                             <div className="flex flex-wrap gap-1">
                               {wildReleaseStocks.length > 0 ? (
                                 wildReleaseStocks.map(s => (
@@ -3524,14 +3526,14 @@ export default function App() {
                                       setSelectedStock(s);
                                       setNotesText(s.master_notes || "");
                                     }}
-                                    className="inline-flex items-center gap-1 text-[9px] bg-[#E5A823]/10 hover:bg-[#E5A823]/25 border border-[#E5A823]/40 text-[#FFB74D] font-bold px-2 py-0.5 rounded-full font-mono transition cursor-pointer animate-pulse shadow-sm shrink-0"
+                                    className="inline-flex items-center gap-1 text-[0.65rem] bg-[#E5A823]/10 hover:bg-[#E5A823]/25 border border-[#E5A823]/40 text-[#FFB74D] font-bold px-2 py-0.5 rounded-full font-mono transition cursor-pointer animate-pulse shadow-sm shrink-0"
                                   >
                                     <span className="w-1.5 h-1.5 rounded-full bg-[#E5A823] shrink-0"></span>
                                     {s.stock_name} {s.stock_id}
                                   </button>
                                 ))
                               ) : (
-                                <span className="text-zinc-650 text-[9px] italic">當前無個股符合野放信號</span>
+                                <span className="text-zinc-650 text-[0.65rem] italic">當前無個股符合野放信號</span>
                               )}
                             </div>
                           </div>
@@ -3544,11 +3546,11 @@ export default function App() {
                               <span className="w-5.5 h-5.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-450 text-xs font-black shrink-0">殺</span>
                               <span className="text-emerald-300 font-bold text-xs md:text-sm">散戶多空反向指標</span>
                             </div>
-                            <p className="text-zinc-400 leading-relaxed text-[10px] md:text-xs font-sans">
+                            <p className="text-zinc-400 leading-relaxed text-[0.725rem] md:text-xs font-sans">
                               小台散戶多空比為<span className="text-emerald-400 font-bold">反向指標</span>。散戶越做空，主力越拉抬。
                             </p>
                           </div>
-                          <div className="mt-2 bg-zinc-950/70 rounded-lg p-2 text-[9px] md:text-xs font-mono border border-zinc-900 flex justify-between items-center gap-2">
+                          <div className="mt-2 bg-zinc-950/70 rounded-lg p-2 text-[0.65rem] md:text-xs font-mono border border-zinc-900 flex justify-between items-center gap-2">
                             <div>
                               <span className="text-zinc-550 block">散戶多空比:</span>
                               <span className="text-white font-bold">{marketData?.retailBullBear || "0.82 (偏空)"}</span>
@@ -3568,11 +3570,11 @@ export default function App() {
                               <span className="w-5.5 h-5.5 rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-450 text-xs font-black shrink-0">早</span>
                               <span className="text-amber-300 font-bold text-xs md:text-sm">利多出盡訊號</span>
                             </div>
-                            <p className="text-zinc-400 leading-relaxed text-[10px] md:text-xs font-sans">
+                            <p className="text-zinc-400 leading-relaxed text-[0.725rem] md:text-xs font-sans">
                               跟單大老闆採購規律。<span className="text-amber-400 font-bold">媒體見報頻傳營收新高即是鎖利時機</span>，提前清倉不追高。
                             </p>
                           </div>
-                          <div className="mt-2 bg-zinc-950/70 rounded-lg p-2 text-[9px] md:text-xs font-mono border border-zinc-900">
+                          <div className="mt-2 bg-zinc-950/70 rounded-lg p-2 text-[0.65rem] md:text-xs font-mono border border-zinc-900">
                             <span className="text-amber-400 font-bold">⚠️ 防守策略：</span>
                             <span className="text-zinc-300 ml-1">媒體見報時減碼 50%↓ 鎖利</span>
                           </div>
@@ -3583,7 +3585,7 @@ export default function App() {
                 </div>
 
                   {/* 市場即時總觀 */}
-                  <div className="mt-3 bg-zinc-950/60 border border-zinc-800/60 rounded-lg p-3 text-[9px] font-mono">
+                  <div className="mt-3 bg-zinc-950/60 border border-zinc-800/60 rounded-lg p-3 text-[0.65rem] font-mono">
                     <div className="text-zinc-400 font-bold mb-2 flex items-center gap-1.5">
                       <Zap className="w-3 h-3 text-[#FFB74D]" />
                       即時總觀: 當前市場信號研判
@@ -3622,7 +3624,7 @@ export default function App() {
                         </span>
                       </div>
                     </div>
-                    <div className="mt-2 grid grid-cols-2 gap-1.5 text-[9px] font-mono">
+                    <div className="mt-2 grid grid-cols-2 gap-1.5 text-[0.65rem] font-mono">
                       <div className="bg-zinc-950/60 rounded p-1.5 border border-zinc-900">
                         <div className="text-zinc-500">景氣信號燈</div>
                         <div className={`font-bold mt-0.5 ${(marketData?.businessCycleLight||'黃燈').includes('紅') ? 'text-rose-400' : (marketData?.businessCycleLight||'黃燈').includes('藍') ? 'text-sky-400' : 'text-amber-400'}`}>
@@ -3644,7 +3646,7 @@ export default function App() {
                         <div className="text-emerald-300 font-bold mt-0.5 truncate">{(marketData?.rotationStage || 'PCB主升').split('→')[0].trim()}</div>
                       </div>
                     </div>
-                    <div className="mt-2 pt-2 border-t border-zinc-800/50 text-[8px] text-zinc-600">
+                    <div className="mt-2 pt-2 border-t border-zinc-800/50 text-[0.55rem] text-zinc-600">
                       🕐 更新: {marketData?.lastUpdate || new Date().toLocaleTimeString('zh-TW', {hour:'2-digit', minute:'2-digit'})}
                     </div>
                   </div>
@@ -3663,7 +3665,7 @@ export default function App() {
             {/* Real-time macro data bar */}
             {marketData && (
               <div className="premium-card rounded-xl px-5 py-3 shadow-lg">
-                <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[10px] font-mono">
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[0.725rem] font-mono">
                   <div className="flex items-center gap-1.5">
                     <span className="text-zinc-500">📡 台指VIX:</span>
                     <span className={`font-bold ${(marketData.twVix||16)<20?'text-emerald-400':(marketData.twVix||16)<30?'text-amber-400':'text-rose-400'}`}>
@@ -3713,7 +3715,7 @@ export default function App() {
               <div className="premium-card rounded-xl p-5 shadow-lg relative overflow-hidden group">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="text-[10px] text-zinc-500 font-black tracking-wider uppercase font-mono">綜合市場情緒指標</h3>
+                    <h3 className="text-[0.725rem] text-zinc-500 font-black tracking-wider uppercase font-mono">綜合市場情緒指標</h3>
                     <div className={`text-2xl font-black mt-2 flex items-center gap-2 ${
                       summary.overall.sentimentColor === "red" || summary.overall.sentimentColor === "text-[#f43f5e]" || summary.overall.sentimentColor?.includes("rose")
                         ? "text-[#f43f5e]"
@@ -3731,7 +3733,7 @@ export default function App() {
                 </div>
                 {/* Sentiment Meter Bar */}
                 <div className="mt-5">
-                  <div className="flex justify-between text-[10px] text-zinc-500 font-mono mb-1 font-semibold">
+                  <div className="flex justify-between text-[0.725rem] text-zinc-500 font-mono mb-1 font-semibold">
                     <span>極度恐慌 (綠燈防禦)</span>
                     <span>極度樂觀 (紅燈特快)</span>
                   </div>
@@ -3746,7 +3748,7 @@ export default function App() {
                     />
                   </div>
                 </div>
-                <div className="mt-4 p-2 rounded bg-zinc-950/40 border border-zinc-900/60 flex items-center gap-2 text-[10px] text-zinc-400 font-sans leading-relaxed">
+                <div className="mt-4 p-2 rounded bg-zinc-950/40 border border-zinc-900/60 flex items-center gap-2 text-[0.725rem] text-zinc-400 font-sans leading-relaxed">
                   <Cpu className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
                   <span>基於 86 檔高 Beta 標的評分分佈與今日平均漲跌幅的動態情緒矩陣。</span>
                 </div>
@@ -3757,13 +3759,13 @@ export default function App() {
               <div className="premium-card rounded-xl p-5 shadow-lg relative overflow-hidden group">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="text-[10px] text-zinc-500 font-black tracking-wider uppercase font-mono">VIX 恐慌指數歷史趨勢條</h3>
+                    <h3 className="text-[0.725rem] text-zinc-500 font-black tracking-wider uppercase font-mono">VIX 恐慌指數歷史趨勢條</h3>
                     <div className="text-2xl font-mono font-black text-white mt-2 flex items-baseline gap-1">
                       {summary.overall.vix?.toFixed(2)}
                       <span className="text-xs text-zinc-500 font-sans font-normal">單位</span>
                     </div>
                   </div>
-                  <span className={`px-2.5 py-1 text-[10px] font-mono font-bold rounded ${
+                  <span className={`px-2.5 py-1 text-[0.725rem] font-mono font-bold rounded ${
                     summary.overall.vix < 20 
                       ? "bg-emerald-950/70 border border-emerald-500/40 text-emerald-400" 
                       : summary.overall.vix < 30 
@@ -3775,7 +3777,7 @@ export default function App() {
                 </div>
                 {/* VIX Bar */}
                 <div className="mt-5">
-                  <div className="flex justify-between text-[10px] text-zinc-500 font-mono mb-1 font-semibold">
+                  <div className="flex justify-between text-[0.725rem] text-zinc-500 font-mono mb-1 font-semibold">
                     <span>低波動 (VIX 10)</span>
                     <span>高波動 (VIX 40)</span>
                   </div>
@@ -3792,7 +3794,7 @@ export default function App() {
                     />
                   </div>
                 </div>
-                <div className="mt-4 p-2 rounded bg-zinc-950/40 border border-zinc-900/60 flex items-center gap-2 text-[10px] text-zinc-400 font-sans leading-relaxed">
+                <div className="mt-4 p-2 rounded bg-zinc-950/40 border border-zinc-900/60 flex items-center gap-2 text-[0.725rem] text-zinc-400 font-sans leading-relaxed">
                   <ShieldAlert className="w-3.5 h-3.5 text-[#FFB74D] shrink-0" />
                   <span>{summary.overall.vix > 30 ? "已觸發 Macro E-Stop 緊急避險，暫停一切買進！" : "宏觀安全閥門正常，低波動水位，多頭策略解鎖中。"}</span>
                 </div>
@@ -3803,13 +3805,13 @@ export default function App() {
               <div className="premium-card rounded-xl p-5 shadow-lg relative overflow-hidden group">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="text-[10px] text-zinc-500 font-black tracking-wider uppercase font-mono">台積電 2330 月線生命線儀表板</h3>
+                    <h3 className="text-[0.725rem] text-zinc-500 font-black tracking-wider uppercase font-mono">台積電 2330 月線生命線儀表板</h3>
                     <div className="text-2xl font-mono font-black text-white mt-2 flex items-baseline gap-1">
                       {data ? data.tsmcPrice : 1045.0}
                       <span className="text-xs text-zinc-500 font-sans font-normal">元</span>
                     </div>
                   </div>
-                  <span className={`px-2.5 py-1 text-[10px] font-mono font-bold rounded ${
+                  <span className={`px-2.5 py-1 text-[0.725rem] font-mono font-bold rounded ${
                     data && data.tsmcPrice >= data.tsmcMa20Value 
                       ? "bg-rose-955 border border-rose-500/40 text-rose-400" 
                       : "bg-emerald-950/70 border border-emerald-500/40 text-emerald-400"
@@ -3819,7 +3821,7 @@ export default function App() {
                 </div>
                 {/* Comparison Bar */}
                 <div className="mt-5">
-                  <div className="flex justify-between text-[10px] text-zinc-500 font-mono mb-1 font-semibold">
+                  <div className="flex justify-between text-[0.725rem] text-zinc-500 font-mono mb-1 font-semibold">
                     <span>月線水位: {data ? data.tsmcMa20Value : 1030.0} 元</span>
                     <span>現價 vs 20MA</span>
                   </div>
@@ -3832,7 +3834,7 @@ export default function App() {
                     />
                   </div>
                 </div>
-                <div className="mt-4 p-2 rounded bg-zinc-950/40 border border-zinc-900/60 flex items-center gap-2 text-[10px] text-zinc-400 font-sans leading-relaxed">
+                <div className="mt-4 p-2 rounded bg-zinc-950/40 border border-zinc-900/60 flex items-center gap-2 text-[0.725rem] text-zinc-400 font-sans leading-relaxed">
                   <Zap className="w-3.5 h-3.5 text-amber-400 shrink-0 animate-pulse" />
                   <span>{data && data.tsmcPrice >= data.tsmcMa20Value 
                     ? "台積電生命線買點開放，全面解除大盤多頭限制。" 
@@ -3858,19 +3860,19 @@ export default function App() {
                 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-zinc-950/70 p-4 rounded-xl border border-zinc-900 shadow-inner shrink-0">
                   <div className="text-center px-2">
-                    <span className="text-[9px] text-zinc-500 font-mono block">累計對沖淨值回報</span>
+                    <span className="text-[0.65rem] text-zinc-500 font-mono block">累計對沖淨值回報</span>
                     <span className="text-base font-mono font-black text-[#f43f5e] block mt-0.5 shadow-[0_0_12px_rgba(244,63,94,0.15)] animate-pulse-rose">+34.80%</span>
                   </div>
                   <div className="text-center border-l border-zinc-850 px-2 pl-4">
-                    <span className="text-[9px] text-zinc-500 font-mono block">防禦型最大回撤</span>
+                    <span className="text-[0.65rem] text-zinc-500 font-mono block">防禦型最大回撤</span>
                     <span className="text-base font-mono font-black text-[#10b881] block mt-0.5">-4.20%</span>
                   </div>
                   <div className="text-center border-l border-zinc-850 px-2 pl-4">
-                    <span className="text-[9px] text-zinc-500 font-mono block">夏普比率 Sharpe</span>
+                    <span className="text-[0.65rem] text-zinc-500 font-mono block">夏普比率 Sharpe</span>
                     <span className="text-base font-mono font-black text-[#FFB74D] block mt-0.5 font-bold">2.84</span>
                   </div>
                   <div className="text-center border-l border-zinc-850 px-2 pl-4">
-                    <span className="text-[9px] text-zinc-500 font-mono block">策略對沖勝率</span>
+                    <span className="text-[0.65rem] text-zinc-500 font-mono block">策略對沖勝率</span>
                     <span className="text-base font-mono font-black text-white block mt-0.5">78.50%</span>
                   </div>
                 </div>
@@ -4009,7 +4011,7 @@ export default function App() {
                   雙因子立體雷達：背景區塊深淺呈現<strong>戰力分數 (金色外框越亮越強)</strong>，文字高亮呈現<strong>類股平均漲跌幅 (紅漲綠跌)</strong>。
                 </p>
               </div>
-              <span className="text-[10px] font-mono text-zinc-500">
+              <span className="text-[0.725rem] font-mono text-zinc-500">
                 對沖週期: 今日實時盤中
               </span>
             </div>
@@ -4037,14 +4039,14 @@ export default function App() {
                     <div>
                       <div className="flex justify-between items-center">
                         <span className="font-bold text-white text-sm tracking-tight">{stat.category}</span>
-                        <span className="text-[10px] text-zinc-500 font-mono font-bold bg-zinc-950 px-2 py-0.5 rounded">
+                        <span className="text-[0.725rem] text-zinc-500 font-mono font-bold bg-zinc-950 px-2 py-0.5 rounded">
                           {stat.count} 檔
                         </span>
                       </div>
                       
                       {/* Technical Score Indicator with Golden Glow */}
                       <div className="mt-4">
-                        <div className="flex justify-between text-[10px] text-zinc-500 font-mono mb-1.5 items-baseline">
+                        <div className="flex justify-between text-[0.725rem] text-zinc-500 font-mono mb-1.5 items-baseline">
                           <span>平均戰力評分</span>
                           <span className="text-[#FFB74D] font-bold text-xs">{stat.avgScore} / 40</span>
                         </div>
@@ -4059,7 +4061,7 @@ export default function App() {
 
                     {/* Return Percentage Indicator (Taiwan Colors: Red = Up, Green = Down) */}
                     <div className="flex items-center justify-between border-t border-zinc-850/60 pt-3 mt-3">
-                      <span className="text-[10px] text-zinc-500">今日均值漲跌</span>
+                      <span className="text-[0.725rem] text-zinc-500">今日均值漲跌</span>
                       <span className={`text-base font-mono font-black tracking-tight flex items-center gap-1 ${
                         stat.avgChangePct >= 0 
                           ? "text-[#f43f5e] drop-shadow-[0_0_6px_rgba(244,63,94,0.15)]" 
@@ -4082,10 +4084,10 @@ export default function App() {
                     <TrendingUp className="w-5 h-5 text-[#FFB74D] shrink-0" />
                     <div>
                       <h4 className="text-white text-xs font-bold font-sans">三大法人全月累計對沖籌碼資金觀察牆</h4>
-                      <p className="text-[9px] text-zinc-500 font-mono mt-0.5">法人月度資金流向監控</p>
+                      <p className="text-[0.65rem] text-zinc-500 font-mono mt-0.5">法人月度資金流向監控</p>
                     </div>
                   </div>
-                  <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded font-bold">
+                  <span className="text-[0.725rem] font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded font-bold">
                     穩定度: 94%
                   </span>
                 </div>
@@ -4093,7 +4095,7 @@ export default function App() {
                 <div className="space-y-4 text-xs font-mono">
                   {/* Foreign Institutional Flow */}
                   <div>
-                    <div className="flex justify-between items-center mb-1 text-[11px]">
+                    <div className="flex justify-between items-center mb-1 text-[0.8rem]">
                       <span className="text-zinc-400 font-sans">外資累計對沖量 (全月)</span>
                       <span className="text-[#f43f5e] font-bold">+1,245.8 億元</span>
                     </div>
@@ -4105,7 +4107,7 @@ export default function App() {
 
                   {/* Trust Institutional Flow */}
                   <div>
-                    <div className="flex justify-between items-center mb-1 text-[11px]">
+                    <div className="flex justify-between items-center mb-1 text-[0.8rem]">
                       <span className="text-zinc-400 font-sans">投信累計鎖碼量 (當日)</span>
                       <span className={`font-bold ${(marketData?.trustNet || 45) > 0 ? 'text-[#f43f5e]' : 'text-[#10b881]'}`}>
                         {(marketData?.trustNet || 45) > 0 ? '+' : ''}{(marketData?.trustNet || 45).toFixed(1)} 億元
@@ -4122,7 +4124,7 @@ export default function App() {
 
                   {/* Dealer Flow */}
                   <div>
-                    <div className="flex justify-between items-center mb-1 text-[11px]">
+                    <div className="flex justify-between items-center mb-1 text-[0.8rem]">
                       <span className="text-zinc-400 font-sans">自營商對沖避險 (當日)</span>
                       <span className={`font-bold ${(marketData?.dealerNet || -12) > 0 ? 'text-[#f43f5e]' : 'text-[#10b881]'}`}>
                         {(marketData?.dealerNet || -12) > 0 ? '+' : ''}{(marketData?.dealerNet || -12).toFixed(1)} 億元
@@ -4138,7 +4140,7 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="mt-4 p-2.5 rounded bg-zinc-950/70 border border-zinc-900/80 flex items-start gap-2 text-[10px] text-zinc-400 font-sans leading-relaxed">
+                <div className="mt-4 p-2.5 rounded bg-zinc-950/70 border border-zinc-900/80 flex items-start gap-2 text-[0.725rem] text-zinc-400 font-sans leading-relaxed">
                   <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
                   <span>外資及投信雙星匯聚買超鎖碼，自營商進行權利金對沖，籌碼結構健康度高，有利多頭波段拉升。</span>
                 </div>
@@ -4152,10 +4154,10 @@ export default function App() {
                     <ShieldAlert className="w-5 h-5 text-[#FFB74D] shrink-0" />
                     <div>
                       <h4 className="text-white text-xs font-bold font-sans">全自動對沖風控雷達訊號檢索區</h4>
-                      <p className="text-[9px] text-zinc-500 font-mono mt-0.5">自動對沖與風控監控</p>
+                      <p className="text-[0.65rem] text-zinc-500 font-mono mt-0.5">自動對沖與風控監控</p>
                     </div>
                   </div>
-                  <span className="text-[10px] font-mono text-rose-400 bg-rose-950/60 border border-rose-500/30 px-2 py-0.5 rounded font-bold animate-pulse">
+                  <span className="text-[0.725rem] font-mono text-rose-400 bg-rose-950/60 border border-rose-500/30 px-2 py-0.5 rounded font-bold animate-pulse">
                     安全閥門: 正常
                   </span>
                 </div>
@@ -4187,7 +4189,7 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="mt-4 p-2.5 rounded bg-zinc-950/70 border border-zinc-900/80 flex items-start gap-2 text-[10px] text-zinc-400 font-sans leading-relaxed">
+                <div className="mt-4 p-2.5 rounded bg-zinc-950/70 border border-zinc-900/80 flex items-start gap-2 text-[0.725rem] text-zinc-400 font-sans leading-relaxed">
                   <ShieldAlert className="w-3.5 h-3.5 text-[#FFB74D] shrink-0 mt-0.5" />
                   <span>生命線支撐於 1030 元上方（台積電安全水位），系統建議採取半凱利金字塔防守對沖建倉策略。</span>
                 </div>
@@ -4201,16 +4203,16 @@ export default function App() {
                     <Briefcase className="w-5 h-5 text-[#FFB74D] shrink-0" />
                     <div>
                       <h4 className="text-white text-xs font-bold font-sans">操盤手金字塔凱利資金分配比重計算器</h4>
-                      <p className="text-[9px] text-zinc-500 font-mono mt-0.5">金字塔凱利槓桿矩陣</p>
+                      <p className="text-[0.65rem] text-zinc-500 font-mono mt-0.5">金字塔凱利槓桿矩陣</p>
                     </div>
                   </div>
-                  <span className="text-[10px] font-mono text-[#FFB74D] bg-amber-950/60 border border-amber-500/30 px-2 py-0.5 rounded font-bold">
+                  <span className="text-[0.725rem] font-mono text-[#FFB74D] bg-amber-950/60 border border-amber-500/30 px-2 py-0.5 rounded font-bold">
                     利潤因子: 2.84
                   </span>
                 </div>
 
-                <div className="space-y-2 text-[11px] font-mono">
-                  <div className="grid grid-cols-3 text-zinc-550 font-bold border-b border-zinc-900 pb-1 text-[10px]">
+                <div className="space-y-2 text-[0.8rem] font-mono">
+                  <div className="grid grid-cols-3 text-zinc-550 font-bold border-b border-zinc-900 pb-1 text-[0.725rem]">
                     <div>梯隊別</div>
                     <div className="text-center">凱利配比</div>
                     <div className="text-right">防守止損線</div>
@@ -4234,14 +4236,14 @@ export default function App() {
                     <div className="text-right text-zinc-500 font-sans">VIX &gt; 28 停損</div>
                   </div>
 
-                  <div className="grid grid-cols-3 text-zinc-550 py-1 items-center text-[10px]">
+                  <div className="grid grid-cols-3 text-zinc-550 py-1 items-center text-[0.725rem]">
                     <div className="font-sans">剩餘預備金</div>
                     <div className="text-center font-bold">35% 儲備</div>
                     <div className="text-right text-sky-400 font-sans">避險鎖利啟動</div>
                   </div>
                 </div>
 
-                <div className="mt-4 p-2.5 rounded bg-zinc-950/70 border border-zinc-900/80 flex items-start gap-2 text-[10px] text-zinc-400 font-sans leading-relaxed">
+                <div className="mt-4 p-2.5 rounded bg-zinc-950/70 border border-zinc-900/80 flex items-start gap-2 text-[0.725rem] text-zinc-400 font-sans leading-relaxed">
                   <Award className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
                   <span>遵循半凱利資金配比，核心倉位控制於35%以內，當個股戰力達38分以上時啟動梯隊加碼防線。</span>
                 </div>
@@ -4258,16 +4260,16 @@ export default function App() {
                     <TrendingUp className="w-5 h-5 text-amber-400 shrink-0" />
                     <div>
                       <h4 className="text-white text-xs font-bold font-mono">產業板塊戰力資金流向熱力矩陣</h4>
-                      <p className="text-[9px] text-zinc-550 font-mono mt-0.5">產業板塊資金流向矩陣</p>
+                      <p className="text-[0.65rem] text-zinc-550 font-mono mt-0.5">產業板塊資金流向矩陣</p>
                     </div>
                   </div>
-                  <span className="text-[9px] font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded font-bold">
+                  <span className="text-[0.65rem] font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded font-bold">
                     主力解封
                   </span>
                 </div>
                 
                 <div className="space-y-2 text-xs font-mono">
-                  <div className="grid grid-cols-3 text-zinc-550 border-b border-zinc-900 pb-1 text-[10px] font-bold">
+                  <div className="grid grid-cols-3 text-zinc-550 border-b border-zinc-900 pb-1 text-[0.725rem] font-bold">
                     <div>產業名稱</div>
                     <div className="text-center">單日大單流入</div>
                     <div className="text-right">大戶買超佔比</div>
@@ -4302,16 +4304,16 @@ export default function App() {
                     <ShieldAlert className="w-5 h-5 text-indigo-400 shrink-0" />
                     <div>
                       <h4 className="text-white text-xs font-bold font-mono">波動率風險相關係數偏離矩陣</h4>
-                      <p className="text-[9px] text-zinc-550 font-mono mt-0.5">波動率風險與 BETA 偏差矩陣</p>
+                      <p className="text-[0.65rem] text-zinc-550 font-mono mt-0.5">波動率風險與 BETA 偏差矩陣</p>
                     </div>
                   </div>
-                  <span className="text-[9px] font-mono text-sky-400 bg-sky-950/60 border border-sky-500/30 px-2 py-0.5 rounded font-bold">
+                  <span className="text-[0.65rem] font-mono text-sky-400 bg-sky-950/60 border border-sky-500/30 px-2 py-0.5 rounded font-bold">
                     相關係數: 0.82
                   </span>
                 </div>
                 
                 <div className="space-y-2 text-xs font-mono">
-                  <div className="grid grid-cols-3 text-zinc-550 border-b border-zinc-900 pb-1 text-[10px] font-bold">
+                  <div className="grid grid-cols-3 text-zinc-550 border-b border-zinc-900 pb-1 text-[0.725rem] font-bold">
                     <div>標的種類</div>
                     <div className="text-center">與VIX相關性</div>
                     <div className="text-right">系統性Beta偏離</div>
@@ -4365,7 +4367,7 @@ export default function App() {
                         <TrendingUp className="w-5 h-5 text-[#FFB74D]" />
                         <div>
                           <h3 className="font-bold text-white text-sm">{selectedCategory} 板塊成份股監控雷達</h3>
-                          <p className="text-[9px] text-zinc-550 font-mono mt-0.5">成份股監控雷達</p>
+                          <p className="text-[0.65rem] text-zinc-550 font-mono mt-0.5">成份股監控雷達</p>
                         </div>
                       </div>
                       <button
@@ -4393,7 +4395,7 @@ export default function App() {
                             ['精英/多頭', `${elite}/${bullCount}`, 'text-amber-300'],
                           ].map(([label, val, color]) => (
                             <div key={label} className="bg-zinc-950/60 rounded-lg border border-zinc-800 p-2.5 text-center">
-                              <div className="text-[9px] text-zinc-500 font-mono">{label}</div>
+                              <div className="text-[0.65rem] text-zinc-500 font-mono">{label}</div>
                               <div className={`text-sm font-bold font-mono mt-0.5 ${color}`}>{val}</div>
                             </div>
                           ))}
@@ -4406,7 +4408,7 @@ export default function App() {
                       <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse font-mono text-xs">
                           <thead>
-                            <tr className="border-b border-zinc-850 text-zinc-550 font-sans text-[10px] uppercase font-bold tracking-wider pb-2">
+                            <tr className="border-b border-zinc-850 text-zinc-550 font-sans text-[0.725rem] uppercase font-bold tracking-wider pb-2">
                               <th className="py-2 px-3">股票代號</th>
                               <th className="py-2 px-3">公司名稱</th>
                               <th className="py-2 px-3 text-right">現價</th>
@@ -4448,7 +4450,7 @@ export default function App() {
                                     </td>
                                     <td className="py-2.5 px-3 text-right text-zinc-400">{stock.per?.toFixed(1) || '-'}x</td>
                                     <td className="py-2.5 px-3 text-right font-sans">
-                                      <span className={`text-[10px] px-2 py-0.5 rounded font-bold border ${
+                                      <span className={`text-[0.725rem] px-2 py-0.5 rounded font-bold border ${
                                         stock.action_signal?.includes("買進") || stock.action_signal?.includes("多")
                                           ? "bg-rose-950/60 border-rose-500/30 text-rose-400"
                                           : stock.action_signal?.includes("隔離") || stock.action_signal?.includes("停損")
@@ -4465,7 +4467,7 @@ export default function App() {
                         </table>
                       </div>
                     </div>
-                    <div className="p-3.5 bg-zinc-900/50 border-t border-zinc-850/60 text-[10px] text-zinc-550 flex justify-between items-center font-sans">
+                    <div className="p-3.5 bg-zinc-900/50 border-t border-zinc-850/60 text-[0.725rem] text-zinc-550 flex justify-between items-center font-sans">
                       <span>💡 提示：點擊任何股票代碼即可直接開啟該個股的對沖與避險詳情面板。</span>
                       <span className="font-mono text-zinc-650">計: {(data?.signals || INITIAL_STOCKS).filter((s: any) => s.category === selectedCategory).length} 檔</span>
                     </div>
@@ -4481,27 +4483,27 @@ export default function App() {
               </h4>
               <div className="grid grid-cols-2 md:grid-cols-6 gap-4 font-mono text-center text-xs">
                 <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-900">
-                  <div className="text-zinc-550 text-[10px] font-bold">高 Beta 總檔數</div>
+                  <div className="text-zinc-550 text-[0.725rem] font-bold">高 Beta 總檔數</div>
                   <div className="text-lg font-bold text-white mt-1 font-mono">{summary.overall.totalCount} 檔</div>
                 </div>
                 <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-900">
-                  <div className="text-[#f43f5e] text-[10px] font-bold">🔴 多頭信號</div>
+                  <div className="text-[#f43f5e] text-[0.725rem] font-bold">🔴 多頭信號</div>
                   <div className="text-lg font-bold text-[#f43f5e] mt-1 font-mono">{summary.overall.multiCount}</div>
                 </div>
                 <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-900">
-                  <div className="text-[#10b881] text-[10px] font-bold">🟢 空頭信號</div>
+                  <div className="text-[#10b881] text-[0.725rem] font-bold">🟢 空頭信號</div>
                   <div className="text-lg font-bold text-[#10b881] mt-1 font-mono">{summary.overall.emptyCount}</div>
                 </div>
                 <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-900">
-                  <div className="text-zinc-400 text-[10px]">⚪ 觀望持倉</div>
+                  <div className="text-zinc-400 text-[0.725rem]">⚪ 觀望持倉</div>
                   <div className="text-lg font-bold text-zinc-300 mt-1 font-mono">{summary.overall.holdCount}</div>
                 </div>
                 <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-900">
-                  <div className="text-[#10b881] text-[10px] font-bold">🟢 物理隔離</div>
+                  <div className="text-[#10b881] text-[0.725rem] font-bold">🟢 物理隔離</div>
                   <div className="text-lg font-bold text-[#10b881] mt-1 font-mono">{summary.overall.isoCount}</div>
                 </div>
                 <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-900">
-                  <div className="text-[#FFD54F] text-[10px] font-bold">精英比率 (⭐&ge;38)</div>
+                  <div className="text-[#FFD54F] text-[0.725rem] font-bold">精英比率 (⭐&ge;38)</div>
                   <div className="text-lg font-bold text-[#FFD54F] mt-1 font-mono">
                     {data && data.signals ? Math.round((data.signals.filter(s => s.score >= 38).length / data.signals.length) * 100) : 0}%
                   </div>
@@ -4524,7 +4526,7 @@ export default function App() {
 
                 {/* Categories Multiselect */}
                 <div className="space-y-2">
-                  <label className="text-[11px] text-zinc-450 font-bold uppercase tracking-wider font-mono">1. 權重類股過濾</label>
+                  <label className="text-[0.8rem] text-zinc-450 font-bold uppercase tracking-wider font-mono">1. 權重類股過濾</label>
                   <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto p-2 bg-zinc-950 rounded border border-zinc-900">
                     {screenerCategories.map(cat => {
                       const active = selectedScreenerCategories.includes(cat);
@@ -4538,7 +4540,7 @@ export default function App() {
                               setSelectedScreenerCategories([...selectedScreenerCategories, cat]);
                             }
                           }}
-                          className={`text-[9px] font-bold px-2 py-1 rounded transition ${
+                          className={`text-[0.65rem] font-bold px-2 py-1 rounded transition ${
                             active
                               ? "bg-amber-950/70 border border-amber-600/50 text-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.1)]"
                               : "bg-zinc-900 text-zinc-550 border border-transparent hover:text-zinc-350"
@@ -4549,7 +4551,7 @@ export default function App() {
                       );
                     })}
                   </div>
-                  <div className="flex justify-end gap-2 text-[9px] font-mono font-bold mt-1">
+                  <div className="flex justify-end gap-2 text-[0.65rem] font-mono font-bold mt-1">
                     <button 
                       onClick={() => setSelectedScreenerCategories(screenerCategories)}
                       className="text-[#FFB74D] hover:underline"
@@ -4568,7 +4570,7 @@ export default function App() {
 
                 {/* Score slider */}
                 <div className="space-y-2">
-                  <div className="flex justify-between text-[11px] font-bold font-mono">
+                  <div className="flex justify-between text-[0.8rem] font-bold font-mono">
                     <span className="text-zinc-400">2. 戰力分數下限限制</span>
                     <span className="text-[#FFB74D] font-bold">{screenerMinScore} / 40</span>
                   </div>
@@ -4580,7 +4582,7 @@ export default function App() {
                     onChange={(e) => setScreenerMinScore(parseInt(e.target.value))}
                     className="w-full accent-[#E5A823] cursor-pointer bg-zinc-950 rounded h-1"
                   />
-                  <div className="flex justify-between text-[8px] font-mono text-zinc-550">
+                  <div className="flex justify-between text-[0.55rem] font-mono text-zinc-550">
                     <span>Score &ge; 10</span>
                     <span className="text-amber-500 font-black">Score &ge; 38 (精英模式)</span>
                     <span>Score &ge; 40</span>
@@ -4589,7 +4591,7 @@ export default function App() {
 
                 {/* Price change range selector */}
                 <div className="space-y-2">
-                  <label className="text-[11px] text-zinc-450 font-bold uppercase tracking-wider font-mono">3. 今日漲跌幅區間</label>
+                  <label className="text-[0.8rem] text-zinc-450 font-bold uppercase tracking-wider font-mono">3. 今日漲跌幅區間</label>
                   <select
                     value={screenerChangeRange}
                     onChange={(e) => setScreenerChangeRange(e.target.value)}
@@ -4605,7 +4607,7 @@ export default function App() {
 
                 {/* PER Slider */}
                 <div className="space-y-2">
-                  <div className="flex justify-between text-[11px] font-bold font-mono">
+                  <div className="flex justify-between text-[0.8rem] font-bold font-mono">
                     <span className="text-zinc-400">4. 本益比上限限制</span>
                     <span className="text-[#FFB74D] font-bold">PER &le; {screenerMaxPer} 倍</span>
                   </div>
@@ -4617,7 +4619,7 @@ export default function App() {
                     onChange={(e) => setScreenerMaxPer(parseInt(e.target.value))}
                     className="w-full accent-[#E5A823] cursor-pointer bg-zinc-950 rounded h-1"
                   />
-                  <div className="flex justify-between text-[8px] font-mono text-zinc-550">
+                  <div className="flex justify-between text-[0.55rem] font-mono text-zinc-550">
                     <span>10倍</span>
                     <span>100倍</span>
                   </div>
@@ -4626,7 +4628,7 @@ export default function App() {
                 {/* Institutional Net buy days */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider font-mono block">外資連買 (天)</label>
+                    <label className="text-[0.725rem] text-zinc-500 font-bold uppercase tracking-wider font-mono block">外資連買 (天)</label>
                     <input
                       type="number"
                       min={-10}
@@ -4637,7 +4639,7 @@ export default function App() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider font-mono block">投信連買 (天)</label>
+                    <label className="text-[0.725rem] text-zinc-500 font-bold uppercase tracking-wider font-mono block">投信連買 (天)</label>
                     <input
                       type="number"
                       min={-8}
@@ -4687,7 +4689,7 @@ export default function App() {
                   return (
                     <div className="space-y-4 text-xs font-mono">
                       <div className="space-y-1.5">
-                        <div className="flex justify-between text-[11px] font-semibold">
+                        <div className="flex justify-between text-[0.8rem] font-semibold">
                           <span className="text-zinc-450">外資鎖碼比率 ({withForeignBuy}/{total})</span>
                           <span className="text-[#FFB74D] font-bold">{foreignPct}%</span>
                         </div>
@@ -4700,7 +4702,7 @@ export default function App() {
                       </div>
 
                       <div className="space-y-1.5">
-                        <div className="flex justify-between text-[11px] font-semibold">
+                        <div className="flex justify-between text-[0.8rem] font-semibold">
                           <span className="text-zinc-450">自營投信作帳比率 ({withInstBuy}/{total})</span>
                           <span className="text-[#FFB74D] font-bold">{instPct}%</span>
                         </div>
@@ -4712,7 +4714,7 @@ export default function App() {
                         </div>
                       </div>
 
-                      <p className="text-[10px] text-zinc-550 font-sans leading-relaxed">
+                      <p className="text-[0.725rem] text-zinc-550 font-sans leading-relaxed">
                         反應目前所選的 {total} 檔股票中，外資與投信呈現連續買超（籌碼鎖定天數 &gt; 0）的比重。
                       </p>
                     </div>
@@ -4730,10 +4732,10 @@ export default function App() {
                 {/* Business Cycle Light */}
                 <div className="flex items-center justify-between bg-zinc-950/60 rounded-lg p-3 border border-zinc-800">
                   <div>
-                    <div className="text-[9px] font-mono text-zinc-500">國發會景氣對策信號</div>
+                    <div className="text-[0.65rem] font-mono text-zinc-500">國發會景氣對策信號</div>
                     <div className="text-sm font-bold font-mono text-white mt-0.5">
                       {marketData?.businessCycleLight || '黃燈'}
-                      <span className="text-[10px] text-zinc-500 ml-1.5">({marketData?.businessCycleScore || 25}分)</span>
+                      <span className="text-[0.725rem] text-zinc-500 ml-1.5">({marketData?.businessCycleScore || 25}分)</span>
                     </div>
                   </div>
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-lg shadow-lg ${
@@ -4747,18 +4749,18 @@ export default function App() {
 
                 {/* M1B/M2 Scissor */}
                 <div className="bg-zinc-950/60 rounded-lg p-3 border border-zinc-800 space-y-1.5">
-                  <div className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider">貨幣M1B/M2剪刀叉</div>
-                  <div className="flex justify-between text-[10px] font-mono">
+                  <div className="text-[0.65rem] font-mono text-zinc-500 uppercase tracking-wider">貨幣M1B/M2剪刀叉</div>
+                  <div className="flex justify-between text-[0.725rem] font-mono">
                     <span className="text-zinc-400">M1B 年增率</span>
                     <span className={`font-bold ${(marketData?.m1bGrowth || 8.5) > (marketData?.m2Growth || 4.2) ? 'text-rose-400' : 'text-emerald-400'}`}>
                       {(marketData?.m1bGrowth || 8.5).toFixed(2)}%
                     </span>
                   </div>
-                  <div className="flex justify-between text-[10px] font-mono">
+                  <div className="flex justify-between text-[0.725rem] font-mono">
                     <span className="text-zinc-400">M2 年增率</span>
                     <span className="text-zinc-300 font-bold">{(marketData?.m2Growth || 4.2).toFixed(2)}%</span>
                   </div>
-                  <div className={`text-[9px] font-bold mt-1 px-2 py-1 rounded ${
+                  <div className={`text-[0.65rem] font-bold mt-1 px-2 py-1 rounded ${
                     marketData?.mScissor ? 'bg-rose-950/50 text-rose-400 border border-rose-500/20' : 'bg-emerald-950/50 text-emerald-400 border border-emerald-500/20'
                   }`}>
                     {marketData?.mScissor ? '✨ M1B > M2 黃金交叉 — 資金活水充沛多頭' : '⚠️ M1B < M2 死叉 — 空頭防守'}
@@ -4767,25 +4769,25 @@ export default function App() {
 
                 {/* Board Rotation Stage (輪字訣) */}
                 <div className="bg-zinc-950/60 rounded-lg p-3 border border-zinc-800">
-                  <div className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider mb-1.5">【輪】板塊輪動階段</div>
-                  <div className={`text-[10px] font-bold font-mono ${(marketData?.rotationWarning) ? 'text-amber-400' : 'text-emerald-300'}`}>
+                  <div className="text-[0.65rem] font-mono text-zinc-500 uppercase tracking-wider mb-1.5">【輪】板塊輪動階段</div>
+                  <div className={`text-[0.725rem] font-bold font-mono ${(marketData?.rotationWarning) ? 'text-amber-400' : 'text-emerald-300'}`}>
                     {marketData?.rotationStage || 'PCB主升 → DRAM醞釀'}
                   </div>
                   {marketData?.rotationWarning && (
-                    <div className="text-[9px] text-amber-400 mt-1">⚠️ 妖股噴出訊號！謹慎散場風險！</div>
+                    <div className="text-[0.65rem] text-amber-400 mt-1">⚠️ 妖股噴出訊號！謹慎散場風險！</div>
                   )}
                 </div>
 
                 {/* Market Calendar */}
                 <div>
-                  <div className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider mb-2">近期大事曆記</div>
+                  <div className="text-[0.65rem] font-mono text-zinc-500 uppercase tracking-wider mb-2">近期大事曆記</div>
                   <div className="space-y-1.5">
                     {(marketData?.marketCalendar || [
                       { date: '2026-05-26', event: '5月外資持股統計公告' },
                       { date: '2026-05-30', event: '美國PCE物價指數公告' },
                       { date: '2026-06-10', event: '美FOMC利率決策會議' },
                     ]).slice(0, 5).map((ev: any, i: number) => (
-                      <div key={i} className="flex gap-2 items-start text-[9px] font-mono">
+                      <div key={i} className="flex gap-2 items-start text-[0.65rem] font-mono">
                         <span className="text-[#FFB74D] font-bold shrink-0">{ev.date.substring(5)}</span>
                         <span className="text-zinc-400">{ev.event}</span>
                       </div>
@@ -4796,12 +4798,12 @@ export default function App() {
                 {/* 早 字訣 - Early Exit Warning */}
                 {marketData?.hasEarlyExitWarning && (
                   <div className="bg-amber-950/40 border border-amber-500/30 rounded-lg p-3">
-                    <div className="text-[9px] font-bold text-amber-400 flex items-center gap-1.5 mb-1.5">
+                    <div className="text-[0.65rem] font-bold text-amber-400 flex items-center gap-1.5 mb-1.5">
                       <Flame className="w-3 h-3 animate-pulse" />
                       【早】字訣 — 利多出盡警報
                     </div>
                     {(marketData?.earlyExitSignals || []).filter((s: any) => s.active).map((s: any, i: number) => (
-                      <div key={i} className="text-[9px] text-amber-300 font-mono">⚠️ {s.type}: {s.desc}</div>
+                      <div key={i} className="text-[0.65rem] text-amber-300 font-mono">⚠️ {s.type}: {s.desc}</div>
                     ))}
                   </div>
                 )}
@@ -4824,7 +4826,7 @@ export default function App() {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-3">
-                    <span className="text-[11px] text-zinc-500 font-mono">排序:</span>
+                    <span className="text-[0.8rem] text-zinc-500 font-mono">排序:</span>
                     <select
                       value={screenerSortBy}
                       onChange={(e) => setScreenerSortBy(e.target.value)}
@@ -4856,7 +4858,7 @@ export default function App() {
                 <div className="overflow-x-auto overflow-y-auto flex-1">
                   <table className="w-full text-left border-collapse table-auto text-xs">
                     <thead>
-                      <tr className="border-b border-zinc-850 bg-[#0e1117]/95 text-[10px] uppercase font-mono font-bold text-zinc-500 sticky top-0 z-10 select-none">
+                      <tr className="border-b border-zinc-850 bg-[#0e1117]/95 text-[0.725rem] uppercase font-mono font-bold text-zinc-500 sticky top-0 z-10 select-none">
                         <th className="py-2.5 px-3">代號 / 股名</th>
                         <th className="py-2.5 px-2 text-right">現價</th>
                         <th className="py-2.5 px-2 text-right">漲跌%</th>
@@ -4877,7 +4879,7 @@ export default function App() {
                           <td colSpan={9} className="py-24 text-center text-zinc-500 font-mono">
                             <AlertTriangle className="w-10 h-10 text-amber-500/25 mx-auto mb-2" />
                             雷達未能搜尋到任何匹配標的
-                            <p className="text-[11px] text-zinc-650 mt-1">💡 請嘗試調低戰力評分滑桿或放寬本益比限制</p>
+                            <p className="text-[0.8rem] text-zinc-650 mt-1">💡 請嘗試調低戰力評分滑桿或放寬本益比限制</p>
                           </td>
                         </tr>
                       ) : (
@@ -4895,7 +4897,7 @@ export default function App() {
                             >
                               <td className="py-2 px-3">
                                 <div className="font-mono font-bold text-white">{stock.stock_id}</div>
-                                <div className="text-[10px] text-zinc-500 mt-0.5">{stock.stock_name}</div>
+                                <div className="text-[0.725rem] text-zinc-500 mt-0.5">{stock.stock_name}</div>
                               </td>
                               <td className="py-2 px-2 text-right font-mono font-semibold text-white">
                                 {stock.close_price.toFixed(1)}
@@ -4916,14 +4918,14 @@ export default function App() {
                                 {bias20ma >= 0 ? `+${bias20ma.toFixed(1)}%` : `${bias20ma.toFixed(1)}%`}
                               </td>
                               <td className="py-2 px-2 text-right font-mono">
-                                <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${
+                                <span className={`text-[0.65rem] px-1.5 py-0.5 rounded font-bold ${
                                   stock.foreignDays >= 3 ? "bg-rose-950/40 text-rose-400 border border-rose-500/20" : stock.foreignDays > 0 ? "bg-amber-950/40 text-amber-400 border border-amber-500/20" : "bg-zinc-900 text-zinc-500"
                                 }`}>
                                   {stock.foreignDays >= 3 ? "🔥 高度吸籌" : stock.foreignDays > 0 ? "⚡ 溫和流入" : "觀望"}
                                 </span>
                               </td>
                               <td className="py-2 px-2 text-right font-mono">
-                                <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${
+                                <span className={`text-[0.65rem] px-1.5 py-0.5 rounded font-bold ${
                                   stock.score >= 38 ? "bg-amber-950/60 border border-amber-500/30 text-amber-400 animate-pulse" : stock.score >= 32 ? "bg-zinc-900 text-zinc-300 border border-zinc-800" : "bg-emerald-950/60 border border-emerald-500/30 text-emerald-400"
                                 }`}>
                                   {stock.score >= 38 ? "A+ 精英穩健" : stock.score >= 32 ? "B 波動整理" : "C 風險防守"}
@@ -4941,7 +4943,7 @@ export default function App() {
                                 <button
                                   onClick={() => openBuyModalForStock(stock)}
                                   disabled={data?.macroEStopActive}
-                                  className={`px-3 py-1 text-[10px] font-bold rounded shadow transition active:scale-[0.96] ${
+                                  className={`px-3 py-1 text-[0.725rem] font-bold rounded shadow transition active:scale-[0.96] ${
                                     data?.macroEStopActive 
                                       ? "bg-zinc-800 text-zinc-550 border border-zinc-850 cursor-not-allowed"
                                       : "bg-rose-900/90 text-rose-300 border border-rose-600/40 hover:bg-rose-800"
@@ -4958,7 +4960,7 @@ export default function App() {
                   </table>
                 </div>
 
-                <div className="p-3.5 bg-[#0e1117] border-t border-zinc-850 text-[10px] font-mono text-zinc-500 flex justify-between items-center select-none">
+                <div className="p-3.5 bg-[#0e1117] border-t border-zinc-850 text-[0.725rem] font-mono text-zinc-500 flex justify-between items-center select-none">
                   <span>符合過濾組合的黃金池標的數: {screenerFiltered.length} 檔</span>
                   <span>單檔建倉上限 NT$ 20,000</span>
                 </div>
@@ -5005,10 +5007,10 @@ export default function App() {
               <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
                 <div className="premium-card rounded-xl p-4 shadow relative overflow-hidden flex flex-col justify-between">
                   <div>
-                    <span className="text-[9px] font-mono text-zinc-500 block">整體投資組合系統性 BETA 值</span>
+                    <span className="text-[0.65rem] font-mono text-zinc-500 block">整體投資組合系統性 BETA 值</span>
                     <div className="text-xl font-mono font-black text-white mt-1">1.18x</div>
                   </div>
-                  <p className="text-[9px] text-zinc-550 leading-tight mt-2">
+                  <p className="text-[0.65rem] text-zinc-550 leading-tight mt-2">
                     高 Beta 板塊動態權重相乘所得，目前多頭策略偏進取配置。
                   </p>
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
@@ -5016,10 +5018,10 @@ export default function App() {
 
                 <div className="premium-card rounded-xl p-4 shadow relative overflow-hidden flex flex-col justify-between">
                   <div>
-                    <span className="text-[9px] font-mono text-zinc-500 block">預估最大回撤防守限制</span>
+                    <span className="text-[0.65rem] font-mono text-zinc-500 block">預估最大回撤防守限制</span>
                     <div className="text-xl font-mono font-black text-[#10b881] mt-1">-4.5%</div>
                   </div>
-                  <p className="text-[9px] text-zinc-550 leading-tight mt-2">
+                  <p className="text-[0.65rem] text-zinc-550 leading-tight mt-2">
                     受大盤物理隔離與個股剛性止損線保護之最大預估回撤下限。
                   </p>
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
@@ -5027,10 +5029,10 @@ export default function App() {
 
                 <div className="premium-card rounded-xl p-4 shadow relative overflow-hidden flex flex-col justify-between">
                   <div>
-                    <span className="text-[9px] font-mono text-zinc-500 block">整體夏普比率 投資組合收益品質</span>
+                    <span className="text-[0.65rem] font-mono text-zinc-500 block">整體夏普比率 投資組合收益品質</span>
                     <div className="text-xl font-mono font-black text-[#FFB74D] mt-1">2.78</div>
                   </div>
-                  <p className="text-[9px] text-zinc-550 leading-tight mt-2">
+                  <p className="text-[0.65rem] text-zinc-550 leading-tight mt-2">
                     策略對沖勝率高達 78% 所得之經風險調整後報酬率穩定指標。
                   </p>
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-500 to-orange-500"></div>
@@ -5038,10 +5040,10 @@ export default function App() {
 
                 <div className="premium-card rounded-xl p-4 shadow relative overflow-hidden flex flex-col justify-between">
                   <div>
-                    <span className="text-[9px] font-mono text-zinc-500 block">防守型認售權證 (PUT) 對沖比率</span>
+                    <span className="text-[0.65rem] font-mono text-zinc-500 block">防守型認售權證 (PUT) 對沖比率</span>
                     <div className="text-xl font-mono font-black text-[#f43f5e] mt-1">12%</div>
                   </div>
-                  <p className="text-[9px] text-zinc-550 leading-tight mt-2">
+                  <p className="text-[0.65rem] text-zinc-550 leading-tight mt-2">
                     波動率穩定，系統維持基本期權保護比率以抵禦極端回撤。
                   </p>
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-rose-500 to-pink-500"></div>
@@ -5059,17 +5061,17 @@ export default function App() {
 
                 <div className="flex gap-4 font-mono text-center">
                   <div className="bg-zinc-900 px-4 py-2 rounded-lg border border-zinc-850">
-                    <div className="text-[10px] text-zinc-500">當前持倉個股</div>
+                    <div className="text-[0.725rem] text-zinc-500">當前持倉個股</div>
                     <div className="text-xl font-bold text-white mt-0.5">{liveHoldings.length} 檔</div>
                   </div>
                   <div className="bg-zinc-900 px-4 py-2 rounded-lg border border-zinc-850">
-                    <div className="text-[10px] text-zinc-500">持倉總價值</div>
+                    <div className="text-[0.725rem] text-zinc-500">持倉總價值</div>
                     <div className="text-xl font-bold text-[#FFB74D] mt-0.5">
                       {liveHoldings.reduce((sum, h) => sum + h.current_price * h.shares, 0).toLocaleString()} 元
                     </div>
                   </div>
                   <div className="bg-zinc-900 px-4 py-2 rounded-lg border border-zinc-850">
-                    <div className="text-[10px] text-zinc-500">預計總利潤 (P&L)</div>
+                    <div className="text-[0.725rem] text-zinc-500">預計總利潤 (P&L)</div>
                     {(() => {
                       const totalPnl = liveHoldings.reduce((sum, h) => sum + h.current_pnl_value, 0);
                       return (
@@ -5135,7 +5137,7 @@ export default function App() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse table-auto text-xs">
                     <thead>
-                      <tr className="border-b border-zinc-850 bg-[#0e1117] text-[10px] font-mono font-bold text-zinc-500 uppercase select-none">
+                      <tr className="border-b border-zinc-850 bg-[#0e1117] text-[0.725rem] font-mono font-bold text-zinc-500 uppercase select-none">
                         {isHoldingSelectMode && <th className="py-3 px-3 w-8"></th>}
                         <th className="py-3 px-4">股票標的</th>
                         <th className="py-3 px-3">進場根據</th>
@@ -5157,7 +5159,7 @@ export default function App() {
                           <td colSpan={13} className="py-16 text-center text-zinc-500 font-mono">
                             <Sliders className="w-10 h-10 text-zinc-700 mx-auto mb-2" />
                             當前無任何持倉股票部位
-                            <p className="text-[11px] text-[#FFB74D] mt-1 hover:underline cursor-pointer" onClick={() => setActiveTab("radar")}>
+                            <p className="text-[0.8rem] text-[#FFB74D] mt-1 hover:underline cursor-pointer" onClick={() => setActiveTab("radar")}>
                               👉 前往 📊 獅王全域整合監控雷達 掃描買進信號建倉
                             </p>
                           </td>
@@ -5198,7 +5200,7 @@ export default function App() {
                               <td className="py-3 px-4 font-bold text-white">
                                 <div className="flex items-center gap-1">
                                   <span className="font-mono">{item.stock_id}</span>
-                                  <span className="text-[10px] text-zinc-500 ml-1.5">{item.stock_name}</span>
+                                  <span className="text-[0.725rem] text-zinc-500 ml-1.5">{item.stock_name}</span>
                                   {item.current_pnl_pct >= 20.0 && (
                                     <span className="inline-block w-2 h-2 rounded-full bg-amber-500 animate-pulse ml-1.5 shadow-[0_0_8px_rgba(245,158,11,0.6)]" title="獲利 20% 強制減碼警示" />
                                   )}
@@ -5219,7 +5221,7 @@ export default function App() {
                                 <div className="flex flex-col items-end">
                                   <span className="text-white font-bold">{item.current_price.toFixed(1)}</span>
                                   {realtimePrices[item.stock_id] && (
-                                    <span className={`text-[9px] font-mono ${realtimePrices[item.stock_id].changePercent >= 0 ? "text-rose-400" : "text-emerald-400"}`}>
+                                    <span className={`text-[0.65rem] font-mono ${realtimePrices[item.stock_id].changePercent >= 0 ? "text-rose-400" : "text-emerald-400"}`}>
                                       {realtimePrices[item.stock_id].changePercent >= 0 ? "+" : ""}{realtimePrices[item.stock_id].changePercent.toFixed(2)}%
                                     </span>
                                   )}
@@ -5231,7 +5233,7 @@ export default function App() {
                               <td className="py-3 px-2 text-right font-mono">
                                 <div className="flex flex-col items-end">
                                   <span className="text-rose-400 font-bold">{item.trailing_stop_price?.toFixed(1) || "-"} 元</span>
-                                  <span className="text-[9px] text-zinc-500 font-mono">回落 -3.0%</span>
+                                  <span className="text-[0.65rem] text-zinc-500 font-mono">回落 -3.0%</span>
                                 </div>
                               </td>
                               <td className="py-3 px-2 text-right font-mono text-emerald-400 font-bold">
@@ -5239,7 +5241,7 @@ export default function App() {
                               </td>
                               <td className={`py-3 px-2 text-right font-mono font-black ${item.current_pnl_value >= 0 ? "text-rose-400" : "text-emerald-400"}`}>
                                 <div>{item.current_pnl_pct >= 0 ? `+${item.current_pnl_pct.toFixed(2)}` : item.current_pnl_pct.toFixed(2)}%</div>
-                                <div className="text-[10px] text-zinc-500 mt-0.5">{item.current_pnl_value >= 0 ? `+${Math.round(item.current_pnl_value)}` : Math.round(item.current_pnl_value)} 元</div>
+                                <div className="text-[0.725rem] text-zinc-500 mt-0.5">{item.current_pnl_value >= 0 ? `+${Math.round(item.current_pnl_value)}` : Math.round(item.current_pnl_value)} 元</div>
                               </td>
                               <td className="py-3 px-3 text-center">
                                 {renderActionBadge(item.suggested_action)}
@@ -5248,14 +5250,14 @@ export default function App() {
                                 <div className="flex items-center justify-center gap-2">
                                   <button
                                     onClick={(e) => { e.stopPropagation(); openEditHoldingModal(item); }}
-                                    className="px-3 py-1 rounded bg-indigo-600/80 hover:bg-indigo-500 text-white font-bold transition active:scale-[0.96] text-[11px] shadow-[0_0_8px_rgba(99,102,241,0.2)] flex items-center gap-1"
+                                    className="px-3 py-1 rounded bg-indigo-600/80 hover:bg-indigo-500 text-white font-bold transition active:scale-[0.96] text-[0.8rem] shadow-[0_0_8px_rgba(99,102,241,0.2)] flex items-center gap-1"
                                   >
                                     <Edit3 className="w-3 h-3" />
                                     編輯
                                   </button>
                                   <button
                                     onClick={(e) => { e.stopPropagation(); openExitModalForHolding(item); }}
-                                    className="px-3 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-bold hover:opacity-90 transition active:scale-[0.96] text-[11px] shadow-[0_0_8px_rgba(16,184,129,0.2)]"
+                                    className="px-3 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-bold hover:opacity-90 transition active:scale-[0.96] text-[0.8rem] shadow-[0_0_8px_rgba(16,184,129,0.2)]"
                                   >
                                     出場
                                   </button>
@@ -5276,7 +5278,7 @@ export default function App() {
                   <div className="premium-card rounded-xl p-8 text-center text-zinc-500 font-mono">
                     <Sliders className="w-10 h-10 text-zinc-700 mx-auto mb-2" />
                     當前無任何持倉股票部位
-                    <p className="text-[11px] text-[#FFB74D] mt-2 hover:underline cursor-pointer" onClick={() => setActiveTab("radar")}>
+                    <p className="text-[0.8rem] text-[#FFB74D] mt-2 hover:underline cursor-pointer" onClick={() => setActiveTab("radar")}>
                       👉 前往整合監控雷達建倉
                     </p>
                   </div>
@@ -5317,59 +5319,59 @@ export default function App() {
                                 <span className="font-mono text-base font-bold text-white">{item.stock_id}</span>
                                 <span className="text-xs text-zinc-400 font-bold bg-zinc-900 px-2 py-0.5 rounded border border-zinc-850">{item.stock_name}</span>
                               </div>
-                              <div className="text-[10px] text-zinc-500 mt-1">
+                              <div className="text-[0.725rem] text-zinc-500 mt-1">
                                 進場根據: <span className="text-zinc-400 font-sans">{item.buy_reason || "量化模型選股"}</span>
                               </div>
                             </div>
                           </div>
                           <div className="flex flex-col items-end gap-1">
                             {renderActionBadge(item.suggested_action)}
-                            <span className="text-[9px] text-zinc-550 font-mono">{item.buy_date} {item.buy_time}</span>
+                            <span className="text-[0.65rem] text-zinc-550 font-mono">{item.buy_date} {item.buy_time}</span>
                           </div>
                         </div>
 
                         <div className="border-t border-zinc-850/50 my-1"></div>
 
                         {/* Pricing Grid */}
-                        <div className="grid grid-cols-3 gap-2 text-center text-[11px] font-mono">
+                        <div className="grid grid-cols-3 gap-2 text-center text-[0.8rem] font-mono">
                           <div className="bg-zinc-900/50 p-2 rounded border border-zinc-850 flex flex-col justify-center">
-                            <span className="text-zinc-550 block text-[9px]">進場均價</span>
+                            <span className="text-zinc-550 block text-[0.65rem]">進場均價</span>
                             <span className="text-zinc-350 font-bold mt-0.5 block">{item.buy_price.toFixed(1)}</span>
                           </div>
                           <div className="bg-zinc-900/50 p-2 rounded border border-zinc-850 flex flex-col justify-center">
-                            <span className="text-zinc-550 block text-[9px]">現價</span>
+                            <span className="text-zinc-550 block text-[0.65rem]">現價</span>
                             <span className="text-white font-bold mt-0.5 block">{lp.toFixed(1)}</span>
                             {realtimePrices[item.stock_id] && (
-                              <span className={`text-[9px] block mt-0.5 ${realtimePrices[item.stock_id].changePercent >= 0 ? "text-rose-400 font-bold" : "text-emerald-400 font-bold"}`}>
+                              <span className={`text-[0.65rem] block mt-0.5 ${realtimePrices[item.stock_id].changePercent >= 0 ? "text-rose-400 font-bold" : "text-emerald-400 font-bold"}`}>
                                 {realtimePrices[item.stock_id].changePercent >= 0 ? "+" : ""}{realtimePrices[item.stock_id].changePercent.toFixed(2)}%
                               </span>
                             )}
                           </div>
                           <div className={`p-2 rounded border transition flex flex-col justify-center ${lv >= 0 ? "bg-rose-950/20 border-rose-900/30 text-rose-400" : "bg-emerald-950/20 border-emerald-900/30 text-emerald-400"}`}>
-                            <span className="text-zinc-500 block text-[9px] font-bold">未實現盈虧</span>
+                            <span className="text-zinc-500 block text-[0.65rem] font-bold">未實現盈虧</span>
                             <span className="font-black mt-0.5 block">{lpct >= 0 ? "+" : ""}{lpct.toFixed(2)}%</span>
-                            <span className="text-[9px] block font-bold mt-0.5">{lv >= 0 ? "+" : ""}{Math.round(lv).toLocaleString()} 元</span>
+                            <span className="text-[0.65rem] block font-bold mt-0.5">{lv >= 0 ? "+" : ""}{Math.round(lv).toLocaleString()} 元</span>
                           </div>
                         </div>
 
                         {/* Exit / Stop Loss Guidelines Grid */}
-                        <div className="grid grid-cols-3 gap-2 text-center text-[10px] font-mono border-t border-zinc-900 pt-2">
+                        <div className="grid grid-cols-3 gap-2 text-center text-[0.725rem] font-mono border-t border-zinc-900 pt-2">
                           <div className="bg-zinc-900/30 p-1.5 rounded">
-                            <span className="text-rose-400/80 block text-[8px] font-bold">🎯 停利目標</span>
+                            <span className="text-rose-400/80 block text-[0.55rem] font-bold">🎯 停利目標</span>
                             <span className="text-rose-300 font-bold block mt-0.5">{item.take_profit_price ? item.take_profit_price.toFixed(1) : (item.buy_price * 1.2).toFixed(1)}</span>
                           </div>
                           <div className="bg-zinc-900/30 p-1.5 rounded">
-                            <span className="text-amber-400/80 block text-[8px] font-bold">🛡️ 移動停利</span>
+                            <span className="text-amber-400/80 block text-[0.55rem] font-bold">🛡️ 移動停利</span>
                             <span className="text-amber-300 font-bold block mt-0.5">{item.trailing_stop_price?.toFixed(1) || "-"}</span>
                           </div>
                           <div className="bg-zinc-900/30 p-1.5 rounded">
-                            <span className="text-emerald-400/80 block text-[8px] font-bold">🟢 買盤止損</span>
+                            <span className="text-emerald-400/80 block text-[0.55rem] font-bold">🟢 買盤止損</span>
                             <span className="text-emerald-300 font-bold block mt-0.5">{item.stop_loss_price?.toFixed(1) || "-"}</span>
                           </div>
                         </div>
 
                         {/* Shares / Size */}
-                        <div className="flex justify-between items-center text-[10px] font-mono bg-zinc-900/40 px-3 py-1.5 rounded text-zinc-400">
+                        <div className="flex justify-between items-center text-[0.725rem] font-mono bg-zinc-900/40 px-3 py-1.5 rounded text-zinc-400">
                           <span>持倉股數: <span className="text-white font-bold">{item.shares} 股</span></span>
                           <span>市值: <span className="text-[#FFB74D] font-bold">{(lp * item.shares).toLocaleString()} 元</span></span>
                         </div>
@@ -5403,7 +5405,7 @@ export default function App() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {/* Position Concentration */}
                 <div className="premium-card rounded-xl p-4 shadow-lg">
-                  <div className="text-[10px] font-mono text-zinc-500 font-bold uppercase tracking-wider mb-3">🎯 持倉集中度 analysis</div>
+                  <div className="text-[0.725rem] font-mono text-zinc-500 font-bold uppercase tracking-wider mb-3">🎯 持倉集中度 analysis</div>
                   {liveHoldings.length === 0 ? (
                     <p className="text-zinc-600 text-xs font-mono">持倉空白</p>
                   ) : (() => {
@@ -5416,7 +5418,7 @@ export default function App() {
                     return (
                       <div className="space-y-1.5">
                         {Object.entries(categoryCounts).map(([cat, count]) => (
-                          <div key={cat} className="flex items-center gap-2 text-[10px] font-mono">
+                          <div key={cat} className="flex items-center gap-2 text-[0.725rem] font-mono">
                             <div className="flex-1 bg-zinc-950 rounded-full h-1.5 overflow-hidden border border-zinc-900">
                               <div className="h-full bg-gradient-to-r from-amber-600 to-amber-400" style={{ width: `${(count / liveHoldings.length) * 100}%` }} />
                             </div>
@@ -5431,7 +5433,7 @@ export default function App() {
 
                 {/* P&L Breakdown */}
                 <div className="premium-card rounded-xl p-4 shadow-lg">
-                  <div className="text-[10px] font-mono text-zinc-500 font-bold uppercase tracking-wider mb-3">📊 未實現損益分布</div>
+                  <div className="text-[0.725rem] font-mono text-zinc-500 font-bold uppercase tracking-wider mb-3">📊 未實現損益分布</div>
                   {liveHoldings.length === 0 ? (
                     <p className="text-zinc-600 text-xs font-mono">持倉空白</p>
                   ) : (() => {
@@ -5440,7 +5442,7 @@ export default function App() {
                     const totalVal = liveHoldings.reduce((s, h) => s + h.current_price * h.shares, 0);
                     const totalCost = liveHoldings.reduce((s, h) => s + h.buy_price * h.shares, 0);
                     return (
-                      <div className="space-y-2 text-[10px] font-mono">
+                      <div className="space-y-2 text-[0.725rem] font-mono">
                         <div className="flex justify-between">
                           <span className="text-zinc-500">盈利持倉</span>
                           <span className="text-rose-400 font-bold">{profits.length} 檔</span>
@@ -5468,8 +5470,8 @@ export default function App() {
 
                 {/* Kelly Position Sizing */}
                 <div className="premium-card rounded-xl p-4 shadow-lg">
-                  <div className="text-[10px] font-mono text-zinc-500 font-bold uppercase tracking-wider mb-3">🤟 半凱利動態投入建議</div>
-                  <div className="space-y-2 text-[10px] font-mono">
+                  <div className="text-[0.725rem] font-mono text-zinc-500 font-bold uppercase tracking-wider mb-3">🤟 半凱利動態投入建議</div>
+                  <div className="space-y-2 text-[0.725rem] font-mono">
                     {['第一戰隊 (50%)', '第二戰隊 (30%)', '第三戰隊 (20%)'].map((tier, i) => {
                       const amounts = [10000, 6000, 4000];
                       const pcts = liveHoldings.length === 0 ? ['0', '0', '0'] : [
@@ -5484,7 +5486,7 @@ export default function App() {
                         </div>
                       );
                     })}
-                    <div className="text-[8px] text-zinc-600 font-sans mt-1">單檔上限 NT$20,000 ・ 持倉總上限 10檔</div>
+                    <div className="text-[0.55rem] text-zinc-600 font-sans mt-1">單檔上限 NT$20,000 ・ 持倉總上限 10檔</div>
                   </div>
                 </div>
               </div>
@@ -5510,7 +5512,7 @@ export default function App() {
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
                   <div className="premium-card rounded-xl p-4 shadow relative overflow-hidden flex flex-col justify-between">
                     <div>
-                      <span className="text-[9px] font-mono text-zinc-550 block">實戰總交易比數 / 對沖勝率</span>
+                      <span className="text-[0.65rem] font-mono text-zinc-550 block">實戰總交易比數 / 對沖勝率</span>
                       <div className="text-xl font-mono font-black text-white mt-1 flex items-baseline gap-2">
                         <span>{totalTrades} 筆</span>
                         <span className="text-rose-400 font-extrabold text-sm">勝率: {winRate}%</span>
@@ -5523,32 +5525,32 @@ export default function App() {
 
                   <div className="premium-card rounded-xl p-4 shadow relative overflow-hidden flex flex-col justify-between">
                     <div>
-                      <span className="text-[9px] font-mono text-zinc-550 block">策略對沖獲利因子</span>
+                      <span className="text-[0.65rem] font-mono text-zinc-550 block">策略對沖獲利因子</span>
                       <div className="text-xl font-mono font-black text-amber-500 mt-1">{profitFactor}</div>
                     </div>
-                    <p className="text-[9px] text-zinc-500 mt-2 font-sans">
+                    <p className="text-[0.65rem] text-zinc-500 mt-2 font-sans">
                       累計對沖盈利額 vs 累計回撤虧損額之核心比率（大於 2.0 為卓越）。
                     </p>
                   </div>
 
                   <div className="premium-card rounded-xl p-4 shadow relative overflow-hidden flex flex-col justify-between">
                     <div>
-                      <span className="text-[9px] font-mono text-zinc-550 block">每筆平均收益期望值 (P&L %)</span>
+                      <span className="text-[0.65rem] font-mono text-zinc-550 block">每筆平均收益期望值 (P&L %)</span>
                       <div className="text-xl font-mono font-black text-[#FFD54F] mt-1">{avgPnlPct}%</div>
                     </div>
-                    <p className="text-[9px] text-zinc-500 mt-2 font-sans">
+                    <p className="text-[0.65rem] text-zinc-500 mt-2 font-sans">
                       數學期望值呈正向偏離，有利於系統資金長期穩健滾動。
                     </p>
                   </div>
 
                   <div className="premium-card rounded-xl p-4 shadow relative overflow-hidden flex flex-col justify-between">
                     <div>
-                      <span className="text-[9px] font-mono text-zinc-550 block">累計結算淨對沖利潤</span>
+                      <span className="text-[0.65rem] font-mono text-zinc-550 block">累計結算淨對沖利潤</span>
                       <div className={`text-xl font-mono font-black mt-1 ${totalGain - totalLoss >= 0 ? "text-rose-400" : "text-emerald-400"}`}>
                         {totalGain - totalLoss >= 0 ? `+${(totalGain - totalLoss).toLocaleString()}` : (totalGain - totalLoss).toLocaleString()} 元
                       </div>
                     </div>
-                    <p className="text-[9px] text-zinc-500 mt-2 font-sans">
+                    <p className="text-[0.65rem] text-zinc-500 mt-2 font-sans">
                       扣除所有剛性止損與隔離操作後所得之實戰淨利回報。
                     </p>
                   </div>
@@ -5576,12 +5578,12 @@ export default function App() {
                 return (
                   <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                     {cats.map(([cat, stat]) => (
-                      <div key={cat} className="bg-zinc-950/60 rounded-lg border border-zinc-900 p-3 text-[10px] font-mono">
-                        <div className="text-zinc-400 font-bold truncate text-[9px] mb-1">{cat}</div>
+                      <div key={cat} className="bg-zinc-950/60 rounded-lg border border-zinc-900 p-3 text-[0.725rem] font-mono">
+                        <div className="text-zinc-400 font-bold truncate text-[0.65rem] mb-1">{cat}</div>
                         <div className={`text-base font-black font-mono ${stat.pnl >= 0 ? 'text-rose-400' : 'text-emerald-400'}`}>
                           {stat.pnl >= 0 ? '+' : ''}{Math.round(stat.pnl).toLocaleString()}
                         </div>
-                        <div className="text-zinc-500 text-[8px] mt-0.5">
+                        <div className="text-zinc-500 text-[0.55rem] mt-0.5">
                           {stat.total}筆 · 勝率 <span className={`font-bold ${Math.round((stat.wins/stat.total)*100) >= 60 ? 'text-rose-400' : 'text-amber-400'}`}>{Math.round((stat.wins/stat.total)*100)}%</span>
                         </div>
                       </div>
@@ -5596,7 +5598,7 @@ export default function App() {
               <div className="flex items-center gap-2">
                 <History className="w-5 h-5 text-[#E5A823] shrink-0" />
                 <h3 className="text-white text-sm md:text-base font-bold">歷史出場操盤檢討日誌</h3>
-                <span className="text-[10px] font-mono bg-zinc-900 border border-zinc-800 text-zinc-400 px-2 py-0.5 rounded-full shrink-0">
+                <span className="text-[0.725rem] font-mono bg-zinc-900 border border-zinc-800 text-zinc-400 px-2 py-0.5 rounded-full shrink-0">
                   共 {exits.length} 筆
                 </span>
               </div>
@@ -5613,7 +5615,7 @@ export default function App() {
                           setSelectedExitIds(allIds);
                         }
                       }}
-                      className="px-3 py-1.5 rounded-lg text-[10px] md:text-xs font-bold bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-850 transition cursor-pointer"
+                      className="px-3 py-1.5 rounded-lg text-[0.725rem] md:text-xs font-bold bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-850 transition cursor-pointer"
                     >
                       {selectedExitIds.length === exits.length ? "取消全選" : "全選所有"}
                     </button>
@@ -5621,7 +5623,7 @@ export default function App() {
                     <button
                       onClick={handleBatchDeleteExits}
                       disabled={selectedExitIds.length === 0}
-                      className="px-3.5 py-1.5 rounded-lg text-[10px] md:text-xs font-bold bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/40 text-rose-400 hover:text-rose-300 disabled:opacity-40 transition flex items-center gap-1.5 cursor-pointer disabled:cursor-not-allowed shadow-sm"
+                      className="px-3.5 py-1.5 rounded-lg text-[0.725rem] md:text-xs font-bold bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/40 text-rose-400 hover:text-rose-300 disabled:opacity-40 transition flex items-center gap-1.5 cursor-pointer disabled:cursor-not-allowed shadow-sm"
                     >
                       <Trash2 className="w-3.5 h-3.5 shrink-0" />
                       確認刪除 ({selectedExitIds.length})
@@ -5632,7 +5634,7 @@ export default function App() {
                         setIsExitSelectMode(false);
                         setSelectedExitIds([]);
                       }}
-                      className="px-3 py-1.5 rounded-lg text-[10px] md:text-xs font-bold text-zinc-400 hover:text-white bg-zinc-900 hover:bg-zinc-850 transition cursor-pointer"
+                      className="px-3 py-1.5 rounded-lg text-[0.725rem] md:text-xs font-bold text-zinc-400 hover:text-white bg-zinc-900 hover:bg-zinc-850 transition cursor-pointer"
                     >
                       取消
                     </button>
@@ -5640,7 +5642,7 @@ export default function App() {
                 ) : (
                   <button
                     onClick={() => setIsExitSelectMode(true)}
-                    className="px-3.5 py-1.5 rounded-lg text-[10px] md:text-xs font-bold bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-850 transition flex items-center gap-1.5 cursor-pointer shadow-sm ml-auto sm:ml-0"
+                    className="px-3.5 py-1.5 rounded-lg text-[0.725rem] md:text-xs font-bold bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-850 transition flex items-center gap-1.5 cursor-pointer shadow-sm ml-auto sm:ml-0"
                   >
                     <Sliders className="w-3.5 h-3.5 text-[#E5A823] shrink-0" />
                     多選刪除紀錄
@@ -5726,18 +5728,18 @@ export default function App() {
                                 )}
                               </div>
 
-                              <div className="text-[10px] md:text-xs text-zinc-550 font-mono mt-1 space-y-1">
+                              <div className="text-[0.725rem] md:text-xs text-zinc-550 font-mono mt-1 space-y-1">
                                 <div>進場日期: {item.buy_date}</div>
                                 <div>清倉日期: {item.exit_date}</div>
                                 <div>交易股數: {item.shares} 股</div>
                               </div>
 
                               <div className="mt-3 grid grid-cols-2 gap-1.5 text-center font-mono">
-                                <div className="bg-zinc-950/80 p-2 rounded border border-zinc-900/60 text-[10px] md:text-xs">
+                                <div className="bg-zinc-950/80 p-2 rounded border border-zinc-900/60 text-[0.725rem] md:text-xs">
                                   <div className="text-zinc-550">進場價</div>
                                   <div className="text-zinc-300 font-bold mt-0.5">{item.buy_price.toFixed(1)}</div>
                                 </div>
-                                <div className="bg-zinc-950/80 p-2 rounded border border-zinc-900/60 text-[10px] md:text-xs">
+                                <div className="bg-zinc-950/80 p-2 rounded border border-zinc-900/60 text-[0.725rem] md:text-xs">
                                   <div className="text-zinc-550">清倉價</div>
                                   <div className="text-zinc-300 font-bold mt-0.5">{item.exit_price.toFixed(1)}</div>
                                 </div>
@@ -5759,7 +5761,7 @@ export default function App() {
 
                             {/* 右側：Gemini AI / 避險基金大師實戰檢討 */}
                             <div className="flex-1 flex flex-col justify-center">
-                              <h4 className="text-[10px] md:text-xs text-zinc-500 font-bold font-mono uppercase tracking-wider flex items-center gap-1.5 mb-1.5">
+                              <h4 className="text-[0.725rem] md:text-xs text-zinc-500 font-bold font-mono uppercase tracking-wider flex items-center gap-1.5 mb-1.5">
                                 <Sparkles className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
                                 避險基金大師實戰檢討與改正方向:
                               </h4>
@@ -5841,17 +5843,17 @@ export default function App() {
                   <div className="p-6 space-y-4">
                     <div className="flex items-center gap-4 bg-zinc-950/60 p-3 rounded-lg border border-zinc-900">
                       <div>
-                        <span className="text-[10px] text-zinc-550 block font-mono">標的代號</span>
+                        <span className="text-[0.725rem] text-zinc-550 block font-mono">標的代號</span>
                         <span className="text-sm font-bold text-white font-mono">{editingExit.stock_id}</span>
                       </div>
                       <div className="border-l border-zinc-850 h-8"></div>
                       <div>
-                        <span className="text-[10px] text-zinc-550 block">標的名稱</span>
+                        <span className="text-[0.725rem] text-zinc-550 block">標的名稱</span>
                         <span className="text-sm font-bold text-zinc-300">{editingExit.stock_name}</span>
                       </div>
                       <div className="border-l border-zinc-850 h-8"></div>
                       <div>
-                        <span className="text-[10px] text-zinc-550 block font-mono">盈虧結果</span>
+                        <span className="text-[0.725rem] text-zinc-550 block font-mono">盈虧結果</span>
                         <span className={`text-sm font-bold font-mono ${editingExit.pnl_value >= 0 ? "text-rose-400" : "text-emerald-400"}`}>
                           {editingExit.pnl_value >= 0 ? "+" : ""}{Math.round(editingExit.pnl_value).toLocaleString()} 元 ({editingExit.pnl_pct.toFixed(2)}%)
                         </span>
@@ -5997,7 +5999,7 @@ export default function App() {
                       />
                     </div>
 
-                    <div className="bg-zinc-950/60 rounded-lg p-3 border border-zinc-900 text-[10px] font-mono text-zinc-500 grid grid-cols-2 gap-2">
+                    <div className="bg-zinc-950/60 rounded-lg p-3 border border-zinc-900 text-[0.725rem] font-mono text-zinc-500 grid grid-cols-2 gap-2">
                       <span>當前盈虧: <span className={editingHolding.current_pnl_pct >= 0 ? "text-rose-400 font-bold" : "text-emerald-400 font-bold"}>{editingHolding.current_pnl_pct >= 0 ? "+" : ""}{editingHolding.current_pnl_pct.toFixed(2)}%</span></span>
                       <span>現價: <span className="text-white font-bold">{editingHolding.current_price.toFixed(1)} 元</span></span>
                     </div>
@@ -6055,7 +6057,7 @@ export default function App() {
                 </div>
                 <div className="shrink-0 flex items-center gap-2 bg-[#E5A823]/10 border border-[#E5A823]/30 rounded-lg px-3 py-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-[#E5A823] animate-ping"></span>
-                  <span className="text-[10px] text-[#FFB74D] font-mono font-bold tracking-wider uppercase">V8050.2 ACTIVE</span>
+                  <span className="text-[0.725rem] text-[#FFB74D] font-mono font-bold tracking-wider uppercase">V8050.2 ACTIVE</span>
                 </div>
               </div>
             </div>
@@ -6077,10 +6079,10 @@ export default function App() {
                     {/* Dimension 1 */}
                     <div className="bg-zinc-900/40 border border-zinc-850 rounded-xl p-4 space-y-3">
                       <h4 className="text-[#FFB74D] text-xs font-black flex items-center gap-2">
-                        <span className="w-5 h-5 rounded bg-amber-950 text-[#FFB74D] flex items-center justify-center font-mono font-bold text-[10px]">一</span>
+                        <span className="w-5 h-5 rounded bg-amber-950 text-[#FFB74D] flex items-center justify-center font-mono font-bold text-[0.725rem]">一</span>
                         均線地基與乖離防護 (生命線系統)
                       </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px] text-zinc-400 font-mono">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[0.8rem] text-zinc-400 font-mono">
                         <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">1. 20MA 生死線：</span>收盤價必站穩 20MA，不在月線下建多倉。</div>
                         <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">2. 完美多頭排列：</span>均線呈「5MA &gt; 8MA &gt; 20MA &gt; 60MA」排列。</div>
                         <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">3. 季線長線保護：</span>收盤價 &gt; 60MA，確保中期多頭格局完好。</div>
@@ -6097,10 +6099,10 @@ export default function App() {
                     {/* Dimension 2 */}
                     <div className="bg-zinc-900/40 border border-zinc-850 rounded-xl p-4 space-y-3">
                       <h4 className="text-rose-400 text-xs font-black flex items-center gap-2">
-                        <span className="w-5 h-5 rounded bg-rose-950 text-rose-400 flex items-center justify-center font-mono font-bold text-[10px]">二</span>
+                        <span className="w-5 h-5 rounded bg-rose-950 text-rose-400 flex items-center justify-center font-mono font-bold text-[0.725rem]">二</span>
                         極端動能與指標共振 (主升段燃料)
                       </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px] text-zinc-400 font-mono">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[0.8rem] text-zinc-400 font-mono">
                         <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">11. MACD 零上發散：</span>MACD 快慢線 DIF &gt; 0，處主升段領域。</div>
                         <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">12. MACD 紅柱點火：</span>OSC 柱狀體由負轉正第一根紅柱。</div>
                         <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">13. 60分K 動能共振：</span>日線回檔時，60分 K 的 MACD 綠柱翻紅。</div>
@@ -6117,10 +6119,10 @@ export default function App() {
                     {/* Dimension 3 */}
                     <div className="bg-zinc-900/40 border border-zinc-850 rounded-xl p-4 space-y-3">
                       <h4 className="text-sky-400 text-xs font-black flex items-center gap-2">
-                        <span className="w-5 h-5 rounded bg-sky-950 text-sky-400 flex items-center justify-center font-mono font-bold text-[10px]">三</span>
+                        <span className="w-5 h-5 rounded bg-sky-950 text-sky-400 flex items-center justify-center font-mono font-bold text-[0.725rem]">三</span>
                         量價結構與微觀型態 (洗盤與攻擊確認)
                       </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px] text-zinc-400 font-mono">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[0.8rem] text-zinc-400 font-mono">
                         <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">21. 爆量真突破：</span>單日成交量 &gt; 5 日均量 1.5 倍至 2.5 倍。</div>
                         <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">22. 凹洞量壓縮：</span>回檔量縮至近 20 日最大量的 50% 以下。</div>
                         <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">23. 紅 K 實體飽滿：</span>突破當日紅 K 實體長度 &gt; 全日振幅 60%。</div>
@@ -6137,10 +6139,10 @@ export default function App() {
                     {/* Dimension 4 */}
                     <div className="bg-zinc-900/40 border border-zinc-850 rounded-xl p-4 space-y-3">
                       <h4 className="text-indigo-400 text-xs font-black flex items-center gap-2">
-                        <span className="w-5 h-5 rounded bg-indigo-950 text-indigo-400 flex items-center justify-center font-mono font-bold text-[10px]">四</span>
+                        <span className="w-5 h-5 rounded bg-indigo-950 text-indigo-400 flex items-center justify-center font-mono font-bold text-[0.725rem]">四</span>
                         主力籌碼與暗池追蹤 (跟隨強勢資金)
                       </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px] text-zinc-400 font-mono">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[0.8rem] text-zinc-400 font-mono">
                         <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">31. 法人共振承接：</span>外資與投信連續 3 日同步大買超。</div>
                         <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">32. 投信鎖碼區：</span>投信持股比例落在 3%～10% 剛發動區。</div>
                         <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">33. 主力集中度：</span>近 5 日主力籌碼集中度 &gt; 5% 且成交佔比 &gt; 10%。</div>
@@ -6157,10 +6159,10 @@ export default function App() {
                     {/* Dimension 5 */}
                     <div className="bg-zinc-900/40 border border-zinc-850 rounded-xl p-4 space-y-3">
                       <h4 className="text-emerald-400 text-xs font-black flex items-center gap-2">
-                        <span className="w-5 h-5 rounded bg-emerald-950 text-emerald-400 flex items-center justify-center font-mono font-bold text-[10px]">五</span>
+                        <span className="w-5 h-5 rounded bg-emerald-950 text-emerald-400 flex items-center justify-center font-mono font-bold text-[0.725rem]">五</span>
                         基本面估值與護城河 (長線保護短線)
                       </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px] text-zinc-400 font-mono">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[0.8rem] text-zinc-400 font-mono">
                         <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">41. 營收 YoY 加速：</span>營收年增率 YoY &gt; 20% 且呈加速趨勢。</div>
                         <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">42. 營收二階斜率：</span>營收年增率之變化斜率 (二階導數) 向上。</div>
                         <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">43. Forward PE：</span>預估本益比 &lt; 15 倍或位於歷史區間下緣。</div>
@@ -6189,7 +6191,7 @@ export default function App() {
                       <div className="text-xs font-bold text-rose-400 flex items-center gap-1.5">
                         <Zap className="w-4 h-4" /> 1. 20MA 絕對死線 (Stop-Loss)
                       </div>
-                      <p className="text-[11px] text-zinc-400 leading-normal font-sans">
+                      <p className="text-[0.8rem] text-zinc-400 leading-normal font-sans">
                         收盤價實質跌破月線 20MA，次日開盤即執行市價砍倉平倉，絕不參與任何季線回測或自欺欺人式的逢低攤平。
                       </p>
                     </div>
@@ -6198,7 +6200,7 @@ export default function App() {
                       <div className="text-xs font-bold text-rose-400 flex items-center gap-1.5">
                         <Flame className="w-4 h-4" /> 2. 極限停損斷頭 (-5%) & 短線打帶跑 (-3.5%)
                       </div>
-                      <p className="text-[11px] text-zinc-400 leading-normal font-sans">
+                      <p className="text-[0.8rem] text-zinc-400 leading-normal font-sans">
                         短線單帳面虧損達 <strong>-3.5% 立即出清</strong>；波段部位虧損觸及 <strong>-5.0% 觸發實體斷路器</strong>，全面物理斷頭平倉。
                       </p>
                     </div>
@@ -6207,7 +6209,7 @@ export default function App() {
                       <div className="text-xs font-bold text-[#FFB74D] flex items-center gap-1.5">
                         <Award className="w-4 h-4" /> 3. 強制減碼鎖利法 (+20%)
                       </div>
-                      <p className="text-[11px] text-zinc-400 leading-normal font-sans">
+                      <p className="text-[0.8rem] text-zinc-400 leading-normal font-sans">
                         獲利觸及 <strong>+20% 時觸發自動化減碼</strong>，強制市價賣出 50% 部位。餘下 50% 移至 10MA 或 ATR 設為動態移動停利線。
                       </p>
                     </div>
@@ -6216,7 +6218,7 @@ export default function App() {
                       <div className="text-xs font-bold text-rose-400 flex items-center gap-1.5">
                         <Shield className="w-4 h-4" /> 4. 總經 VIX E-Stop 斷路機制 (VIX &gt; 30)
                       </div>
-                      <p className="text-[11px] text-zinc-400 leading-normal font-sans">
+                      <p className="text-[0.8rem] text-zinc-400 leading-normal font-sans">
                         VIX 指數飆破 30 代表市場進入黑天鵝系統性風暴。系統強制進入防衛，全面清倉部位至 80% 現金退守。
                       </p>
                     </div>
@@ -6227,7 +6229,7 @@ export default function App() {
                       <Sliders className="w-4 h-4 text-amber-500" />
                       🟢 獅王戰神 V8050.2 執行階梯決策說明
                     </h4>
-                    <ul className="text-[11px] text-zinc-400 space-y-1.5 leading-relaxed font-mono">
+                    <ul className="text-[0.8rem] text-zinc-400 space-y-1.5 leading-relaxed font-mono">
                       <li>🏆 <strong className="text-amber-400">🏆 S 級重倉狙擊區 (45~50分):</strong> 金字塔式建倉 (5-3-2 配置)，結合半凱利公式，沿 10MA 防守推進。</li>
                       <li>🥇 <strong className="text-blue-400">🥇 A 級右側伏擊區 (38~44分):</strong> 嚴禁市價追單，掛「ROD 限價伏擊單」，價位鎖定為「20MA + 0.5% ~ 1.5%」區間。</li>
                       <li>💀 <strong className="text-zinc-550">💀 X 級物理隔離區 (&lt; 38分):</strong> 前端強制不渲染任何買進建議，物理隔離阻斷資金曝險，強迫現金觀望。</li>
@@ -6247,7 +6249,7 @@ export default function App() {
                       <Link className="w-4.5 h-4.5 text-[#E5A823]" />
                       🌐 戰神全域量化情報直連通道
                     </h3>
-                    <p className="text-[10px] text-zinc-500 mt-1">極速開啟官方 OpenAPI 及大盤、籌碼、即時財經快訊</p>
+                    <p className="text-[0.725rem] text-zinc-500 mt-1">極速開啟官方 OpenAPI 及大盤、籌碼、即時財經快訊</p>
                   </div>
 
                   {/* Group 1: Macro VIX */}
@@ -6255,7 +6257,7 @@ export default function App() {
                     <h4 className="text-sky-400 text-xs font-bold flex items-center gap-1.5">
                       📊 Macro_VIX：總經與恐慌指數
                     </h4>
-                    <div className="grid grid-cols-2 gap-1.5 text-[10px] font-mono">
+                    <div className="grid grid-cols-2 gap-1.5 text-[0.725rem] font-mono">
                       <a href="https://edition.cnn.com/markets/fear-and-greed" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left">
                         CNN 恐懼貪婪
                       </a>
@@ -6294,7 +6296,7 @@ export default function App() {
                     <h4 className="text-[#FFB74D] text-xs font-bold flex items-center gap-1.5">
                       🔥 TW_Chips：台股籌碼與期貨數據
                     </h4>
-                    <div className="grid grid-cols-2 gap-1.5 text-[10px] font-mono">
+                    <div className="grid grid-cols-2 gap-1.5 text-[0.725rem] font-mono">
                       <a href="https://www.wantgoo.com/stock/institutional-investors/foreign-investor/buy-sell-rank" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left">
                         外資買賣超排行
                       </a>
@@ -6333,7 +6335,7 @@ export default function App() {
                     <h4 className="text-indigo-400 text-xs font-bold flex items-center gap-1.5">
                       📰 TW_News：台股即時快訊與情報
                     </h4>
-                    <div className="grid grid-cols-2 gap-1.5 text-[10px] font-mono">
+                    <div className="grid grid-cols-2 gap-1.5 text-[0.725rem] font-mono">
                       <a href="https://tw.stock.yahoo.com/news/" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left">
                         Yahoo 股市新聞
                       </a>
@@ -6372,7 +6374,7 @@ export default function App() {
                     <h4 className="text-emerald-400 text-xs font-bold flex items-center gap-1.5">
                       ⚡ TW_OpenAPI：官方數據直連
                     </h4>
-                    <div className="grid grid-cols-2 gap-1.5 text-[10px] font-mono">
+                    <div className="grid grid-cols-2 gap-1.5 text-[0.725rem] font-mono">
                       <a href="https://openapi.twse.com.tw/v1/fund/T86" target="_blank" rel="noreferrer" className="bg-zinc-950 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-700 p-2 rounded text-zinc-300 transition truncate text-left" title="證交所 三大法人買賣超 (張數)">
                         三大法人張數 (T86)
                       </a>
@@ -6422,9 +6424,9 @@ export default function App() {
             <span>© 2026 獅王量化交易基金會. All rights reserved. 獅王戰神 V2026.Max 終極大一統核心.</span>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-[10px] text-emerald-400">● 雲端資料庫同步對接正常</span>
+            <span className="text-[0.725rem] text-emerald-400">● 雲端資料庫同步對接正常</span>
             <span>|</span>
-            <span className="text-[10px] text-amber-500">無重力穩定對沖運行中</span>
+            <span className="text-[0.725rem] text-amber-500">無重力穩定對沖運行中</span>
           </div>
         </div>
       </footer>
@@ -6445,10 +6447,10 @@ export default function App() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
-                  <span className={`text-[10px] font-black tracking-wider uppercase px-1.5 py-0.5 rounded font-mono ${currentToast.type === 'BUY' ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/20' : 'bg-rose-950 text-rose-400 border border-rose-500/20'}`}>
+                  <span className={`text-[0.725rem] font-black tracking-wider uppercase px-1.5 py-0.5 rounded font-mono ${currentToast.type === 'BUY' ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/20' : 'bg-rose-950 text-rose-400 border border-rose-500/20'}`}>
                     AI {currentToast.type === 'BUY' ? '自動建倉' : '自動平倉'}
                   </span>
-                  <span className="text-[9px] text-zinc-550 font-mono">
+                  <span className="text-[0.65rem] text-zinc-550 font-mono">
                     {new Date(currentToast.timestamp).toLocaleTimeString('zh-TW', { hour12: false })}
                   </span>
                 </div>
@@ -6458,7 +6460,7 @@ export default function App() {
                   <span className="text-zinc-500">|</span>
                   <span className="text-[#FFB74D] font-mono">NT$ {currentToast.price}</span>
                 </h4>
-                <p className="text-[10px] text-zinc-450 mt-1.5 leading-relaxed bg-zinc-900/40 p-2 rounded border border-zinc-900/60 font-mono">
+                <p className="text-[0.725rem] text-zinc-450 mt-1.5 leading-relaxed bg-zinc-900/40 p-2 rounded border border-zinc-900/60 font-mono">
                   {currentToast.reason}
                 </p>
               </div>
@@ -6561,7 +6563,7 @@ export default function App() {
               </div>
 
               {buyPrice * buyShares > 25000 && (
-                <p className="text-[10px] text-rose-400 font-bold mt-2 font-mono text-right">
+                <p className="text-[0.725rem] text-rose-400 font-bold mt-2 font-mono text-right">
                   ⚠️ 警告: 交易成本超過 NT$ 25,000 的風控安全紅線！請調低股數
                 </p>
               )}
