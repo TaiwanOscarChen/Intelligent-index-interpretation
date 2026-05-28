@@ -146,6 +146,7 @@ export default function App() {
   const [selectedSignalFilters, setSelectedSignalFilters] = useState<StockSignalOption[]>(["多", "空", "持倉", "隔離"]);
   const [sortBy, setSortBy] = useState<string>("score_desc"); // change_pct_desc, change_pct_asc, id, close_desc, volume_desc, score_desc
   const [selectedStock, setSelectedStock] = useState<StockSignal | null>(null);
+  const hasSetInitialStock = useRef(false);
   
   // Tab control
   const [activeTab, setActiveTab] = useState<"radar" | "holdings" | "exits" | "sop" | "strategy" | "screener">("radar");
@@ -357,9 +358,10 @@ export default function App() {
       if (resData.success && resData.data) {
         setData(resData.data);
         setDbSync(resData.dbSync);
-        if (resData.data.signals?.length > 0 && !selectedStock) {
+        if (resData.data.signals?.length > 0 && !hasSetInitialStock.current) {
           setSelectedStock(resData.data.signals[0]);
           setNotesText(resData.data.signals[0].master_notes || "");
+          hasSetInitialStock.current = true;
         }
       }
     } catch (error) {
@@ -1631,7 +1633,7 @@ export default function App() {
                           <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-850 space-y-2">
                             <h4 className="text-[0.65rem] text-zinc-500 font-bold uppercase tracking-wider font-mono flex items-center gap-1.5">
                               <Sparkles className="w-3 h-3 text-[#FFB74D]" />
-                              🤖 AI 主力意圖與多空能量分析
+                              AI 主力意圖與多空能量分析
                             </h4>
                             
                             <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[0.55rem] font-mono">
@@ -1707,7 +1709,7 @@ export default function App() {
                           <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-850 space-y-2 select-none">
                             <h4 className="text-[0.65rem] text-zinc-500 font-bold uppercase tracking-wider font-mono flex items-center gap-1.5">
                               <Sliders className="w-3 h-3 text-[#FFB74D]" />
-                              📐 關鍵K線型態分析 (SVG Pattern Preview)
+                              關鍵K線型態分析 (SVG Pattern Preview)
                             </h4>
 
                             <div className="grid grid-cols-2 gap-3">
@@ -1798,7 +1800,7 @@ export default function App() {
                                     <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-850 space-y-1.5">
                                       <h4 className="text-[0.65rem] text-zinc-500 font-bold uppercase tracking-wider font-mono flex items-center gap-1.5">
                                         <Activity className="w-3 h-3 text-[#FFB74D]" />
-                                        📊 三大法人近 5 日籌碼動態 (張)
+                                        三大法人近 5 日籌碼動態 (張)
                                       </h4>
                                       <div className="overflow-x-auto">
                                         <table className="w-full text-left border-collapse text-[0.55rem] font-mono">
@@ -1936,7 +1938,7 @@ export default function App() {
                                     <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-850 space-y-2">
                                       <h4 className="text-[0.65rem] text-zinc-500 font-bold uppercase tracking-wider font-mono flex items-center gap-1.5">
                                         <Zap className="w-3 h-3 text-[#FFB74D]" />
-                                        🗺️ 關鍵價位與主力沙盤路徑預測
+                                        關鍵價位與主力沙盤路徑預測
                                       </h4>
                                       
                                       {/* Key Levels Grid */}
@@ -1999,8 +2001,8 @@ export default function App() {
                               {/* Shape and K-line Analysis */}
                               <div className="bg-zinc-950 p-2.5 rounded-lg border border-zinc-850 space-y-1.5">
                                 <h4 className="text-[0.65rem] text-zinc-500 font-bold uppercase tracking-wider font-mono flex items-center gap-1.5">
-                                  <Cpu className="w-3 h-3 text-[#FFB74D] shrink-0" />
-                                  🤖 AI 形態與 K 線結論
+                                  <TrendingUp className="w-3 h-3 text-[#FFB74D] shrink-0" />
+                                  AI 形態與 K 線結論
                                 </h4>
                                 <div className="grid grid-cols-2 gap-1.5 text-[0.55rem] font-mono">
                                   <div className="bg-zinc-900/40 p-1 rounded border border-zinc-900">
@@ -2533,38 +2535,38 @@ export default function App() {
       </header>
 
       {/* Global Macro Bloomberg-style Banner */}
-      <div className="bg-[#0c0e12] border-b border-zinc-850 py-2.5 px-6">
-        <div className="w-full max-w-[1700px] mx-auto flex flex-wrap items-center justify-between gap-4 font-mono text-xs font-bold">
-          <div className="flex items-center gap-6 overflow-x-auto py-1">
-            <span className="text-zinc-500 text-[0.725rem] tracking-wider uppercase font-bold">🌐 全球總經避險監控:</span>
+      <div className="bg-[#0c0e12] border-b border-zinc-850 py-1.5 px-4 md:py-2.5 md:px-6">
+        <div className="w-full max-w-[1700px] mx-auto flex flex-col md:flex-row items-center justify-between gap-2 md:gap-4 font-mono text-[0.725rem] font-bold">
+          <div className="flex items-center gap-2 md:gap-5 overflow-x-auto py-0.5 w-full md:w-auto scrollbar-none whitespace-nowrap">
+            <span className="text-zinc-500 text-[0.6rem] md:text-[0.725rem] tracking-wider uppercase font-bold shrink-0">🌐 全球總經避險監控:</span>
             
-            <div className="flex items-center gap-1.5 bg-zinc-950/60 border border-zinc-850 rounded px-2.5 py-1 text-sky-400">
+            <div className="flex items-center gap-1.5 bg-zinc-950/60 border border-zinc-850 rounded px-2 py-0.5 md:px-2.5 md:py-1 text-sky-400 text-[0.625rem] md:text-xs shrink-0">
               <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse"></span>
-              <span>VIX 恐慌指數:</span>
-              <span className="text-white font-extrabold text-[0.875rem]">{data ? data.vixValue?.toFixed(2) : "16.70"}</span>
+              <span>VIX 恐慌:</span>
+              <span className="text-white font-extrabold text-[0.75rem] md:text-[0.875rem]">{data ? data.vixValue?.toFixed(2) : "16.70"}</span>
             </div>
 
-            <div className="flex items-center gap-1.5 bg-zinc-950/60 border border-zinc-850 rounded px-2.5 py-1 text-[#f43f5e]">
+            <div className="flex items-center gap-1.5 bg-zinc-950/60 border border-zinc-850 rounded px-2 py-0.5 md:px-2.5 md:py-1 text-[#f43f5e] text-[0.625rem] md:text-xs shrink-0">
               <span className="w-1.5 h-1.5 rounded-full bg-[#f43f5e] animate-pulse"></span>
-              <span>SOX 費半指數:</span>
-              <span className="text-white font-extrabold text-[0.875rem]">12202.54</span>
+              <span>SOX 費半:</span>
+              <span className="text-white font-extrabold text-[0.75rem] md:text-[0.875rem]">12202.54</span>
             </div>
 
-            <div className="flex items-center gap-1.5 bg-zinc-950/60 border border-zinc-850 rounded px-2.5 py-1 text-[#f43f5e]">
+            <div className="flex items-center gap-1.5 bg-zinc-950/60 border border-zinc-850 rounded px-2 py-0.5 md:px-2.5 md:py-1 text-[#f43f5e] text-[0.625rem] md:text-xs shrink-0">
               <span className="w-1.5 h-1.5 rounded-full bg-[#f43f5e] animate-pulse"></span>
-              <span>WTI 原油價格:</span>
-              <span className="text-white font-extrabold text-[0.875rem]">$97.00</span>
+              <span>WTI 原油:</span>
+              <span className="text-white font-extrabold text-[0.75rem] md:text-[0.875rem]">$97.00</span>
             </div>
 
-            <div className="flex items-center gap-1.5 bg-zinc-950/60 border border-zinc-850 rounded px-2.5 py-1 text-[#10b881]">
+            <div className="flex items-center gap-1.5 bg-zinc-950/60 border border-zinc-850 rounded px-2 py-0.5 md:px-2.5 md:py-1 text-[#10b881] text-[0.625rem] md:text-xs shrink-0">
               <span className="w-1.5 h-1.5 rounded-full bg-[#10b881]"></span>
-              <span>現金水位持籌:</span>
-              <span className="text-white font-extrabold text-[0.875rem]">30%</span>
+              <span>現金水位:</span>
+              <span className="text-white font-extrabold text-[0.75rem] md:text-[0.875rem]">30%</span>
             </div>
           </div>
           
-          <div className="text-[0.725rem] text-zinc-500 font-bold uppercase tracking-wider flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-[#10b881] animate-ping"></span>
+          <div className="text-[0.6rem] md:text-[0.725rem] text-zinc-500 font-bold uppercase tracking-wider flex items-center gap-1.5 shrink-0 self-end md:self-auto mt-1 md:mt-0">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#10b881] animate-ping"></span>
             <span>主力大資金盤中安全預警</span>
           </div>
         </div>
