@@ -909,7 +909,86 @@ def execute_ai_auto_trade(current_vix):
         is_trading_hours = is_weekday and ("09:00" <= current_time_str <= "13:30")
         
         if not is_trading_hours:
-            print(f"⏰ [AI Auto Trade] 當前台北時間 {now_taipei.strftime('%Y-%m-%d %H:%M:%S')} 非開盤盤中時段 (週一至週五 09:00 - 13:30)，跳過自動進出場交易。")
+            print(f"⏰ [AI Auto Trade] 當前台北時間 {now_taipei.strftime('%Y-%m-%d %H:%M:%S')} 非開盤盤中時段，啟動「盤後預判與提醒機制」。")
+            if not MONGO_URI:
+                return
+            client = MongoClient(MONGO_URI)
+            db = client["LionKing_DB"]
+            strategy_collection = db['strategy_signals']
+            holdings_collection = db['simulated_holdings']
+            notifications_collection = db['trade_notifications']
+            
+            signals = list(strategy_collection.find({}))
+            holdings = list(holdings_collection.find({}))
+            
+            # Check for exit signals (REMIND_SELL)
+            for h in holdings:
+                stock_id = h.get('stock_id')
+                sig = next((s for s in signals if s.get('stock_id') == stock_id), None)
+                if not sig:
+                    continue
+                current_price = sig.get('close_price')
+                buy_price = h.get('buy_price')
+                current_pnl_pct = ((current_price - buy_price) / buy_price) * 100
+                stop_loss = sig.get('stop_loss_price') or (buy_price * 0.95)
+                
+                should_remind_exit = False
+                reason = ""
+                if current_price <= stop_loss:
+                    should_remind_exit = True
+                    reason = "【AI 平倉預告】股價觸及止損或移動防線，預期將於開盤交易時段出清。"
+                elif current_pnl_pct <= -3.5:
+                    should_remind_exit = True
+                    reason = "【AI 平倉預告】虧損達 -3.5% 停損水位，預期將於開盤交易時段出清。"
+                elif current_pnl_pct >= 20.0 and not h.get('take_profit_triggered'):
+                    should_remind_exit = True
+                    reason = "【AI 減碼預告】獲利達 +20% 強制停利線，預期將於開盤交易時段執行減碼 50% 鎖利。"
+                elif sig.get('score', 0) < 38:
+                    should_remind_exit = True
+                    reason = f"【AI 平倉預告】評分跌破 38 分防禦線，預期將於開盤交易時段執行平倉。"
+                    
+                if should_remind_exit:
+                    stock_name = h.get('stock_name', stock_id)
+                    existing = notifications_collection.find_one({
+                        "stock_id": stock_id,
+                        "type": {"$in": ["REMIND_SELL", "SELL"]},
+                        "timestamp": {"$gte": (now_taipei - datetime.timedelta(hours=18)).isoformat()}
+                    })
+                    if not existing:
+                        notifications_collection.insert_one({
+                            "type": "REMIND_SELL",
+                            "stock_id": stock_id,
+                            "stock_name": stock_name,
+                            "price": current_price,
+                            "reason": reason,
+                            "timestamp": now_taipei.isoformat()
+                        })
+                        print(f"📢 [AI Auto Trade] 已發布盤後平倉預告：{stock_name} ({stock_id})")
+                        
+            # Check for entry signals (REMIND_BUY)
+            if len(holdings) < 5:
+                candidates = [s for s in signals if s.get('score', 0) >= 38 and not any(h.get('stock_id') == s.get('stock_id') for h in holdings)]
+                candidates.sort(key=lambda x: x.get('score', 0), reverse=True)
+                for sig in candidates[:(5 - len(holdings))]:
+                    stock_id = sig.get('stock_id')
+                    stock_name = sig.get('stock_name')
+                    close_price = sig.get('close_price')
+                    score = sig.get('score', 0)
+                    existing = notifications_collection.find_one({
+                        "stock_id": stock_id,
+                        "type": {"$in": ["REMIND_BUY", "BUY"]},
+                        "timestamp": {"$gte": (now_taipei - datetime.timedelta(hours=18)).isoformat()}
+                    })
+                    if not existing:
+                        notifications_collection.insert_one({
+                            "type": "REMIND_BUY",
+                            "stock_id": stock_id,
+                            "stock_name": stock_name,
+                            "price": close_price,
+                            "reason": f"【AI 建倉預告】個股評分高達 {score} 分符合建倉標準，預期將於開盤交易時段買入。",
+                            "timestamp": now_taipei.isoformat()
+                        })
+                        print(f"📢 [AI Auto Trade] 已發布盤後建倉預告：{stock_name} ({stock_id})")
             return
             
         if not MONGO_URI:

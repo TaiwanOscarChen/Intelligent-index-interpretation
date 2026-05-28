@@ -409,11 +409,14 @@ export default function App() {
         setTradeNotifications(list);
         const newest = list[0];
         if (newest.timestamp !== lastNotificationTime) {
+          const isInitial = lastNotificationTime === "";
           setLastNotificationTime(newest.timestamp);
-          setCurrentToast(newest);
-          setTimeout(() => {
-            setCurrentToast(null);
-          }, 8000);
+          if (!isInitial) {
+            setCurrentToast(newest);
+            setTimeout(() => {
+              setCurrentToast(null);
+            }, 8000);
+          }
         }
       }
     } catch (err) {
@@ -2974,7 +2977,7 @@ export default function App() {
                   <div className="flex justify-between items-center border-b border-zinc-850 pb-2 mb-2">
                     <div className="flex items-center gap-1.5">
                       <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-                      <h4 className="text-white text-xs font-bold font-sans">AI 量化自動交易實時情報流</h4>
+                      <h4 className="text-white text-xs font-bold font-sans">AI 實時情報流</h4>
                     </div>
                     <span className="text-[0.55rem] font-mono text-[#FFB74D] uppercase font-bold">實時廣播</span>
                   </div>
@@ -2985,8 +2988,15 @@ export default function App() {
                     ) : (
                       tradeNotifications.slice(0, 3).map((item, idx) => (
                         <div key={idx} className="flex justify-between items-center p-1 bg-zinc-950/50 rounded border border-zinc-900/60">
-                          <span className={`font-bold ${item.type === 'BUY' ? 'text-emerald-400' : 'text-rose-400'}`}>
-                            {item.type === 'BUY' ? '🟢 買入' : '🔴 賣出'}
+                          <span className={`font-bold ${
+                            item.type === 'BUY' ? 'text-emerald-400' :
+                            item.type === 'SELL' ? 'text-rose-400' : 'text-amber-400'
+                          }`}>
+                            {
+                              item.type === 'BUY' ? '🟢 買入' :
+                              item.type === 'SELL' ? '🔴 賣出' :
+                              item.type === 'REMIND_BUY' ? '🟡 預計買' : '🟡 預計賣'
+                            }
                           </span>
                           <span className="text-zinc-300 font-bold truncate max-w-[80px]">{item.stock_name}</span>
                           <span className="text-zinc-500">{item.price} 元</span>
@@ -6444,13 +6454,25 @@ export default function App() {
           >
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 via-yellow-400 to-[#E5A823]"></div>
             <div className="flex items-start gap-3 mt-1">
-              <div className={`p-2 rounded-lg shrink-0 ${currentToast.type === 'BUY' ? 'bg-emerald-950/70 border border-emerald-500/20 text-emerald-400' : 'bg-rose-950/70 border border-rose-500/20 text-rose-400'}`}>
-                {currentToast.type === 'BUY' ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
+              <div className={`p-2 rounded-lg shrink-0 ${
+                currentToast.type === 'BUY' ? 'bg-emerald-950/70 border border-emerald-500/20 text-emerald-400' :
+                currentToast.type === 'SELL' ? 'bg-rose-950/70 border border-rose-500/20 text-rose-400' :
+                'bg-amber-950/70 border border-amber-500/20 text-amber-400'
+              }`}>
+                {currentToast.type.includes('BUY') ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
-                  <span className={`text-[0.725rem] font-black tracking-wider uppercase px-1.5 py-0.5 rounded font-mono ${currentToast.type === 'BUY' ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/20' : 'bg-rose-950 text-rose-400 border border-rose-500/20'}`}>
-                    AI {currentToast.type === 'BUY' ? '自動建倉' : '自動平倉'}
+                  <span className={`text-[0.725rem] font-black tracking-wider uppercase px-1.5 py-0.5 rounded font-mono ${
+                    currentToast.type === 'BUY' ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/20' :
+                    currentToast.type === 'SELL' ? 'bg-rose-950 text-rose-400 border border-rose-500/20' :
+                    'bg-amber-950 text-amber-400 border border-amber-500/20'
+                  }`}>
+                    AI {
+                      currentToast.type === 'BUY' ? '自動建倉' :
+                      currentToast.type === 'SELL' ? '自動平倉' :
+                      currentToast.type === 'REMIND_BUY' ? '建倉預告' : '平倉預告'
+                    }
                   </span>
                   <span className="text-[0.65rem] text-zinc-550 font-mono">
                     {new Date(currentToast.timestamp).toLocaleTimeString('zh-TW', { hour12: false })}
