@@ -255,6 +255,18 @@ export default function App() {
   const [editExitReview, setEditExitReview] = useState<string>("");
   const [isSubmittingEditExit, setIsSubmittingEditExit] = useState<boolean>(false);
 
+  // Holdings Edit & Multi-Select Delete States
+  const [isHoldingSelectMode, setIsHoldingSelectMode] = useState<boolean>(false);
+  const [selectedHoldingIds, setSelectedHoldingIds] = useState<string[]>([]);
+  const [isDeletingHoldings, setIsDeletingHoldings] = useState<boolean>(false);
+  const [editingHolding, setEditingHolding] = useState<HoldingItem | null>(null);
+  const [editHoldingBuyPrice, setEditHoldingBuyPrice] = useState<number>(0);
+  const [editHoldingShares, setEditHoldingShares] = useState<number>(0);
+  const [editHoldingStopLoss, setEditHoldingStopLoss] = useState<number>(0);
+  const [editHoldingTakeProfit, setEditHoldingTakeProfit] = useState<number>(0);
+  const [editHoldingBuyReason, setEditHoldingBuyReason] = useState<string>("");
+  const [isSubmittingEditHolding, setIsSubmittingEditHolding] = useState<boolean>(false);
+
   // Notes
   const [notesText, setNotesText] = useState<string>("");
   const [isGeneratingNotes, setIsGeneratingNotes] = useState<boolean>(false);
@@ -309,10 +321,16 @@ export default function App() {
   const [vixAlertLevel, setVixAlertLevel] = useState<"safe" | "warning" | "blackswan">("safe");
 
   useEffect(() => {
-    // Keep real-time UTC Clock updated
+    // Keep real-time Taipei Clock updated (UTC+8)
     const updateTime = () => {
-      const d = new Date();
-      setUtcTime(d.toISOString().replace("T", " ").substring(0, 19) + " UTC");
+      const d = new Date(Date.now() + 8 * 60 * 60 * 1000);
+      const yyyy = d.getUTCFullYear();
+      const mm   = String(d.getUTCMonth() + 1).padStart(2, "0");
+      const dd   = String(d.getUTCDate()).padStart(2, "0");
+      const hh   = String(d.getUTCHours()).padStart(2, "0");
+      const min  = String(d.getUTCMinutes()).padStart(2, "0");
+      const ss   = String(d.getUTCSeconds()).padStart(2, "0");
+      setUtcTime(`${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`);
     };
     updateTime();
     const interval = setInterval(updateTime, 1000);
@@ -840,6 +858,89 @@ export default function App() {
       alert("批次刪除已出場紀錄失敗，請稍後再試。");
     }
   };
+
+  // Open edit modal for a holding
+  const openEditHoldingModal = (holding: HoldingItem) => {
+    setEditingHolding(holding);
+    setEditHoldingBuyPrice(holding.buy_price);
+    setEditHoldingShares(holding.shares);
+    setEditHoldingStopLoss(holding.stop_loss_price ?? Math.round(holding.buy_price * 0.95 * 10) / 10);
+    setEditHoldingTakeProfit(holding.take_profit_price ?? Math.round(holding.buy_price * 1.20 * 10) / 10);
+    setEditHoldingBuyReason(holding.buy_reason || "");
+  };
+
+  // Save edited holding
+  const handleEditHoldingSave = async () => {
+    if (!editingHolding) return;
+    setIsSubmittingEditHolding(true);
+    try {
+      const response = await fetch(`/api/holdings/edit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          stock_id: editingHolding.stock_id,
+          buy_price: editHoldingBuyPrice,
+          shares: editHoldingShares,
+          stop_loss_price: editHoldingStopLoss,
+          take_profit_price: editHoldingTakeProfit,
+          buy_reason: editHoldingBuyReason
+        })
+      });
+      const resData = await response.json();
+      if (resData.success) {
+        setHoldings(prev => prev.map(h => {
+          if (h.stock_id === editingHolding.stock_id) {
+            return {
+              ...h,
+              buy_price: editHoldingBuyPrice,
+              shares: editHoldingShares,
+              stop_loss_price: editHoldingStopLoss,
+              take_profit_price: editHoldingTakeProfit,
+              buy_reason: editHoldingBuyReason
+            };
+          }
+          return h;
+        }));
+        setEditingHolding(null);
+      } else {
+        alert("更新失敗：" + (resData.message || resData.error || "未知錯誤"));
+      }
+    } catch (error) {
+      console.error("更新持倉資料失敗:", error);
+      alert("更新持倉資料失敗，請稍後再試。");
+    } finally {
+      setIsSubmittingEditHolding(false);
+    }
+  };
+
+  // Batch delete holdings
+  const handleBatchDeleteHoldings = async () => {
+    if (selectedHoldingIds.length === 0) return;
+    if (!confirm(`確定要刪除選中的 ${selectedHoldingIds.length} 筆持倉紀錄嗎？此動作無法復原，且不會產生出場紀錄。`)) return;
+    setIsDeletingHoldings(true);
+    try {
+      const response = await fetch("/api/holdings/delete-batch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: selectedHoldingIds })
+      });
+      const resData = await response.json();
+      if (resData.success) {
+        setHoldings(prev => prev.filter(h => !selectedHoldingIds.includes(h.stock_id)));
+        setSelectedHoldingIds([]);
+        setIsHoldingSelectMode(false);
+      } else {
+        alert("刪除失敗：" + (resData.message || resData.error || "未知錯誤"));
+      }
+    } catch (error) {
+      console.error("批次刪除持倉失敗:", error);
+      alert("批次刪除持倉失敗，請稍後再試。");
+    } finally {
+      setIsDeletingHoldings(false);
+    }
+  };
+
+
 
   // Handle file select (image/text) with client-side canvas compression
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, fileType: "image" | "text") => {
@@ -4958,12 +5059,61 @@ export default function App() {
                 </div>
               </div>
 
+              {/* Holdings Toolbar: multi-select + delete */}
+              {liveHoldings.length > 0 && (
+                <div className="flex items-center gap-3 flex-wrap">
+                  <button
+                    onClick={() => {
+                      setIsHoldingSelectMode(prev => {
+                        if (prev) setSelectedHoldingIds([]);
+                        return !prev;
+                      });
+                    }}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold font-mono border transition ${
+                      isHoldingSelectMode
+                        ? "bg-amber-500/20 border-amber-500/50 text-amber-400"
+                        : "bg-zinc-900 border-zinc-700 text-zinc-400 hover:border-zinc-500"
+                    }`}
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    {isHoldingSelectMode ? `已選 ${selectedHoldingIds.length} 筆` : "多選管理"}
+                  </button>
+
+                  {isHoldingSelectMode && (
+                    <>
+                      <button
+                        onClick={() => {
+                          if (selectedHoldingIds.length === liveHoldings.length) {
+                            setSelectedHoldingIds([]);
+                          } else {
+                            setSelectedHoldingIds(liveHoldings.map(h => h.stock_id));
+                          }
+                        }}
+                        className="px-4 py-2 rounded-lg text-xs font-bold font-mono border border-zinc-700 bg-zinc-900 text-zinc-400 hover:border-zinc-500 transition"
+                      >
+                        {selectedHoldingIds.length === liveHoldings.length ? "取消全選" : "全選"}
+                      </button>
+
+                      <button
+                        disabled={selectedHoldingIds.length === 0 || isDeletingHoldings}
+                        onClick={handleBatchDeleteHoldings}
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold font-mono border border-rose-500/50 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        {isDeletingHoldings ? "刪除中..." : `刪除選中 (${selectedHoldingIds.length})`}
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+
               {/* Holdings Table */}
               <div className="premium-card rounded-xl shadow-xl overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse table-auto text-xs">
                     <thead>
                       <tr className="border-b border-zinc-850 bg-[#0e1117] text-[10px] font-mono font-bold text-zinc-500 uppercase select-none">
+                        {isHoldingSelectMode && <th className="py-3 px-3 w-8"></th>}
                         <th className="py-3 px-4">股票標的</th>
                         <th className="py-3 px-3">進場根據</th>
                         <th className="py-3 px-2 text-right">買入日期 / 時間</th>
@@ -4975,13 +5125,13 @@ export default function App() {
                         <th className="py-3 px-2 text-right text-emerald-400">買盤防線(止損)</th>
                         <th className="py-3 px-2 text-right">未實現損益 (P&L)</th>
                         <th className="py-3 px-3 text-center">指導建議</th>
-                        <th className="py-3 px-4 text-center">清倉指令</th>
+                        <th className="py-3 px-4 text-center">操作</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-850/50 text-zinc-350">
                       {liveHoldings.length === 0 ? (
                         <tr>
-                          <td colSpan={12} className="py-16 text-center text-zinc-500 font-mono">
+                          <td colSpan={13} className="py-16 text-center text-zinc-500 font-mono">
                             <Sliders className="w-10 h-10 text-zinc-700 mx-auto mb-2" />
                             當前無任何持倉股票部位
                             <p className="text-[11px] text-[#FFB74D] mt-1 hover:underline cursor-pointer" onClick={() => setActiveTab("radar")}>
@@ -4991,8 +5141,37 @@ export default function App() {
                         </tr>
                       ) : (
                         liveHoldings.map(item => {
+                          const isSelected = selectedHoldingIds.includes(item.stock_id);
                           return (
-                            <tr key={item.stock_id} className="hover:bg-zinc-900/30 transition">
+                            <tr
+                              key={item.stock_id}
+                              className={`hover:bg-zinc-900/30 transition ${isSelected ? "bg-amber-500/8 border-l-2 border-amber-500" : ""}`}
+                              onClick={isHoldingSelectMode ? () => {
+                                setSelectedHoldingIds(prev =>
+                                  prev.includes(item.stock_id)
+                                    ? prev.filter(id => id !== item.stock_id)
+                                    : [...prev, item.stock_id]
+                                );
+                              } : undefined}
+                              style={isHoldingSelectMode ? { cursor: "pointer" } : {}}
+                            >
+                              {isHoldingSelectMode && (
+                                <td className="py-3 px-3">
+                                  <input
+                                    type="checkbox"
+                                    checked={isSelected}
+                                    onChange={() => {
+                                      setSelectedHoldingIds(prev =>
+                                        prev.includes(item.stock_id)
+                                          ? prev.filter(id => id !== item.stock_id)
+                                          : [...prev, item.stock_id]
+                                      );
+                                    }}
+                                    onClick={e => e.stopPropagation()}
+                                    className="w-4 h-4 rounded accent-amber-500 cursor-pointer"
+                                  />
+                                </td>
+                              )}
                               <td className="py-3 px-4 font-bold text-white">
                                 <div className="flex items-center gap-1">
                                   <span className="font-mono">{item.stock_id}</span>
@@ -5043,12 +5222,21 @@ export default function App() {
                                 {renderActionBadge(item.suggested_action)}
                               </td>
                               <td className="py-3 px-4 text-center">
-                                <button
-                                  onClick={() => openExitModalForHolding(item)}
-                                  className="px-3 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-bold hover:opacity-90 transition active:scale-[0.96] text-[11px] shadow-[0_0_8px_rgba(16,184,129,0.2)]"
-                                >
-                                  出場結算
-                                </button>
+                                <div className="flex items-center justify-center gap-2">
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); openEditHoldingModal(item); }}
+                                    className="px-3 py-1 rounded bg-indigo-600/80 hover:bg-indigo-500 text-white font-bold transition active:scale-[0.96] text-[11px] shadow-[0_0_8px_rgba(99,102,241,0.2)] flex items-center gap-1"
+                                  >
+                                    <Edit3 className="w-3 h-3" />
+                                    編輯
+                                  </button>
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); openExitModalForHolding(item); }}
+                                    className="px-3 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-bold hover:opacity-90 transition active:scale-[0.96] text-[11px] shadow-[0_0_8px_rgba(16,184,129,0.2)]"
+                                  >
+                                    出場
+                                  </button>
+                                </div>
                               </td>
                             </tr>
                           );
@@ -5058,6 +5246,7 @@ export default function App() {
                   </table>
                 </div>
               </div>
+
 
               {/* Portfolio Analytics Row */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -5553,6 +5742,129 @@ export default function App() {
                       className="px-5 py-2 rounded-lg text-xs font-bold text-black bg-[#E5A823] hover:bg-[#ffbe33] transition disabled:opacity-50 cursor-pointer flex items-center gap-1.5 shadow-md"
                     >
                       {isSubmittingEditExit ? (
+                        <>
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin shrink-0" />
+                          更新中...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                          儲存修改
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ===== Holdings Edit Modal ===== */}
+            {editingHolding && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-fade-in">
+                <div className="bg-[#0e1117] border border-zinc-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl animate-scale-up">
+                  <div className="flex justify-between items-center bg-zinc-950 px-6 py-4 border-b border-zinc-900">
+                    <h3 className="text-white text-base font-bold flex items-center gap-2">
+                      <Edit3 className="w-5 h-5 text-indigo-400 shrink-0" />
+                      編輯持倉資料 —
+                      <span className="font-mono text-indigo-300">{editingHolding.stock_id}</span>
+                      <span className="text-zinc-400 text-sm font-normal">{editingHolding.stock_name}</span>
+                    </h3>
+                    <button
+                      onClick={() => setEditingHolding(null)}
+                      className="text-zinc-400 hover:text-white transition cursor-pointer"
+                    >
+                      <X className="w-5 h-5 shrink-0" />
+                    </button>
+                  </div>
+
+                  <div className="p-6 space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-zinc-400 mb-1.5 font-mono">
+                          進場均價 (元)
+                        </label>
+                        <input
+                          type="number"
+                          value={editHoldingBuyPrice}
+                          onChange={(e) => setEditHoldingBuyPrice(Number(e.target.value))}
+                          step="0.1"
+                          min="0"
+                          className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3.5 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 transition-all font-mono"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-zinc-400 mb-1.5 font-mono">
+                          持倉股數 (股)
+                        </label>
+                        <input
+                          type="number"
+                          value={editHoldingShares}
+                          onChange={(e) => setEditHoldingShares(Number(e.target.value))}
+                          step="1"
+                          min="1"
+                          className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3.5 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 transition-all font-mono"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-zinc-400 mb-1.5 font-mono">
+                          🟢 止損防線 (元)
+                        </label>
+                        <input
+                          type="number"
+                          value={editHoldingStopLoss}
+                          onChange={(e) => setEditHoldingStopLoss(Number(e.target.value))}
+                          step="0.1"
+                          min="0"
+                          className="w-full bg-zinc-950 border border-emerald-800/60 rounded-lg px-3.5 py-2 text-sm text-emerald-300 focus:outline-none focus:border-emerald-500 transition-all font-mono"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-zinc-400 mb-1.5 font-mono">
+                          🔴 停利目標 (元)
+                        </label>
+                        <input
+                          type="number"
+                          value={editHoldingTakeProfit}
+                          onChange={(e) => setEditHoldingTakeProfit(Number(e.target.value))}
+                          step="0.1"
+                          min="0"
+                          className="w-full bg-zinc-950 border border-rose-800/60 rounded-lg px-3.5 py-2 text-sm text-rose-300 focus:outline-none focus:border-rose-500 transition-all font-mono"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-zinc-400 mb-1.5 font-mono">
+                        進場依據備註
+                      </label>
+                      <textarea
+                        value={editHoldingBuyReason}
+                        onChange={(e) => setEditHoldingBuyReason(e.target.value)}
+                        rows={3}
+                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 transition-all font-sans resize-none"
+                        placeholder="說明建倉理由，例如：外資連續買超、突破月線均線支撐等..."
+                      />
+                    </div>
+
+                    <div className="bg-zinc-950/60 rounded-lg p-3 border border-zinc-900 text-[10px] font-mono text-zinc-500 grid grid-cols-2 gap-2">
+                      <span>當前盈虧: <span className={editingHolding.current_pnl_pct >= 0 ? "text-rose-400 font-bold" : "text-emerald-400 font-bold"}>{editingHolding.current_pnl_pct >= 0 ? "+" : ""}{editingHolding.current_pnl_pct.toFixed(2)}%</span></span>
+                      <span>現價: <span className="text-white font-bold">{editingHolding.current_price.toFixed(1)} 元</span></span>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-3 px-6 py-4 bg-zinc-950 border-t border-zinc-900">
+                    <button
+                      onClick={() => setEditingHolding(null)}
+                      className="px-4 py-2 rounded-lg text-xs font-bold text-zinc-400 hover:text-white bg-zinc-900 hover:bg-zinc-850 transition cursor-pointer"
+                    >
+                      取消
+                    </button>
+                    <button
+                      onClick={handleEditHoldingSave}
+                      disabled={isSubmittingEditHolding || editHoldingBuyPrice <= 0 || editHoldingShares <= 0}
+                      className="px-5 py-2 rounded-lg text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 transition disabled:opacity-50 cursor-pointer flex items-center gap-1.5 shadow-md"
+                    >
+                      {isSubmittingEditHolding ? (
                         <>
                           <RefreshCw className="w-3.5 h-3.5 animate-spin shrink-0" />
                           更新中...

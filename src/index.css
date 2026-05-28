@@ -27,6 +27,11 @@ body {
   background-color: #08090c;
   color: #d1d4dc;
   font-family: var(--font-sans);
+  font-size: 1rem; /* base font size */
+}
+
+@media (max-width: 640px) {
+  body { font-size: 1.125rem; }
 }
 
 /* Premium Glassmorphism and Gold Hover glow utility classes */

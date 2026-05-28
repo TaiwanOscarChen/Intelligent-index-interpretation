@@ -13,7 +13,35 @@ import YahooFinanceClass from "yahoo-finance2";
 const yahooFinance = new ((YahooFinanceClass as any).default || YahooFinanceClass)();
 import { promisify } from "util";
 import { INITIAL_STOCKS, StockBasicInfo } from "./src/initial_stocks.js";
-import { StockSignal, ScanResult, StockSignalOption, HoldingItem, ExitLogItem } from "./src/types.js";
+const AUTO_TRADE_DISABLED = process.env.AUTO_TRADE_DISABLED === 'true';
+const MIN_SCORE_FOR_ENTRY = 45;
+const SWAP_SCORE_MARGIN = 5;
+
+// Taipei Time Helper
+const getTaipeiDateParts = () => {
+  const d = new Date();
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Taipei",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false
+  });
+  const parts = formatter.formatToParts(d);
+  const partMap: Record<string, string> = {};
+  parts.forEach(p => {
+    partMap[p.type] = p.value;
+  });
+  return {
+    date: `${partMap.year}-${partMap.month}-${partMap.day}`,
+    time: `${partMap.hour}:${partMap.minute}:${partMap.second}`,
+    datetime: `${partMap.year}-${partMap.month}-${partMap.day} ${partMap.hour}:${partMap.minute}:${partMap.second}`,
+    timestamp: `${partMap.year}-${partMap.month}-${partMap.day}T${partMap.hour}:${partMap.minute}:${partMap.second}+08:00`
+  };
+};
 
 // Load environment variables
 dotenv.config();
@@ -1523,9 +1551,9 @@ app.post("/api/holdings/buy", async (req, res) => {
     return res.status(400).json({ success: false, message: "Missing buy orders parameters." });
   }
 
-  const nowTaipei = new Date(Date.now() + 8 * 60 * 60 * 1000);
-  const buy_date = nowTaipei.toISOString().split('T')[0];
-  const buy_time = nowTaipei.toISOString().split('T')[1].substring(0, 8);
+  const taipeiTime = getTaipeiDateParts();
+  const buy_date = taipeiTime.date;
+  const buy_time = taipeiTime.time;
 
   const newHolding: HoldingItem = {
     stock_id,
@@ -1590,7 +1618,7 @@ app.post("/api/holdings/exit", async (req, res) => {
     const priceExit = Number(exit_price);
     const pnl_value = Math.round((priceExit - holding.buy_price) * holding.shares * 10) / 10;
     const pnl_pct = Math.round(((priceExit - holding.buy_price) / holding.buy_price) * 100 * 100) / 100;
-    const exit_date = new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString().replace('T', ' ').substring(0, 19) + " (台北時間)";
+    const exit_date = getTaipeiDateParts().datetime + " (台北時間)";
 
     // Generative AI professional retrospect post-mortem review!
     let review_summary = `大師戰略檢討：個股 ${holding.stock_name} 於 ${exit_reason} 點清倉出場，盈虧 ${pnl_pct}%。戰略遵循 20MA 與移動停利線，嚴防下行回檔風險。`;
@@ -1719,9 +1747,68 @@ app.post("/api/exits/delete-batch", async (req, res) => {
 
 
 // ==============================================================================
+// 📋 HOLDINGS EDIT & BATCH DELETE APIs
+// ==============================================================================
+
+// 1. Edit a holding's fields
+app.post("/api/holdings/edit", async (req, res) => {
+  try {
+    const { stock_id, buy_price, shares, stop_loss_price, take_profit_price, buy_reason } = req.body;
+    if (!stock_id) return res.status(400).json({ success: false, message: "Missing stock_id." });
+
+    const updates: any = {};
+    if (buy_price !== undefined) updates.buy_price = Number(buy_price);
+    if (shares !== undefined) updates.shares = Number(shares);
+    if (stop_loss_price !== undefined) updates.stop_loss_price = Number(stop_loss_price);
+    if (take_profit_price !== undefined) {
+      updates.take_profit_price = Number(take_profit_price);
+    }
+    if (buy_reason !== undefined) updates.buy_reason = buy_reason;
+
+    updates.last_edited = getTaipeiDateParts().datetime + " (台北時間)";
+
+    if (dbConnected && holdingsCollection) {
+      await holdingsCollection.updateOne({ stock_id }, { $set: updates });
+    } else {
+      const idx = localHoldings.findIndex(h => h.stock_id === stock_id);
+      if (idx !== -1) {
+        localHoldings[idx] = { ...localHoldings[idx], ...updates };
+      }
+    }
+    console.log(`✏️ [Holdings Edit] Updated ${stock_id}:`, updates);
+    res.json({ success: true, message: "持倉資料已成功更新。" });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 2. Batch delete holdings (hard delete, no exit log)
+app.post("/api/holdings/delete-batch", async (req, res) => {
+  try {
+    const { ids } = req.body; // Array of stock_ids
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ success: false, message: "Missing or empty ids selection array." });
+    }
+
+    if (dbConnected && holdingsCollection) {
+      await holdingsCollection.deleteMany({ stock_id: { $in: ids } });
+    } else {
+      localHoldings = localHoldings.filter(h => !ids.includes(h.stock_id));
+    }
+    console.log(`🗑️ [Holdings Delete Batch] Deleted ${ids.length} holdings:`, ids);
+    res.json({ success: true, message: `成功刪除 ${ids.length} 筆持倉紀錄。` });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+
+
+// ==============================================================================
 // 💬 INTERACTIVE AI ADVISOR CHAT API
 // ==============================================================================
 app.post("/api/stocks/chat", async (req, res) => {
+
   const { messages, stock_id, fileData } = req.body;
   if (!messages || !Array.isArray(messages)) {
     return res.status(400).json({ success: false, message: "Missing messages dialog array." });
@@ -1885,6 +1972,7 @@ ${fileAnalysisContext}
 async function executeAIAutoTrade() {
   try {
     if (!dbConnected || !holdingsCollection || !exitsCollection) return;
+if (AUTO_TRADE_DISABLED) { console.log('🔒 [AI Auto Trade] AUTO_TRADE_DISABLED enabled, skipping trade execution.'); return; }
 
     // 剛性風控防線：進場與出場必須在開盤後盤中 (台北時間週一至週五 09:00 - 13:30)
     const formatter = new Intl.DateTimeFormat("en-US", {
@@ -1965,15 +2053,15 @@ async function executeAIAutoTrade() {
 
       if (shouldExit) {
         console.log(`🤖 [AI Auto Trade] ${isPartialExit ? '部分減碼' : '自動平倉'} ${h.stock_name} (${h.stock_id}) - 理由: ${reason}`);
-        const nowTaipei = new Date(Date.now() + 8 * 60 * 60 * 1000);
+        const taipeiTime = getTaipeiDateParts();
         const exitItem = {
           stock_id: h.stock_id,
           stock_name: h.stock_name,
           buy_price: h.buy_price,
           buy_date: h.buy_date,
           exit_price: current_price,
-          exit_date: nowTaipei.toISOString().split('T')[0],
-          exit_time: nowTaipei.toISOString().split('T')[1].substring(0, 8),
+          exit_date: taipeiTime.date,
+          exit_time: taipeiTime.time,
           shares: exitShares,
           pnl_value: Math.round((current_price - h.buy_price) * exitShares),
           pnl_pct: Math.round(current_pnl_pct * 100) / 100,
@@ -2025,10 +2113,11 @@ async function executeAIAutoTrade() {
     let activeHoldings = [...currentHoldings];
     let activeHoldingsCount = activeHoldings.length;
 
-    // Filter candidate signals (score >= 38 and not already in activeHoldings)
-    const candidates = signals
-      .filter((sig: any) => sig.score >= 38 && !activeHoldings.some((h: any) => h.stock_id === sig.stock_id))
-      .sort((a: any, b: any) => b.score - a.score);
+    // Filter candidate signals (score >= MIN_SCORE_FOR_ENTRY and not already in activeHoldings)
+const candidates = signals
+  .filter((sig: any) => sig.score >= MIN_SCORE_FOR_ENTRY && !activeHoldings.some((h: any) => h.stock_id === sig.stock_id))
+  .sort((a: any, b: any) => b.score - a.score);
+
 
     const getScore = (h: any) => {
       const sig = signals.find((s: any) => s.stock_id === h.stock_id);
@@ -2043,14 +2132,14 @@ async function executeAIAutoTrade() {
 
       if (activeHoldingsCount < 5) {
         console.log(`➕ [AI Auto Trade] Buy new signal stock: ${stock_name} (${stock_id}) with score: ${sig.score}`);
-        const nowTaipei = new Date(Date.now() + 8 * 60 * 60 * 1000);
+        const taipeiTime = getTaipeiDateParts();
         const shares = Math.floor(20000 / close_price) || 1;
         const newH = {
           stock_id,
           stock_name,
           buy_price: close_price,
-          buy_date: nowTaipei.toISOString().split('T')[0],
-          buy_time: nowTaipei.toISOString().split('T')[1].substring(0, 8),
+          buy_date: taipeiTime.date,
+          buy_time: taipeiTime.time,
           shares,
           current_price: close_price,
           current_pnl_pct: 0,
@@ -2076,7 +2165,7 @@ async function executeAIAutoTrade() {
           stock_name,
           price: close_price,
           reason: `評分達 ${sig.score} 分，AI 定向買入部位`,
-          timestamp: nowTaipei.toISOString()
+          timestamp: taipeiTime.timestamp
         });
       } else {
         // Swap logic: compare with the lowest score holding in activeHoldings
@@ -2085,18 +2174,18 @@ async function executeAIAutoTrade() {
         for (const h of activeHoldings) {
           const sVal = getScore(h);
           if (sVal < minScore) {
-            minScore = sVal;
+      minScore = sVal;
             hMin = h;
           }
         }
 
-        if (sig.score > minScore) {
+        if (sig.score > minScore + SWAP_SCORE_MARGIN) {
           const hMinId = hMin.stock_id;
           const hMinName = hMin.stock_name;
           const exitReason = `換股操作：由更高效益評分股票(${stock_name}: ${sig.score}分)替換得分最低持股(${hMinName}: ${minScore}分)`;
           console.log(`🔄 [AI Auto Trade] Swapping: exit ${hMinName} (${minScore} score) and enter ${stock_name} (${sig.score} score)`);
 
-          const nowTaipei = new Date(Date.now() + 8 * 60 * 60 * 1000);
+          const taipeiTime = getTaipeiDateParts();
           const hMinBuyPrice = hMin.buy_price;
           const hMinCurrentPrice = hMin.current_price || hMinBuyPrice;
           const hMinPnlPct = hMinBuyPrice ? ((hMinCurrentPrice - hMinBuyPrice) / hMinBuyPrice) * 100 : 0;
@@ -2108,8 +2197,8 @@ async function executeAIAutoTrade() {
             buy_price: hMinBuyPrice,
             buy_date: hMin.buy_date,
             exit_price: hMinCurrentPrice,
-            exit_date: nowTaipei.toISOString().split('T')[0],
-            exit_time: nowTaipei.toISOString().split('T')[1].substring(0, 8),
+            exit_date: taipeiTime.date,
+            exit_time: taipeiTime.time,
             shares: hMin.shares || 1,
             pnl_value: Math.round((hMinCurrentPrice - hMinBuyPrice) * (hMin.shares || 1)),
             pnl_pct: Math.round(hMinPnlPct * 100) / 100,
@@ -2128,7 +2217,7 @@ async function executeAIAutoTrade() {
             stock_name: hMinName,
             price: hMinCurrentPrice,
             reason: exitReason,
-            timestamp: nowTaipei.toISOString()
+            timestamp: taipeiTime.timestamp
           });
 
           // 4. Buy candidate stock
@@ -2137,8 +2226,8 @@ async function executeAIAutoTrade() {
             stock_id,
             stock_name,
             buy_price: close_price,
-            buy_date: nowTaipei.toISOString().split('T')[0],
-            buy_time: nowTaipei.toISOString().split('T')[1].substring(0, 8),
+            buy_date: taipeiTime.date,
+            buy_time: taipeiTime.time,
             shares,
             current_price: close_price,
             current_pnl_pct: 0,
@@ -2166,7 +2255,7 @@ async function executeAIAutoTrade() {
             stock_name,
             price: close_price,
             reason: `評分達 ${sig.score} 分，高於汰換門檻`,
-            timestamp: nowTaipei.toISOString()
+            timestamp: taipeiTime.timestamp
           });
         } else {
           // Since candidates are sorted by score descending, if this candidate cannot beat the min_score,
