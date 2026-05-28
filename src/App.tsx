@@ -2652,7 +2652,7 @@ export default function App() {
               )}
             </button>
 
-            <button
+             <button
               onClick={() => setActiveTab("holdings")}
               className={`group py-3 px-2 sm:px-2.5 md:px-3 lg:px-4 text-[0.8rem] sm:text-xs md:text-sm lg:text-[0.95rem] font-black uppercase tracking-wider group transition-all flex items-center gap-1 md:gap-1.5 border-b-2 transition-all relative whitespace-nowrap ${
                 activeTab === "holdings"
@@ -2661,7 +2661,12 @@ export default function App() {
               }`}
             >
               <Briefcase className="w-4 h-4 text-[#FFB74D]" />
-              持倉股票 ({holdings.length})
+              <span>持倉股票</span>
+              <span className={`px-1.5 py-0.5 text-[0.65rem] font-mono font-bold rounded-full transition-all ${
+                activeTab === "holdings" ? "bg-[#E5A823] text-zinc-950 shadow-[0_0_8px_rgba(229,168,35,0.4)]" : "bg-zinc-850 text-zinc-400 border border-zinc-800"
+              }`}>
+                {holdings.length}
+              </span>
               {activeTab === "holdings" && (
                 <motion.div layoutId="tab-active-pill" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E5A823]" />
               )}
@@ -2676,7 +2681,12 @@ export default function App() {
               }`}
             >
               <History className="w-4 h-4 text-[#FFB74D]" />
-              已出場檢討記錄 ({exits.length})
+              <span>已出場檢討記錄</span>
+              <span className={`px-1.5 py-0.5 text-[0.65rem] font-mono font-bold rounded-full transition-all ${
+                activeTab === "exits" ? "bg-[#E5A823] text-zinc-950 shadow-[0_0_8px_rgba(229,168,35,0.4)]" : "bg-zinc-850 text-zinc-400 border border-zinc-800"
+              }`}>
+                {exits.length}
+              </span>
               {activeTab === "exits" && (
                 <motion.div layoutId="tab-active-pill" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E5A823]" />
               )}
@@ -3109,10 +3119,9 @@ export default function App() {
 
                 </div>
 
-                {/* Table list */}
-                {viewMode === "table" ? (
-                  <div className="overflow-x-auto max-h-[550px] overflow-y-auto">
-                    <table className="w-full text-left border-collapse table-auto text-xs">
+                {/* Table list (Desktop only when in table mode) */}
+                <div className={`hidden md:block ${viewMode === "table" ? "block" : "hidden"} overflow-x-auto max-h-[550px] overflow-y-auto`}>
+                  <table className="w-full text-left border-collapse table-auto text-xs">
                     <thead>
                       <tr className="border-b border-zinc-850 bg-[#0e1117]/95 text-[0.725rem] uppercase font-mono font-bold text-zinc-500 sticky top-0 z-10 select-none">
                         <th className="py-2.5 px-3">代號 / 股名</th>
@@ -3132,7 +3141,7 @@ export default function App() {
                         <tr>
                           <td colSpan={10} className="py-16 text-center text-zinc-500 font-mono">
                             <AlertTriangle className="w-9 h-9 text-amber-500/35 mx-auto mb-2" />
-                            沒有符合篩選條件的黃金標的
+                            沒有符合篩選條件 of 黃金標的
                             {eliteOnly && (
                               <p className="text-[0.8rem] text-zinc-650 mt-1">💡 當前開啟了 Score &gt;= 38 限制，試著關閉以檢視更多</p>
                             )}
@@ -3220,8 +3229,9 @@ export default function App() {
                     </tbody>
                   </table>
                 </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 max-h-[550px] overflow-y-auto p-2">
+
+                {/* Card list (Visible on mobile ALWAYS, and on desktop only when viewMode === "cards") */}
+                <div className={`${viewMode === "cards" ? "block" : "block md:hidden"} grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 max-h-[550px] overflow-y-auto p-2`}>
                     {processedSignals.length === 0 ? (
                       <div className="col-span-full py-16 text-center text-zinc-500 font-mono">
                         <AlertTriangle className="w-9 h-9 text-amber-500/35 mx-auto mb-2" />
@@ -3425,7 +3435,6 @@ export default function App() {
                       })
                     )}
                   </div>
-                )}
 
                 <div className="p-3.5 bg-[#0e1117] border-t border-zinc-850 text-[0.725rem] font-mono text-zinc-500 flex flex-col sm:flex-row justify-between items-center gap-2">
                   <span>精英戰線已過濾符合 {processedSignals.length} 檔標的</span>
@@ -4866,8 +4875,8 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Filtered Table */}
-                <div className="overflow-x-auto overflow-y-auto flex-1">
+                {/* Filtered Table (Desktop View only) */}
+                <div className="hidden md:block overflow-x-auto overflow-y-auto flex-1">
                   <table className="w-full text-left border-collapse table-auto text-xs">
                     <thead>
                       <tr className="border-b border-zinc-850 bg-[#0e1117]/95 text-[0.725rem] uppercase font-mono font-bold text-zinc-500 sticky top-0 z-10 select-none">
@@ -4970,6 +4979,101 @@ export default function App() {
                       )}
                     </tbody>
                   </table>
+                </div>
+
+                {/* Filtered Cards (Mobile View only) */}
+                <div className="block md:hidden space-y-3 overflow-y-auto max-h-[450px] p-1 flex-1">
+                  {screenerFiltered.length === 0 ? (
+                    <div className="premium-card rounded-xl p-8 text-center text-zinc-550 font-mono shadow-xl">
+                      <AlertTriangle className="w-9 h-9 text-amber-500/25 mx-auto mb-2 shrink-0" />
+                      雷達未能搜尋到任何匹配標的
+                      <p className="text-[0.725rem] text-zinc-650 mt-1">💡 請嘗試調低篩選標準</p>
+                    </div>
+                  ) : (
+                    screenerFiltered.map(stock => {
+                      const bias20ma = ((stock.close_price - (stock.dynamicTiers?.vwap5d || stock.close_price * 0.98)) / (stock.dynamicTiers?.vwap5d || stock.close_price * 0.98)) * 100;
+                      return (
+                        <div 
+                          key={stock.stock_id}
+                          onClick={() => {
+                            setSelectedStock(stock);
+                            setNotesText(stock.master_notes || "");
+                            setActiveTab("radar");
+                          }}
+                          className="premium-card rounded-xl p-4 shadow-lg border border-zinc-850 bg-zinc-950/40 relative overflow-hidden flex flex-col gap-2.5 cursor-pointer"
+                        >
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-mono text-base font-bold text-white">{stock.stock_id}</span>
+                                <span className="text-xs text-zinc-400 font-bold bg-zinc-900 px-2 py-0.5 rounded border border-zinc-850">{stock.stock_name}</span>
+                              </div>
+                              <div className="text-[0.65rem] text-zinc-500 mt-1 font-mono">{stock.category}</div>
+                            </div>
+                            <span className={`px-2 py-0.5 rounded font-mono font-bold text-[0.725rem] ${
+                              stock.score >= 38 
+                                ? "bg-yellow-950 text-[#FFB74D] border border-yellow-500/40" 
+                                : "bg-zinc-800/80 text-zinc-450"
+                            }`}>
+                              {stock.score} 分
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-3 gap-2 text-center text-[0.75rem] font-mono border-t border-b border-zinc-900/50 py-2">
+                            <div className="flex flex-col">
+                              <span className="text-zinc-550 text-[0.6rem]">現價</span>
+                              <span className="text-white font-bold mt-0.5">{stock.close_price.toFixed(1)}</span>
+                              <span className={`text-[0.65rem] mt-0.5 ${stock.change_pct >= 0 ? 'text-rose-400' : 'text-emerald-400'}`}>
+                                {stock.change_pct >= 0 ? '+' : ''}{stock.change_pct.toFixed(2)}%
+                              </span>
+                            </div>
+                            <div className="flex flex-col border-l border-r border-zinc-900/50">
+                              <span className="text-zinc-550 text-[0.6rem]">20MA 乖離</span>
+                              <span className={`font-bold mt-0.5 ${bias20ma >= 0 ? 'text-rose-400' : 'text-emerald-400'}`}>
+                                {bias20ma >= 0 ? '+' : ''}{bias20ma.toFixed(1)}%
+                              </span>
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-zinc-550 text-[0.6rem]">對沖級別</span>
+                              <span className="text-[#FFB74D] font-bold text-[0.65rem] mt-0.5 truncate">
+                                {stock.score >= 38 ? "A+ 精英" : stock.score >= 32 ? "B 整理" : "C 防守"}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="flex justify-between items-center text-[0.65rem] font-mono text-zinc-450 bg-zinc-900/40 px-2 py-1 rounded">
+                            <span>外資: <span className={stock.foreignDays > 0 ? "text-rose-400 font-bold" : "text-zinc-550"}>{stock.foreignDays > 0 ? `▲ ${stock.foreignDays}天` : `${stock.foreignDays}天`}</span></span>
+                            <span>投信: <span className={stock.instDays > 0 ? "text-rose-400 font-bold" : "text-zinc-550"}>{stock.instDays > 0 ? `▲ ${stock.instDays}天` : `${stock.instDays}天`}</span></span>
+                            <span>PE: <span className="text-zinc-400 font-bold">{stock.per?.toFixed(1)}x</span></span>
+                          </div>
+
+                          <div className="flex gap-2 mt-1" onClick={e => e.stopPropagation()}>
+                            <button
+                              onClick={() => openBuyModalForStock(stock)}
+                              disabled={data?.macroEStopActive}
+                              className={`flex-1 py-1.5 text-xs font-bold rounded shadow transition active:scale-[0.96] text-center ${
+                                data?.macroEStopActive 
+                                  ? "bg-zinc-800 text-zinc-550 border border-zinc-850 cursor-not-allowed"
+                                  : "bg-rose-900/90 text-rose-300 border border-rose-600/40 hover:bg-rose-800"
+                              }`}
+                            >
+                              建倉買進
+                            </button>
+                            <button
+                              onClick={() => {
+                                setSelectedStock(stock);
+                                setNotesText(stock.master_notes || "");
+                                setActiveTab("radar");
+                              }}
+                              className="flex-1 py-1.5 text-xs font-bold rounded bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 text-center transition"
+                            >
+                              檢視細節
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
 
                 <div className="p-3.5 bg-[#0e1117] border-t border-zinc-850 text-[0.725rem] font-mono text-zinc-500 flex justify-between items-center select-none">
