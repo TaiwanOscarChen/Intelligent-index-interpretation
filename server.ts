@@ -1520,15 +1520,19 @@ app.get("/api/holdings", async (req, res) => {
       };
     });
 
-    // Update active positions in database to persist the calculated max price
+    // Update active positions in database to persist the calculated max price and live dynamic metrics
     if (dbConnected && holdingsCollection) {
       for (const h of updatedHoldings) {
         await holdingsCollection.updateOne(
           { stock_id: h.stock_id },
           { 
             $set: { 
+              current_price: h.current_price,
+              current_pnl_value: h.current_pnl_value,
+              current_pnl_pct: h.current_pnl_pct,
               max_price_reached: h.max_price_reached,
-              take_profit_triggered: h.take_profit_triggered
+              take_profit_triggered: h.take_profit_triggered,
+              suggested_action: h.suggested_action
             } 
           }
         );

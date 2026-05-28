@@ -7,12 +7,12 @@ import urllib.parse
 MONGO_URI = os.getenv("MONGO_URI")
 if not MONGO_URI:
     # Use the default from app.py
-    MONGO_URI = "mongodb+srv://oscar:oscar123@cluster0.p7102.mongodb.net/lionking_quant"
+    MONGO_URI = "mongodb+srv://qianhao_chen:Aa0983770098@cluster0.gdnkemb.mongodb.net/?appName=Cluster0"
 
 def get_mongo_collection(collection_name):
     try:
         client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
-        db = client["lionking_quant"]
+        db = client["LionKing_DB"]
         return db[collection_name]
     except Exception as e:
         print(f"MongoDB Connection Error: {e}")
@@ -20,7 +20,7 @@ def get_mongo_collection(collection_name):
 
 def run_fast_price_update():
     print("⚡ [Fast Price Updater] 啟動極速報價更新...")
-    holdings_col = get_mongo_collection("holdings")
+    holdings_col = get_mongo_collection("simulated_holdings")
     signals_col = get_mongo_collection("strategy_signals")
     if holdings_col is None or signals_col is None:
         return
