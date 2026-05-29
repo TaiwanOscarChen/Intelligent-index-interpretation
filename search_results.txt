@@ -1,0 +1,29 @@
+.\app.py:5 (5檔): 配備裝甲級非同步爬取、40分布林計分引擎、總經 VIX E-Stop、台北時間進場濾網、5檔動態定價與雲端雙集合Upsert協定
+.\app.py:870 (100000): diff = float(diff_str) / 100000000.0 # Convert to hundred million (億)
+.\app.py:1462 (100000): allocated_capital = 1000000 * half_kelly  # 38.75% of 1M capital
+.\app.py:1483 (5檔): # 5檔動態定價
+.\patch_app.py:67 (100000): diff = float(diff_str) / 100000000.0 # Convert to hundred million (億)
+.\patch_server_cloud.py:59 (啟動全域即時量化洗價): console.log("⚡ [Smart Start] 啟動全域即時量化洗價 (Force Sweep)");
+.\patch_server_cloud.py:72 (啟動全域即時量化洗價): console.log("⚡ [Smart Start] 向 GitHub Actions 請求啟動全域即時量化洗價");
+.\patch_server_ts.py:15 (啟動全域即時量化洗價): console.log("⚡ [Smart Start] 啟動全域即時量化洗價 (Force Sweep)");
+.\server.ts:250 (100000): const allocated_capital = 1000000 * half_kelly;
+.\server.ts:382 (100000): const allocated_capital = 1000000 * half_kelly;
+.\server.ts:1675 (5檔): - 5檔動能細節：漲停價 ${stock.dynamicTiers.limitUp}，跌停價 ${stock.dynamicTiers.limitDown}，追價線 ${stock.dynamicTiers.chaseUp2}，大戶成本 ${stock.dynamicTiers.vwap5d}
+.\server.ts:1992 (啟動全域即時量化洗價): console.log("⚡ [Smart Start] 向 GitHub Actions 請求啟動全域即時量化洗價");
+.\server.ts:2025 (5檔): // 15檔精準上櫃股票 (OTC) 集合，確保其餘 71 檔精準補綴 .TW，這 15 檔補綴 .TWO
+.\src\App.tsx:1839 (5檔): <span className="text-zinc-400">5檔動態定價:</span>
+.\src\App.tsx:1979 (100000): <td className="py-1 text-right text-white">{f.revenue ? (f.revenue / 100000000).toFixed(1) : "0.0"}</td>
+.\src\App.tsx:1980 (100000): <td className="py-1 text-right text-white">{f.net_income ? (f.net_income / 100000000).toFixed(1) : "0.0"}</td>
+.\src\App.tsx:2450 (持倉股票): 持倉股票 ({holdings.length})
+.\src\App.tsx:2706 (啟動全域即時量化洗價): {isScanning ? "正在為 86 檔高 Beta 洗價中..." : "⚡ 啟動全域即時量化洗價"}
+.\src\App.tsx:2739 (100,000): NT$ {(holdings.length * 20000).toLocaleString()} <span className="text-xs text-zinc-500">/ 100,000 元</span>
+.\src\App.tsx:2886 (籌碼卡片): 🎴 籌碼卡片
+.\src\App.tsx:2902 (5檔): <th className="py-2.5 px-3 text-left">建議進場價格區間 (5檔定價)</th>
+.\src\App.tsx:3030 (100000): const allocated_capital = 1000000 * half_kelly;
+.\src\App.tsx:3639 (72): <line x1="672.2" y1="40" x2="672.2" y2="180" stroke="#1f2937" strokeWidth="0.5" strokeDasharray="3,3" />
+.\src\App.tsx:3650 (72): d="M 50,180 L 50,160 L 127.7,144 L 205.5,150 L 283.3,121 L 361.1,134 L 438.8,101 L 516.6,79 L 594.4,88 L 672.2,59 L 750,47 L 750,180 Z"
+.\src\App.tsx:3656 (72): d="M 50,160 L 127.7,144 L 205.5,150 L 283.3,121 L 361.1,134 L 438.8,101 L 516.6,79 L 594.4,88 L 672.2,59 L 750,47"
+.\src\App.tsx:3675 (72): { x: 672.2, y: 59, val: "1.310", label: "Day 28" },
+.\src\App.tsx:3726 (72): <text x="672.2" y="200" fill="#4b5563" fontSize="8" fontFamily="monospace" textAnchor="middle">W5</text>
+.\src\App.tsx:4842 (持倉股票): 當前無任何持倉股票部位
+.\src\App.tsx:5123 (72): <div className="md:w-72 shrink-0 flex flex-col gap-1.5 border-r border-zinc-850/60 pr-5">

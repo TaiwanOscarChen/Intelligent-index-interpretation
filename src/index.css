@@ -209,3 +209,72 @@ body {
   animation-play-state: paused;
 }
 
+/* Bento Box Dashboard Grid */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  grid-auto-rows: minmax(140px, auto);
+}
+
+.bento-card {
+  background: rgba(13, 15, 20, 0.65) !important;
+  backdrop-filter: blur(24px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.02) !important;
+  transition: all 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.bento-card:hover {
+  border-color: rgba(99, 102, 241, 0.4) !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6), 0 0 30px rgba(99, 102, 241, 0.12) !important;
+  transform: translateY(-2px);
+}
+
+.bento-card-gold:hover {
+  border-color: rgba(229, 168, 37, 0.5) !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6), 0 0 30px rgba(229, 168, 37, 0.15) !important;
+}
+
+/* Ambient Cyberpunk Glows */
+.ambient-glow-purple {
+  position: absolute;
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.08) 0%, transparent 70%);
+  filter: blur(40px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ambient-glow-blue {
+  position: absolute;
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.08) 0%, transparent 70%);
+  filter: blur(40px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Data Number Ticking / Changing Animation */
+@keyframes number-tick {
+  0% { opacity: 0.5; transform: translateY(4px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-number-tick {
+  animation: number-tick 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+/* Area Chart Fill Animation */
+@keyframes fill-fade-in {
+  from { opacity: 0; }
+  to { opacity: 0.15; }
+}
+
+.animate-area-fill {
+  animation: fill-fade-in 1.5s ease-out forwards;
+}
+

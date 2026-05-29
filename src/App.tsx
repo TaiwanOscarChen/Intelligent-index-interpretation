@@ -1514,8 +1514,106 @@ export default function App() {
 
                     <hr className="border-zinc-850" />
 
+                    {/* Quant Radar Chart Visualization */}
+                    {(() => {
+                      // Dynamically calculate radar values based on stock metrics
+                      const scoreVal = selectedStock.score;
+                      
+                      // 1. 動能 (Momentum) based on score and performance
+                      let momentum = Math.min(100, Math.max(0, 40 + (scoreVal * 1.5) + (selectedStock.perf1m || 0)));
+                      
+                      // 2. 籌碼 (Chips/Flow) based on foreign/inst days
+                      let chips = Math.min(100, Math.max(0, 30 + ((selectedStock.foreignDays + selectedStock.instDays) * 10)));
+                      if (chips < 50 && scoreVal > 35) chips += 20;
+
+                      // 3. 基本面 (Fundamentals) based on PER and PBR
+                      let fundamental = 50;
+                      if (selectedStock.per > 0 && selectedStock.per < 20) fundamental += 25;
+                      if (selectedStock.per >= 20 && selectedStock.per < 40) fundamental += 10;
+                      if (selectedStock.pbr > 0 && selectedStock.pbr < 3) fundamental += 20;
+                      fundamental = Math.min(100, fundamental);
+
+                      // 4. 波動與風控 (Risk & Volatility) based on change percent and atr
+                      let risk = Math.min(100, Math.max(20, 100 - (Math.abs(selectedStock.change_pct) * 5)));
+                      
+                      // 5. 趨勢 (Trend) based on score and MA status
+                      let trend = scoreVal >= 38 ? 95 : scoreVal >= 30 ? 75 : scoreVal >= 20 ? 50 : 30;
+
+                      // Array of 5 points for the pentagon radar
+                      const values = [momentum, chips, fundamental, risk, trend];
+                      const labels = ["量價動能", "外資投信", "財報估值", "防禦波動", "趨勢強度"];
+                      const maxR = 40; // Max radius for the radar
+                      
+                      const points = values.map((val, i) => {
+                        const angle = (Math.PI / 2) - (2 * Math.PI * i / 5);
+                        const r = (val / 100) * maxR;
+                        const x = 50 + r * Math.cos(angle);
+                        const y = 50 - r * Math.sin(angle);
+                        return `${x},${y}`;
+                      }).join(" ");
+                      
+                      // Grid pentagons
+                      const gridPolygons = [1, 0.75, 0.5, 0.25].map(scale => {
+                        const pts = Array.from({length: 5}).map((_, i) => {
+                          const angle = (Math.PI / 2) - (2 * Math.PI * i / 5);
+                          const r = maxR * scale;
+                          const x = 50 + r * Math.cos(angle);
+                          const y = 50 - r * Math.sin(angle);
+                          return `${x},${y}`;
+                        }).join(" ");
+                        return <polygon key={scale} points={pts} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="0.5" />;
+                      });
+                      
+                      const axisLines = Array.from({length: 5}).map((_, i) => {
+                        const angle = (Math.PI / 2) - (2 * Math.PI * i / 5);
+                        const x = 50 + maxR * Math.cos(angle);
+                        const y = 50 - maxR * Math.sin(angle);
+                        return <line key={i} x1="50" y1="50" x2={x} y2={y} stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />;
+                      });
+
+                      return (
+                        <div className="bg-[#0b0c13]/80 p-4 rounded-xl border border-zinc-850/60 shadow-lg relative overflow-hidden flex flex-col sm:flex-row items-center gap-4 group">
+                          <div className="absolute top-0 right-0 w-32 h-32 bg-[#E5A823] opacity-[0.03] blur-3xl rounded-full pointer-events-none group-hover:opacity-[0.08] transition-opacity duration-700"></div>
+                          
+                          <div className="w-32 h-32 shrink-0 relative flex items-center justify-center">
+                            <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible drop-shadow-[0_0_10px_rgba(229,168,35,0.2)]">
+                              {gridPolygons}
+                              {axisLines}
+                              <polygon 
+                                points={points} 
+                                fill="rgba(229, 168, 35, 0.25)" 
+                                stroke="#E5A823" 
+                                strokeWidth="1.5" 
+                                strokeLinejoin="round"
+                                className="animate-pulse"
+                              />
+                              {/* Central Dot */}
+                              <circle cx="50" cy="50" r="1.5" fill="#E5A823" />
+                            </svg>
+                          </div>
+                          
+                          <div className="flex-1 w-full flex flex-col gap-1.5 justify-center z-10">
+                            <div className="text-xs font-mono font-bold text-white uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                              <Activity className="w-3.5 h-3.5 text-[#E5A823]" /> 五維量化戰力解析
+                            </div>
+                            {values.map((val, idx) => (
+                              <div key={idx} className="flex items-center justify-between text-[0.65rem] font-mono">
+                                <span className="text-zinc-450">{labels[idx]}</span>
+                                <div className="flex items-center gap-2">
+                                  <div className="w-16 h-1 bg-zinc-900 rounded-full overflow-hidden">
+                                    <div className="h-full bg-gradient-to-r from-indigo-500 to-[#E5A823]" style={{ width: `${val}%` }}></div>
+                                  </div>
+                                  <span className="text-white w-6 text-right font-bold">{Math.round(val)}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })()}
+
                     {/* Tab Navigation inside Sidebar */}
-                    <div className="grid grid-cols-4 gap-1 bg-zinc-950 p-1 rounded-lg border border-zinc-850 text-center font-bold font-mono my-2 shadow-[inset_0_1px_2px_rgba(0,0,0,0.4)]">
+                    <div className="grid grid-cols-4 gap-1 bg-[#0b0c13]/80 p-1 rounded-xl border border-zinc-850/60 text-center font-bold font-mono my-2 shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
                       <button
                         onClick={() => setDetailTab("notes")}
                         className={`py-2 text-[0.65rem] rounded transition-all flex flex-col items-center justify-center gap-0.5 ${
@@ -2670,7 +2768,7 @@ export default function App() {
     const taiexPoints = currentPeriod.taiex.map((val, idx) => `${getX(idx)},${getY(val)}`).join(" ");
 
     return (
-      <div className="premium-card rounded-xl p-5 shadow-lg relative overflow-hidden backtest-mesh flex flex-col gap-5 border border-zinc-850 bg-[#0d0f14]/80">
+      <div className="bento-card rounded-xl p-5 shadow-lg relative overflow-hidden backtest-mesh flex flex-col gap-5 border border-zinc-850 bg-[#0d0f14]/80">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-850 pb-4 gap-3">
           <div className="flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-[#E5A823] shrink-0" />
@@ -2728,9 +2826,21 @@ export default function App() {
                     </g>
                   );
                 })}
+                {/* Area Fills */}
+                <polygon fill="rgba(82, 82, 91, 0.15)" points={`0,${height} ${taiexPoints} ${width},${height}`} className="animate-area-fill" />
+                <polygon fill="url(#lionGradient)" points={`0,${height} ${lionPoints} ${width},${height}`} className="animate-area-fill" />
+                
+                {/* Gradient Definition */}
+                <defs>
+                  <linearGradient id="lionGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="rgba(229,168,35,0.25)" />
+                    <stop offset="100%" stopColor="rgba(229,168,35,0.01)" />
+                  </linearGradient>
+                </defs>
 
+                {/* Lines */}
                 <polyline fill="none" stroke="#52525b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" points={taiexPoints} />
-                <polyline fill="none" stroke="#E5A823" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" points={lionPoints} className="drop-shadow-[0_0_8px_rgba(229,168,35,0.3)]" />
+                <polyline fill="none" stroke="#E5A823" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" points={lionPoints} className="drop-shadow-[0_0_8px_rgba(229,168,35,0.5)]" />
 
                 {currentPeriod.dates.map((date, idx) => (
                   <text key={idx} x={getX(idx)} y={height - 2} textAnchor="middle" fill="rgba(255, 255, 255, 0.3)" className="text-[0.55rem] font-mono select-none">
@@ -3029,7 +3139,7 @@ export default function App() {
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                 
                 {/* TSMC 生命線 */}
-                <div className="premium-card rounded-xl p-3 md:p-4 shadow relative overflow-hidden group">
+                <div className="bento-card rounded-xl p-3 md:p-4 shadow relative overflow-hidden group">
                   <div className="flex items-start justify-between">
                     <div>
                       <h3 className="text-[0.65rem] md:text-[0.725rem] text-zinc-500 font-black tracking-wider uppercase font-mono">台積電生命線 (20MA)</h3>
@@ -3051,7 +3161,7 @@ export default function App() {
                 </div>
 
                 {/* 大盤隔離狀態 */}
-                <div className="premium-card rounded-xl p-3 md:p-4 shadow relative overflow-hidden group">
+                <div className="bento-card rounded-xl p-3 md:p-4 shadow relative overflow-hidden group">
                   <div className="flex items-start justify-between">
                     <div>
                       <h3 className="text-[0.65rem] md:text-[0.725rem] text-zinc-500 font-black tracking-wider uppercase font-mono">台北交易時間防線</h3>
@@ -3072,7 +3182,7 @@ export default function App() {
                 </div>
 
                 {/* Score Stats */}
-                <div className="premium-card rounded-xl p-3 md:p-4 shadow relative overflow-hidden group">
+                <div className="bento-card rounded-xl p-3 md:p-4 shadow relative overflow-hidden group">
                   <h3 className="text-[0.65rem] md:text-[0.725rem] text-zinc-500 font-black tracking-wider uppercase font-mono mb-2">86 檔純高 Beta 分佈</h3>
                   <div className="grid grid-cols-4 gap-1 text-center font-mono">
                     <div className="bg-zinc-900/60 p-1.5 rounded border border-zinc-850">
@@ -3095,7 +3205,7 @@ export default function App() {
                 </div>
 
                 {/* Override testing */}
-                <div className="premium-card rounded-xl p-3 md:p-4 shadow relative overflow-hidden flex flex-col justify-between">
+                <div className="bento-card rounded-xl p-3 md:p-4 shadow relative overflow-hidden flex flex-col justify-between">
                   <div>
                     <h3 className="text-[0.725rem] text-[#FFB74D] font-black tracking-wider uppercase font-mono flex items-center gap-1.5">
                       <Sliders className="w-3.5 h-3.5" /> 大盤剛性回測
@@ -3131,7 +3241,7 @@ export default function App() {
               {/* Macro Institutional & Intraday Block Order Monitoring Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* 三大法人期指淨未平倉對沖監控牆 */}
-                <div className="premium-card rounded-xl p-4 shadow-lg relative overflow-hidden group">
+                <div className="bento-card rounded-xl p-4 shadow-lg relative overflow-hidden group">
                   <div className="flex justify-between items-start border-b border-zinc-850 pb-2 mb-3">
                     <div className="flex items-center gap-1.5">
                       <TrendingUp className="w-4 h-4 text-[#FFB74D] shrink-0" />
@@ -3163,7 +3273,7 @@ export default function App() {
                 </div>
 
                 {/* 盤中大單大筆成交防線檢索區 */}
-                <div className="premium-card rounded-xl p-4 shadow-lg relative overflow-hidden group">
+                <div className="bento-card rounded-xl p-4 shadow-lg relative overflow-hidden group">
                   <div className="flex justify-between items-start border-b border-zinc-850 pb-2 mb-3">
                     <div className="flex items-center gap-1.5">
                       <ShieldAlert className="w-4 h-4 text-[#FFB74D] shrink-0" />
@@ -3247,7 +3357,7 @@ export default function App() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 
                 {/* Widget A: AI Capital Deployed */}
-                <div className="premium-card rounded-xl p-4 shadow-lg border border-zinc-800 relative overflow-hidden group">
+                <div className="bento-card rounded-xl p-4 shadow-lg border border-zinc-800 relative overflow-hidden group">
                   <div className="absolute top-0 right-0 w-16 h-16 bg-emerald-500/5 rounded-full blur-xl"></div>
                   <div className="flex justify-between items-start">
                     <div>
@@ -3277,7 +3387,7 @@ export default function App() {
                 </div>
 
                 {/* Widget B: Live Trade Alerts Feed */}
-                <div className="premium-card rounded-xl p-4 shadow-lg border border-zinc-800 relative overflow-hidden">
+                <div className="bento-card rounded-xl p-4 shadow-lg border border-zinc-800 relative overflow-hidden">
                   <div className="flex justify-between items-center border-b border-zinc-850 pb-2 mb-2">
                     <div className="flex items-center gap-1.5">
                       <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
@@ -3314,7 +3424,7 @@ export default function App() {
               </div>
 
               {/* Main Matrix Table */}
-              <div className="premium-card rounded-xl shadow-2xl overflow-hidden">
+              <div className="bento-card rounded-xl shadow-2xl overflow-hidden">
                 
                 {/* Filters Row */}
                 <div className="p-4 border-b border-zinc-800 bg-[#0e1117] flex flex-wrap gap-4 items-center justify-between">
@@ -3578,7 +3688,7 @@ export default function App() {
                               setSelectedStock(stock);
                               setNotesText(stock.master_notes || "");
                             }}
-                            className={`premium-card rounded-xl p-4 shadow-xl transition-all duration-300 relative overflow-hidden group cursor-pointer flex flex-col justify-between gap-3 ${borderStyle}`}
+                            className={`bento-card rounded-xl p-4 shadow-xl transition-all duration-300 relative overflow-hidden group cursor-pointer flex flex-col justify-between gap-3 ${borderStyle}`}
                           >
                             {/* Card Top Row */}
                             <div className="flex items-start justify-between">
@@ -3742,7 +3852,7 @@ export default function App() {
             {/* Right Side Tactical Intelligence Panel */}
             <div className="hidden lg:flex lg:col-span-4 flex-col gap-6">
               
-              <div className="premium-card rounded-xl shadow-xl overflow-hidden sticky top-[135px] max-h-[calc(100vh-160px)] overflow-y-auto">
+              <div className="bento-card rounded-xl shadow-xl overflow-hidden sticky top-[135px] max-h-[calc(100vh-160px)] overflow-y-auto">
                 
                 {/* Header */}
                 <div className="p-4 bg-gradient-to-r from-zinc-900 to-[#0e1117] border-b border-zinc-850 flex items-center justify-between">
@@ -3979,7 +4089,7 @@ export default function App() {
 
             {/* Real-time macro data bar */}
             {marketData && (
-              <div className="premium-card rounded-xl px-5 py-3 shadow-lg">
+              <div className="bento-card rounded-xl px-5 py-3 shadow-lg">
                 <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[0.725rem] font-mono">
                   <div className="flex items-center gap-1.5">
                     <span className="text-zinc-500">📡 台指VIX:</span>
@@ -4027,10 +4137,11 @@ export default function App() {
             {renderStrategyBacktest()}
 
             {/* Top Market Dashboard */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="bento-grid">
               {/* Market Sentiment Gauge */}
-              <div className="premium-card rounded-xl p-5 shadow-lg relative overflow-hidden group">
-                <div className="flex justify-between items-start">
+              <div className="bento-card rounded-xl p-5 relative overflow-hidden group">
+                <div className="ambient-glow-purple -top-10 -left-10"></div>
+                <div className="flex justify-between items-start relative z-10">
                   <div>
                     <h3 className="text-[0.725rem] text-zinc-500 font-black tracking-wider uppercase font-mono">綜合市場情緒指標</h3>
                     <div className={`text-2xl font-black mt-2 flex items-center gap-2 ${
@@ -4041,22 +4152,22 @@ export default function App() {
                         : "text-yellow-400"
                     }`}>
                       <Flame className="w-6 h-6 animate-pulse animate-duration-1000" />
-                      {summary.overall.sentiment}
+                      <span className="animate-number-tick">{summary.overall.sentiment}</span>
                     </div>
                   </div>
                   <div className="px-2.5 py-1.5 rounded-lg text-xs font-mono font-bold bg-zinc-900 border border-zinc-850 text-zinc-350">
-                    指數: {summary.overall.sentimentScore}%
+                    指數: <span className="animate-number-tick inline-block">{summary.overall.sentimentScore}</span>%
                   </div>
                 </div>
                 {/* Sentiment Meter Bar */}
-                <div className="mt-5">
+                <div className="mt-5 relative z-10">
                   <div className="flex justify-between text-[0.725rem] text-zinc-500 font-mono mb-1 font-semibold">
                     <span>極度恐慌 (綠燈防禦)</span>
                     <span>極度樂觀 (紅燈特快)</span>
                   </div>
                   <div className="w-full h-2 bg-zinc-950 rounded-full overflow-hidden border border-zinc-800">
                     <div 
-                      className={`h-full bg-gradient-to-r ${
+                      className={`h-full bg-gradient-to-r transition-all duration-1000 ${
                         summary.overall.vix > 30 || summary.overall.macroEStop
                           ? "from-emerald-500 to-emerald-400 shadow-[0_0_8px_#10b881]"
                           : "from-amber-500 via-yellow-400 to-rose-500 shadow-[0_0_8px_#f43f5e]"
@@ -4065,7 +4176,7 @@ export default function App() {
                     />
                   </div>
                 </div>
-                <div className="mt-4 p-2 rounded bg-zinc-950/40 border border-zinc-900/60 flex items-center gap-2 text-[0.725rem] text-zinc-400 font-sans leading-relaxed">
+                <div className="mt-4 p-2 rounded bg-zinc-950/40 border border-zinc-900/60 flex items-center gap-2 text-[0.725rem] text-zinc-400 font-sans leading-relaxed relative z-10">
                   <Cpu className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
                   <span>基於 86 檔高 Beta 標的評分分佈與今日平均漲跌幅的動態情緒矩陣。</span>
                 </div>
@@ -4073,11 +4184,12 @@ export default function App() {
               </div>
 
               {/* VIX Fear Barometer */}
-              <div className="premium-card rounded-xl p-5 shadow-lg relative overflow-hidden group">
-                <div className="flex justify-between items-start">
+              <div className="bento-card rounded-xl p-5 relative overflow-hidden group">
+                <div className="ambient-glow-blue -top-10 -right-10"></div>
+                <div className="flex justify-between items-start relative z-10">
                   <div>
                     <h3 className="text-[0.725rem] text-zinc-500 font-black tracking-wider uppercase font-mono">VIX 恐慌指數歷史趨勢條</h3>
-                    <div className="text-2xl font-mono font-black text-white mt-2 flex items-baseline gap-1">
+                    <div className="text-2xl font-mono font-black text-white mt-2 flex items-baseline gap-1 animate-number-tick">
                       {summary.overall.vix?.toFixed(2)}
                       <span className="text-xs text-zinc-500 font-sans font-normal">單位</span>
                     </div>
@@ -4093,14 +4205,14 @@ export default function App() {
                   </span>
                 </div>
                 {/* VIX Bar */}
-                <div className="mt-5">
+                <div className="mt-5 relative z-10">
                   <div className="flex justify-between text-[0.725rem] text-zinc-500 font-mono mb-1 font-semibold">
                     <span>低波動 (VIX 10)</span>
                     <span>高波動 (VIX 40)</span>
                   </div>
                   <div className="w-full h-2 bg-zinc-950 rounded-full overflow-hidden border border-zinc-800">
                     <div 
-                      className={`h-full ${
+                      className={`h-full transition-all duration-1000 ${
                         summary.overall.vix < 20 
                           ? "bg-emerald-500 shadow-[0_0_8px_#10b881]" 
                           : summary.overall.vix < 30 
@@ -4111,7 +4223,7 @@ export default function App() {
                     />
                   </div>
                 </div>
-                <div className="mt-4 p-2 rounded bg-zinc-950/40 border border-zinc-900/60 flex items-center gap-2 text-[0.725rem] text-zinc-400 font-sans leading-relaxed">
+                <div className="mt-4 p-2 rounded bg-zinc-950/40 border border-zinc-900/60 flex items-center gap-2 text-[0.725rem] text-zinc-400 font-sans leading-relaxed relative z-10">
                   <ShieldAlert className="w-3.5 h-3.5 text-[#FFB74D] shrink-0" />
                   <span>{summary.overall.vix > 30 ? "已觸發 Macro E-Stop 緊急避險，暫停一切買進！" : "宏觀安全閥門正常，低波動水位，多頭策略解鎖中。"}</span>
                 </div>
@@ -4119,11 +4231,12 @@ export default function App() {
               </div>
 
               {/* TSMC 月線生命線儀表板 */}
-              <div className="premium-card rounded-xl p-5 shadow-lg relative overflow-hidden group">
-                <div className="flex justify-between items-start">
+              <div className="bento-card-gold bento-card rounded-xl p-5 relative overflow-hidden group">
+                <div className="ambient-glow-purple -bottom-10 -right-10"></div>
+                <div className="flex justify-between items-start relative z-10">
                   <div>
                     <h3 className="text-[0.725rem] text-zinc-500 font-black tracking-wider uppercase font-mono">台積電 2330 月線生命線儀表板</h3>
-                    <div className="text-2xl font-mono font-black text-white mt-2 flex items-baseline gap-1">
+                    <div className="text-2xl font-mono font-black text-white mt-2 flex items-baseline gap-1 animate-number-tick">
                       {data ? data.tsmcPrice : 1045.0}
                       <span className="text-xs text-zinc-500 font-sans font-normal">元</span>
                     </div>
@@ -4137,21 +4250,21 @@ export default function App() {
                   </span>
                 </div>
                 {/* Comparison Bar */}
-                <div className="mt-5">
+                <div className="mt-5 relative z-10">
                   <div className="flex justify-between text-[0.725rem] text-zinc-500 font-mono mb-1 font-semibold">
                     <span>月線水位: {data ? data.tsmcMa20Value : 1030.0} 元</span>
                     <span>現價 vs 20MA</span>
                   </div>
                   <div className="w-full h-2 bg-zinc-950 rounded-full overflow-hidden border border-zinc-800">
                     <div 
-                      className={`h-full ${data && data.tsmcPrice >= data.tsmcMa20Value ? "bg-rose-500 shadow-[0_0_8px_#f43f5e]" : "bg-emerald-500 shadow-[0_0_8px_#10b881]"}`}
+                      className={`h-full transition-all duration-1000 ${data && data.tsmcPrice >= data.tsmcMa20Value ? "bg-rose-500 shadow-[0_0_8px_#f43f5e]" : "bg-emerald-500 shadow-[0_0_8px_#10b881]"}`}
                       style={{ 
                         width: `${Math.min(100, Math.max(0, 50 + (((data ? data.tsmcPrice : 1045.0) - (data ? data.tsmcMa20Value : 1030.0)) / (data ? data.tsmcMa20Value : 1030.0)) * 500))}%` 
                       }}
                     />
                   </div>
                 </div>
-                <div className="mt-4 p-2 rounded bg-zinc-950/40 border border-zinc-900/60 flex items-center gap-2 text-[0.725rem] text-zinc-400 font-sans leading-relaxed">
+                <div className="mt-4 p-2 rounded bg-zinc-950/40 border border-zinc-900/60 flex items-center gap-2 text-[0.725rem] text-zinc-400 font-sans leading-relaxed relative z-10">
                   <Zap className="w-3.5 h-3.5 text-amber-400 shrink-0 animate-pulse" />
                   <span>{data && data.tsmcPrice >= data.tsmcMa20Value 
                     ? "台積電生命線買點開放，全面解除大盤多頭限制。" 
@@ -4161,8 +4274,9 @@ export default function App() {
               </div>
             </div>
 
+
             {/* NAV Performance Yield Curve (Bloomberg Quant style) */}
-            <div className="premium-card rounded-xl p-6 shadow-xl relative overflow-hidden group">
+            <div className="bento-card rounded-xl p-6 shadow-xl relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-b from-[#E5A823]/5 to-transparent rounded-full blur-3xl pointer-events-none"></div>
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-6">
                 <div>
@@ -4395,7 +4509,7 @@ export default function App() {
             {/* Sectors Heatmap Advanced Quantitative Extension */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
               {/* 三大法人全月累計對沖籌碼資金觀察牆 */}
-              <div className="premium-card rounded-xl p-5 shadow-lg relative overflow-hidden group">
+              <div className="bento-card rounded-xl p-5 shadow-lg relative overflow-hidden group">
                 <div className="flex justify-between items-start border-b border-zinc-850 pb-3 mb-4">
                   <div className="flex items-center gap-2">
                     <TrendingUp className="w-5 h-5 text-[#FFB74D] shrink-0" />
@@ -4465,7 +4579,7 @@ export default function App() {
               </div>
 
               {/* 全自動對沖風控雷達訊號檢索區 */}
-              <div className="premium-card rounded-xl p-5 shadow-lg relative overflow-hidden group">
+              <div className="bento-card rounded-xl p-5 shadow-lg relative overflow-hidden group">
                 <div className="flex justify-between items-start border-b border-zinc-850 pb-3 mb-4">
                   <div className="flex items-center gap-2">
                     <ShieldAlert className="w-5 h-5 text-[#FFB74D] shrink-0" />
@@ -4514,7 +4628,7 @@ export default function App() {
               </div>
 
               {/* 操盤手金字塔凱利資金分配比重計算器 */}
-              <div className="premium-card rounded-xl p-5 shadow-lg relative overflow-hidden group">
+              <div className="bento-card rounded-xl p-5 shadow-lg relative overflow-hidden group">
                 <div className="flex justify-between items-start border-b border-zinc-850 pb-3 mb-4">
                   <div className="flex items-center gap-2">
                     <Briefcase className="w-5 h-5 text-[#FFB74D] shrink-0" />
@@ -4571,7 +4685,7 @@ export default function App() {
             {/* Sectors Heatmap More Data Observations */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
               {/* 產業板塊戰力資金流向熱力矩陣 */}
-              <div className="premium-card rounded-xl p-5 shadow-lg relative overflow-hidden group">
+              <div className="bento-card rounded-xl p-5 shadow-lg relative overflow-hidden group">
                 <div className="flex items-center justify-between border-b border-zinc-850 pb-3 mb-4">
                   <div className="flex items-center gap-2">
                     <TrendingUp className="w-5 h-5 text-amber-400 shrink-0" />
@@ -4615,7 +4729,7 @@ export default function App() {
               </div>
 
               {/* 波動率風險相關係數偏離矩陣 */}
-              <div className="premium-card rounded-xl p-5 shadow-lg relative overflow-hidden group">
+              <div className="bento-card rounded-xl p-5 shadow-lg relative overflow-hidden group">
                 <div className="flex items-center justify-between border-b border-zinc-850 pb-3 mb-4">
                   <div className="flex items-center gap-2">
                     <ShieldAlert className="w-5 h-5 text-indigo-400 shrink-0" />
@@ -4794,7 +4908,7 @@ export default function App() {
             </AnimatePresence>
 
             {/* Tactical stats panel */}
-            <div className="premium-card rounded-xl p-5 shadow-lg mt-8">
+            <div className="bento-card rounded-xl p-5 shadow-lg mt-8">
               <h4 className="text-white text-xs font-bold font-mono tracking-wider mb-4 uppercase">
                 📊 全球高 Beta 投資組合統計矩陣
               </h4>
@@ -5348,7 +5462,7 @@ export default function App() {
                 {/* Filtered Cards (Mobile View only) */}
                 <div className="block md:hidden space-y-3 overflow-y-auto max-h-[450px] p-1 flex-1">
                   {screenerFiltered.length === 0 ? (
-                    <div className="premium-card rounded-xl p-8 text-center text-zinc-550 font-mono shadow-xl">
+                    <div className="bento-card rounded-xl p-8 text-center text-zinc-550 font-mono shadow-xl">
                       <AlertTriangle className="w-9 h-9 text-amber-500/25 mx-auto mb-2 shrink-0" />
                       雷達未能搜尋到任何匹配標的
                       <p className="text-[0.725rem] text-zinc-650 mt-1">💡 請嘗試調低篩選標準</p>
@@ -5364,7 +5478,7 @@ export default function App() {
                             setNotesText(stock.master_notes || "");
                             setActiveTab("radar");
                           }}
-                          className="premium-card rounded-xl p-4 shadow-lg border border-zinc-850 bg-zinc-950/40 relative overflow-hidden flex flex-col gap-2.5 cursor-pointer"
+                          className="bento-card rounded-xl p-4 shadow-lg border border-zinc-850 bg-zinc-950/40 relative overflow-hidden flex flex-col gap-2.5 cursor-pointer"
                         >
                           <div className="flex justify-between items-start">
                             <div>
@@ -5535,9 +5649,10 @@ export default function App() {
             <div className="space-y-6 animate-fade-in">
               
               {/* 投資組合對沖風控分析矩陣 */}
-              <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-                <div className="premium-card rounded-xl p-4 shadow relative overflow-hidden flex flex-col justify-between">
-                  <div>
+              <div className="bento-grid gap-4">
+                <div className="bento-card rounded-xl p-4 relative overflow-hidden flex flex-col justify-between group">
+                  <div className="ambient-glow-purple -top-10 -left-10"></div>
+                  <div className="relative z-10">
                     <span className="text-[0.65rem] font-mono text-zinc-500 block">整體投資組合系統性 BETA 值</span>
                     <div className="text-xl font-mono font-black text-white mt-1">
                       {portfolioBeta === 0 ? "0.00x" : `${portfolioBeta.toFixed(2)}x`}
@@ -5552,8 +5667,9 @@ export default function App() {
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
                 </div>
 
-                <div className="premium-card rounded-xl p-4 shadow relative overflow-hidden flex flex-col justify-between">
-                  <div>
+                <div className="bento-card rounded-xl p-4 relative overflow-hidden flex flex-col justify-between group">
+                  <div className="ambient-glow-blue -top-10 -right-10"></div>
+                  <div className="relative z-10">
                     <span className="text-[0.65rem] font-mono text-zinc-500 block">預估最大回撤防守限制</span>
                     <div className="text-xl font-mono font-black text-[#10b881] mt-1">
                       {portfolioDrawdown === 0 ? "0.0%" : `${portfolioDrawdown.toFixed(1)}%`}
@@ -5568,8 +5684,9 @@ export default function App() {
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
                 </div>
 
-                <div className="premium-card rounded-xl p-4 shadow relative overflow-hidden flex flex-col justify-between">
-                  <div>
+                <div className="bento-card-gold bento-card rounded-xl p-4 relative overflow-hidden flex flex-col justify-between group">
+                  <div className="ambient-glow-purple -bottom-10 -right-10"></div>
+                  <div className="relative z-10">
                     <span className="text-[0.65rem] font-mono text-zinc-500 block">整體夏普比率 投資組合收益品質</span>
                     <div className="text-xl font-mono font-black text-[#FFB74D] mt-1">
                       {portfolioSharpe === 0 ? "0.00" : portfolioSharpe.toFixed(2)}
@@ -5584,8 +5701,9 @@ export default function App() {
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-500 to-orange-500"></div>
                 </div>
 
-                <div className="premium-card rounded-xl p-4 shadow relative overflow-hidden flex flex-col justify-between">
-                  <div>
+                <div className="bento-card rounded-xl p-4 relative overflow-hidden flex flex-col justify-between group">
+                  <div className="ambient-glow-blue -bottom-10 -left-10"></div>
+                  <div className="relative z-10">
                     <span className="text-[0.65rem] font-mono text-zinc-500 block">防守型認售權證 (PUT) 對沖比率</span>
                     <div className="text-xl font-mono font-black text-[#f43f5e] mt-1">
                       {portfolioHedging === 0 ? "0%" : `${portfolioHedging}%`}
@@ -5602,9 +5720,10 @@ export default function App() {
               </div>
 
               {/* Sector Concentration & Portfolio Risk Matrix */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 premium-card rounded-xl p-5 shadow-lg relative overflow-hidden group">
-                  <div className="flex items-center justify-between border-b border-zinc-850 pb-4 mb-4">
+              <div className="bento-grid gap-6">
+                <div className="lg:col-span-2 bento-card rounded-xl p-5 relative overflow-hidden group">
+                  <div className="ambient-glow-purple -top-20 -left-20"></div>
+                  <div className="flex items-center justify-between border-b border-zinc-850 pb-4 mb-4 relative z-10">
                     <div className="flex items-center gap-2">
                       <TrendingUp className="w-5 h-5 text-[#E5A823]" />
                       <h3 className="text-sm font-bold text-white font-mono uppercase tracking-wider">
@@ -5699,7 +5818,7 @@ export default function App() {
                   )}
                 </div>
 
-                <div className="premium-card rounded-xl p-5 shadow-lg relative overflow-hidden flex flex-col justify-between group">
+                <div className="bento-card rounded-xl p-5 shadow-lg relative overflow-hidden flex flex-col justify-between group">
                   <div>
                     <div className="flex items-center gap-2 border-b border-zinc-850 pb-3 mb-3">
                       <Activity className="w-5 h-5 text-indigo-400 animate-pulse" />
@@ -5733,7 +5852,7 @@ export default function App() {
               </div>
 
               {/* Holdings Head card */}
-              <div className="premium-card rounded-xl p-6 shadow flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+              <div className="bento-card rounded-xl p-6 shadow flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
                   <h3 className="text-white text-lg font-bold">實時對沖持倉管理區</h3>
                   <p className="text-xs text-zinc-450 mt-1">
@@ -5815,7 +5934,7 @@ export default function App() {
               )}
 
               {/* Holdings Table - Desktop View */}
-              <div className="hidden md:block premium-card rounded-xl shadow-xl overflow-hidden">
+              <div className="hidden md:block bento-card rounded-xl shadow-xl overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse table-auto text-xs">
                     <thead>
@@ -5957,7 +6076,7 @@ export default function App() {
               {/* Mobile Cards (Visible only on mobile/tablet) - Premium Layout */}
               <div className="md:hidden space-y-4">
                 {liveHoldings.length === 0 ? (
-                  <div className="premium-card rounded-xl p-8 text-center text-zinc-500 font-mono">
+                  <div className="bento-card rounded-xl p-8 text-center text-zinc-500 font-mono">
                     <Sliders className="w-10 h-10 text-zinc-700 mx-auto mb-2" />
                     當前無任何持倉股票部位
                     <p className="text-[0.8rem] text-[#FFB74D] mt-2 hover:underline cursor-pointer" onClick={() => setActiveTab("radar")}>
@@ -5974,7 +6093,7 @@ export default function App() {
                     return (
                       <div 
                         key={item.stock_id} 
-                        className={`premium-card rounded-xl p-4 shadow-lg border relative overflow-hidden flex flex-col gap-3 transition-all ${
+                        className={`bento-card rounded-xl p-4 shadow-lg border relative overflow-hidden flex flex-col gap-3 transition-all ${
                           isSelected ? "border-amber-500/60 bg-amber-500/5" : "border-zinc-800/80 bg-zinc-950/40"
                         }`}
                         onClick={isHoldingSelectMode ? () => {
@@ -6086,7 +6205,7 @@ export default function App() {
               {/* Portfolio Analytics Row */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {/* Position Concentration */}
-                <div className="premium-card rounded-xl p-4 shadow-lg">
+                <div className="bento-card rounded-xl p-4 shadow-lg">
                   <div className="text-[0.725rem] font-mono text-zinc-500 font-bold uppercase tracking-wider mb-3">🎯 持倉集中度 analysis</div>
                   {liveHoldings.length === 0 ? (
                     <p className="text-zinc-600 text-xs font-mono">持倉空白</p>
@@ -6114,7 +6233,7 @@ export default function App() {
                 </div>
 
                 {/* P&L Breakdown */}
-                <div className="premium-card rounded-xl p-4 shadow-lg">
+                <div className="bento-card rounded-xl p-4 shadow-lg">
                   <div className="text-[0.725rem] font-mono text-zinc-500 font-bold uppercase tracking-wider mb-3">📊 未實現損益分布</div>
                   {liveHoldings.length === 0 ? (
                     <p className="text-zinc-600 text-xs font-mono">持倉空白</p>
@@ -6151,7 +6270,7 @@ export default function App() {
                 </div>
 
                 {/* Kelly Position Sizing */}
-                <div className="premium-card rounded-xl p-4 shadow-lg">
+                <div className="bento-card rounded-xl p-4 shadow-lg">
                   <div className="text-[0.725rem] font-mono text-zinc-500 font-bold uppercase tracking-wider mb-3">🤟 半凱利動態投入建議</div>
                   <div className="space-y-2 text-[0.725rem] font-mono">
                     {['第一戰隊 (50%)', '第二戰隊 (30%)', '第三戰隊 (20%)'].map((tier, i) => {
@@ -6192,7 +6311,7 @@ export default function App() {
 
               return (
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-                  <div className="premium-card rounded-xl p-4 shadow relative overflow-hidden flex flex-col justify-between">
+                  <div className="bento-card rounded-xl p-4 shadow relative overflow-hidden flex flex-col justify-between">
                     <div>
                       <span className="text-[0.65rem] font-mono text-zinc-550 block">實戰總交易比數 / 對沖勝率</span>
                       <div className="text-xl font-mono font-black text-white mt-1 flex items-baseline gap-2">
@@ -6205,7 +6324,7 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div className="premium-card rounded-xl p-4 shadow relative overflow-hidden flex flex-col justify-between">
+                  <div className="bento-card rounded-xl p-4 shadow relative overflow-hidden flex flex-col justify-between">
                     <div>
                       <span className="text-[0.65rem] font-mono text-zinc-550 block">策略對沖獲利因子</span>
                       <div className="text-xl font-mono font-black text-amber-500 mt-1">{profitFactor}</div>
@@ -6215,7 +6334,7 @@ export default function App() {
                     </p>
                   </div>
 
-                  <div className="premium-card rounded-xl p-4 shadow relative overflow-hidden flex flex-col justify-between">
+                  <div className="bento-card rounded-xl p-4 shadow relative overflow-hidden flex flex-col justify-between">
                     <div>
                       <span className="text-[0.65rem] font-mono text-zinc-550 block">每筆平均收益期望值 (P&L %)</span>
                       <div className="text-xl font-mono font-black text-[#FFD54F] mt-1">{avgPnlPct}%</div>
@@ -6225,7 +6344,7 @@ export default function App() {
                     </p>
                   </div>
 
-                  <div className="premium-card rounded-xl p-4 shadow relative overflow-hidden flex flex-col justify-between">
+                  <div className="bento-card rounded-xl p-4 shadow relative overflow-hidden flex flex-col justify-between">
                     <div>
                       <span className="text-[0.65rem] font-mono text-zinc-550 block">累計結算淨對沖利潤</span>
                       <div className={`text-xl font-mono font-black mt-1 ${totalGain - totalLoss >= 0 ? "text-rose-400" : "text-emerald-400"}`}>
@@ -6240,7 +6359,7 @@ export default function App() {
               );
             })()}
 
-            <div className="premium-card rounded-xl p-6 shadow">
+            <div className="bento-card rounded-xl p-6 shadow">
               <h3 className="text-white text-lg font-bold">歷史出場操盤檢討日誌</h3>
               <p className="text-xs text-zinc-450 mt-1">
                 記錄您所有歷史模擬持倉的清倉記錄，並包含 <code>Gemini AI</code> 為您客製化產生的精闢操盤回顧與改進方向。
@@ -6336,7 +6455,7 @@ export default function App() {
             {/* 出場歷史清單 */}
             <div className="grid grid-cols-1 gap-6">
               {exits.length === 0 ? (
-                <div className="premium-card rounded-xl p-16 text-center text-zinc-550 font-mono shadow-xl">
+                <div className="bento-card rounded-xl p-16 text-center text-zinc-550 font-mono shadow-xl">
                   <History className="w-10 h-10 text-zinc-700 mx-auto mb-2 shrink-0" />
                   目前無歷史已結算部位檢討記錄。
                 </div>
@@ -6416,7 +6535,7 @@ export default function App() {
                                 }
                               }
                             }}
-                            className={`premium-card rounded-xl p-5 shadow-lg flex flex-col md:flex-row gap-5 relative overflow-hidden group transition-all duration-300 ${
+                            className={`bento-card rounded-xl p-5 shadow-lg flex flex-col md:flex-row gap-5 relative overflow-hidden group transition-all duration-300 ${
                               isExitSelectMode ? "cursor-pointer select-none" : ""
                             } ${isSelected ? "border-2 border-rose-500/50 bg-rose-950/5" : "border border-zinc-850/45 hover:border-zinc-800"}`}
                           >
@@ -6777,7 +6896,7 @@ export default function App() {
           <div className="space-y-8 animate-fade-in text-left">
             
             {/* Header Title with Lion King Branding */}
-            <div className="premium-card rounded-xl p-6 shadow-2xl bg-gradient-to-r from-zinc-950 via-[#0e1117] to-zinc-950 border border-[#E5A823]/30">
+            <div className="bento-card rounded-xl p-6 shadow-2xl bg-gradient-to-r from-zinc-950 via-[#0e1117] to-zinc-950 border border-[#E5A823]/30">
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
                   <h2 className="text-white text-lg md:text-xl font-black flex items-center gap-3">
@@ -6804,7 +6923,7 @@ export default function App() {
               <div className="xl:col-span-8 space-y-6">
                 
                 {/* 50 Checkers Section */}
-                <div className="premium-card rounded-xl p-6 shadow-lg border border-zinc-800">
+                <div className="bento-card rounded-xl p-6 shadow-lg border border-zinc-800">
                   <h3 className="text-white text-sm font-bold flex items-center gap-2 mb-4">
                     <Sliders className="w-4.5 h-4.5 text-[#FFB74D]" />
                     🔍 戰神全域量化 50 道微觀濾網檢核法典 (五大維度)
@@ -6915,7 +7034,7 @@ export default function App() {
                 </div>
 
                 {/* Automation SOP Section */}
-                <div className="premium-card rounded-xl p-6 shadow-lg border border-zinc-800 space-y-5">
+                <div className="bento-card rounded-xl p-6 shadow-lg border border-zinc-800 space-y-5">
                   <h3 className="text-[#FFB74D] text-sm font-bold flex items-center gap-2">
                     <ShieldAlert className="w-5 h-5 text-rose-500 animate-pulse" />
                     🛑 鐵血出場與全自動停利停損管理規範
@@ -6978,7 +7097,7 @@ export default function App() {
               <div className="xl:col-span-4 space-y-6">
                 
                 {/* Master Links Dashboard */}
-                <div className="premium-card rounded-xl p-6 shadow-lg border border-zinc-800 space-y-5">
+                <div className="bento-card rounded-xl p-6 shadow-lg border border-zinc-800 space-y-5">
                   <div className="border-b border-zinc-800 pb-3">
                     <h3 className="text-white text-sm font-bold flex items-center gap-2">
                       <Link className="w-4.5 h-4.5 text-[#E5A823]" />
@@ -7228,7 +7347,7 @@ export default function App() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="premium-card rounded-xl p-6 max-w-md w-full shadow-2xl relative"
+              className="bento-card rounded-xl p-6 max-w-md w-full shadow-2xl relative"
             >
               
               {/* Close Button */}
@@ -7328,7 +7447,7 @@ export default function App() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="premium-card rounded-xl p-6 max-w-md w-full shadow-2xl relative"
+              className="bento-card rounded-xl p-6 max-w-md w-full shadow-2xl relative"
             >
               
               <button 

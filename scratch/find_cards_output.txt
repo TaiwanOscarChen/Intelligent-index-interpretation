@@ -1,0 +1,1218 @@
+Match found at line 2952: viewMode === "table"
+  2947:                   {/* ViewMode Toggle */}
+  2948:                   <div className="flex items-center gap-1 bg-zinc-900 border border-zinc-850 rounded p-1">
+  2949:                     <button
+  2950:                       onClick={() => setViewMode("table")}
+  2951:                       className={`px-2.5 py-1 text-[10px] font-bold rounded transition-all select-none ${
+  2952:                         viewMode === "table"
+  2953:                           ? "bg-[#E5A823] text-black shadow font-black"
+  2954:                           : "text-zinc-400 hover:text-white"
+  2955:                       }`}
+  2956:                     >
+  2957:                       📋 表格視圖
+  2958:                     </button>
+  2959:                     <button
+  2960:                       onClick={() => setViewMode("cards")}
+  2961:                       className={`px-2.5 py-1 text-[10px] font-bold rounded transition-all select-none ${
+  2962:                         viewMode === "cards"
+  2963:                           ? "bg-[#E5A823] text-black shadow font-black"
+  2964:                           : "text-zinc-400 hover:text-white"
+  2965:                       }`}
+  2966:                     >
+  2967:                       🎴 籌碼卡片
+  2968:                     </button>
+  2969:                   </div>
+  2970: 
+  2971:                 </div>
+  2972: 
+  2973:                 {/* Table list */}
+  2974:                 {viewMode === "table" ? (
+  2975:                   <div className="overflow-x-auto max-h-[550px] overflow-y-auto">
+  2976:                     <table className="w-full text-left border-collapse table-auto text-xs">
+  2977:                     <thead>
+  2978:                       <tr className="border-b border-zinc-850 bg-[#0e1117]/95 text-[10px] uppercase font-mono font-bold text-zinc-500 sticky top-0 z-10 select-none">
+  2979:                         <th className="py-2.5 px-3">代號 / 股名</th>
+  2980:                         <th className="py-2.5 px-2 text-right">現價</th>
+  2981:                         <th className="py-2.5 px-2 text-right">漲跌%</th>
+  2982:                         <th className="py-2.5 px-2 text-center text-[#FFB74D]">評分</th>
+  2983:                         <th className="py-2.5 px-3 text-left">建議進場價格區間 (5檔定價)</th>
+  2984:                         <th className="py-2.5 px-2 text-right text-rose-400 font-bold">減碼價(20%)</th>
+  2985:                         <th className="py-2.5 px-2 text-right text-rose-400">移動停利</th>
+  2986:                         <th className="py-2.5 px-2 text-right text-emerald-400 font-bold">防呆停損</th>
+  2987:                         <th className="py-2.5 px-2 text-center">策略訊號</th>
+  2988:                         <th className="py-2.5 px-3 text-center">實戰操作</th>
+  2989:                       </tr>
+  2990:                     </thead>
+  2991:                     <tbody className="divide-y divide-zinc-850/60 text-zinc-300">
+  2992:                       {processedSignals.length === 0 ? (
+  2993:                         <tr>
+  2994:                           <td colSpan={10} className="py-16 text-center text-zinc-500 font-mono">
+  2995:                             <AlertTriangle className="w-9 h-9 text-amber-500/35 mx-auto mb-2" />
+  2996:                             沒有符合篩選條件的黃金標的
+  2997:                             {eliteOnly && (
+  2998:                               <p className="text-[11px] text-zinc-650 mt-1">💡 當前開啟了 Score &gt;= 38 限制，試著關閉以檢視更多</p>
+  2999:                             )}
+  3000:                           </td>
+  3001:                         </tr>
+  3002:                       ) : (
+  3003:                         processedSignals.map(stock => {
+  3004:                           const isSelected = selectedStock?.stock_id === stock.stock_id;
+  3005:                           return (
+  3006:                             <tr
+  3007:                               key={stock.stock_id}
+  3008:                               onClick={() => {
+  3009:                                 setSelectedStock(stock);
+  3010:                                 setNotesText(stock.master_notes || "");
+  3011:                               }}
+  3012:                               className={`hover:bg-zinc-900/50 cursor-pointer transition ${
+  3013:                                 isSelected ? "bg-zinc-900/70 border-l-2 border-[#E5A823] text-white" : ""
+  3014:                               }`}
+  3015:                             >
+  3016:                               <td className="py-2 px-3">
+  3017:                                 <div className="font-mono font-bold flex items-center gap-1">
+  3018:                                   {stock.stock_id}
+  3019:                                   {stock.liquidity_warning && <span className="text-amber-500" title="流動性警告">⚠️</span>}
+  3020:                                 </div>
+  3021:                                 <div className="text-[10px] text-zinc-500 mt-0.5">{stock.stock_name}</div>
+  3022:                               </td>
+  3023:                               <td className="py-2 px-2 text-right font-mono font-semibold">
+  3024:                                 {stock.close_price.toFixed(1)}
+  3025:                               </td>
+  3026:                               <td className={`py-2 px-2 text-right font-mono font-black ${stock.change_pct >= 0 ? "text-rose-400" : "text-emerald-400"}`}>
+  3027:                                 {stock.change_pct >= 0 ? `+${stock.change_pct.toFixed(2)}` : stock.change_pct.toFixed(2)}%
+  3028:                               </td>
+  3029:                               <td className="py-2 px-2 text-center">
+  3030:                                 <span className={`px-2 py-0.5 rounded font-mono font-bold text-xs ${
+  3031:                                   stock.score >= 38
+  3032:                                     ? "bg-yellow-950 text-[#FFB74D] border border-yellow-500/40"
+  3033:                                     : "bg-zinc-800/80 text-zinc-450"
+  3034:                                 }`}>
+  3035:                                   {stock.score}
+  3036:                                 </span>
+  3037:                               </td>
+  3038:                               <td className="py-2 px-3 text-left font-mono text-[10px] text-zinc-350 max-w-[210px] truncate" title={stock.suggested_entry_price}>
+  3039:                                 {stock.suggested_entry_price}
+  3040:                               </td>
+  3041:                               <td className="py-2 px-2 text-right font-mono text-rose-400 font-bold">
+  3042:                                 {stock.take_profit_half_price?.toFixed(1) || "-"}
+  3043:                               </td>
+  3044:                               <td className="py-2 px-2 text-right font-mono text-rose-400">
+  3045:                                 {stock.trailing_stop_price?.toFixed(1) || "-"}
+  3046:                               </td>
+  3047:                               <td className="py-2 px-2 text-right font-mono text-emerald-400 font-bold">
+  3048:                                 {stock.stop_loss_price?.toFixed(1) || "-"}
+  3049:                               </td>
+  3050:                               <td className="py-2 px-2 text-center">
+  3051:                                 {renderSignalBadge(stock.signal)}
+  3052:                               </td>
+  3053:                               <td className="py-2 px-3 text-center" onClick={e => e.stopPropagation()}>
+  3054:                                 <div className="flex items-center gap-1.5 justify-center">
+  3055:                                   <button
+  3056:                                     onClick={() => openBuyModalForStock(stock)}
+  3057:                                     disabled={data?.macroEStopActive}
+  3058:                                     className={`px-2.5 py-1 text-[10px] font-bold rounded shadow transition active:scale-[0.96] ${
+  3059:                                       data?.macroEStopActive
+  3060:                                         ? "bg-zinc-800 text-zinc-550 border border-zinc-850 cursor-not-allowed"
+  3061:                                         : "bg-rose-900/90 text-rose-300 border border-rose-600/40 hover:bg-rose-800"
+  3062:                                     }`}
+  3063:                                   >
+  3064:                                     買入
+  3065:                                   </button>
+  3066:                                   <button
+  3067:                                     onClick={() => {
+  3068:                                       setSelectedStock(stock);
+  3069:                                       setNotesText(stock.master_notes || "");
+  3070:                                     }}
+  3071:                                     className="px-2.5 py-1 text-[10px] font-bold rounded bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 transition"
+  3072:                                   >
+  3073:                                     解盤
+  3074:                                   </button>
+  3075:                                 </div>
+  3076:                               </td>
+  3077:                             </tr>
+  3078:                           );
+  3079:                         })
+  3080:                       )}
+  3081:                     </tbody>
+  3082:                   </table>
+  3083:                 </div>
+  3084:                 ) : (
+  3085:                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 max-h-[550px] overflow-y-auto p-2">
+  3086:                     {processedSignals.length === 0 ? (
+  3087:                       <div className="col-span-full py-16 text-center text-zinc-500 font-mono">
+  3088:                         <AlertTriangle className="w-9 h-9 text-amber-500/35 mx-auto mb-2" />
+  3089:                         沒有符合篩選條件的黃金標的
+  3090:                       </div>
+  3091:                     ) : (
+  3092:                       processedSignals.map(stock => {
+  3093:                         const isSelected = selectedStock?.stock_id === stock.stock_id;
+  3094:                         const rsiVal = stock.scoreBreakdown?.rsiAbove50 ? 65 : 42;
+  3095:                         const statusText = stock.score >= 45 ? "🔥 過熱" : "✅ 正常";
+  3096:                         const momentumText = stock.score >= 45 ? "🚀 極強" : "📈 偏多";
+  3097:                         const volumeRatio = stock.volume_multiplier ? stock.volume_multiplier.toFixed(1) + "x" : "1.2x";
+  3098: 
+  3099:                         // S-Class or A-Class determination
+  3100:                         const isSClass = stock.score >= 45;
+  3101:                         const isAClass = stock.score >= 35 && stock.score < 45;
+  3102:                         const actionTier = isSClass ? "🏆 S級重倉狙擊" : "🥇 A級右側/左側伏擊";
+  3103: 
+  3104:                         // 20% Profit take warning flash
+  3105:                         const isTakeProfitWarning = stock.close_price >= (stock.take_profit_half_price || stock.close_price * 1.20);
+  3106: 
+  3107:                         // Half-Kelly calculation (base 1M capital)
+  3108:                         const winRate = stock.score >= 45 ? 85 : 68;
+  3109:                         const win_prob = winRate / 100;
+  3110:                         const odds = 2.0;
+  3111:                         const half_kelly = 0.5 * (win_prob - (1.0 - win_prob) / odds);
+  3112:                         const allocated_capital = 1000000 * half_kelly;
+  3113:                         const orderShares = isSClass ? Math.floor(allocated_capital / stock.close_price) : Math.floor(20000 / stock.close_price);
+  3114:                         const orderAmount = orderShares * stock.close_price;
+  3115: 
+  3116:                         // Pyramid tranches
+  3117:                         const p1 = Math.floor(orderShares * 0.5);
+  3118:                         const p2 = Math.floor(orderShares * 0.3);
+  3119:                         const p3 = Math.floor(orderShares * 0.2);
+  3120: 
+  3121:                         // Card Neon/Breathing border styling
+  3122:                         let borderStyle = "border-zinc-850 bg-zinc-950/80 hover:border-zinc-700 hover:bg-zinc-900/30";
+  3123:                         if (isSelected) {
+  3124:                           borderStyle = "border-2 border-[#E5A823] bg-zinc-900/90 shadow-[0_0_25px_rgba(229,168,35,0.22)] scale-[1.01]";
+  3125:                         } else if (isTakeProfitWarning) {
+  3126:                           borderStyle = "border border-[#FFB74D] bg-yellow-950/20 shadow-[0_0_18px_rgba(245,158,11,0.18)] animate-pulse-yellow";
+  3127:                         } else if (isSClass) {
+  3128:                           borderStyle = "border border-amber-500/60 bg-zinc-950/80 hover:border-amber-400 shadow-[0_0_15px_rgba(229,168,35,0.08)] hover:shadow-[0_0_22px_rgba(229,168,35,0.18)]";
+  3129:                         }
+  3130: 
+  3131:                         return (
+  3132:                           <div
+  3133:                             key={stock.stock_id}
+  3134:                             onClick={() => {
+  3135:                               setSelectedStock(stock);
+  3136:                               setNotesText(stock.master_notes || "");
+  3137:                             }}
+  3138:                             className={`premium-card rounded-xl p-4 shadow-xl transition-all duration-300 relative overflow-hidden group cursor-pointer flex flex-col justify-between gap-3 ${borderStyle}`}
+  3139:                           >
+  3140:                             {/* Card Top Row */}
+  3141:                             <div className="flex items-start justify-between">
+  3142:                               <div>
+  3143:                                 <div className="flex items-center gap-1.5">
+  3144:                                   <span className="text-base font-mono font-black text-white">{stock.stock_id}</span>
+  3145:                                   <span className="text-xs font-bold text-zinc-400">{stock.stock_name}</span>
+  3146:                                 </div>
+  3147:                                 <div className="flex flex-wrap gap-1 mt-1 text-[8px] font-mono">
+  3148:                                   <span className="bg-zinc-900 text-zinc-450 px-1 py-0.5 rounded border border-zinc-800">
+  3149:                                     {stock.category || "AI與權值"}
+  3150:                                   </span>
+  3151:                                   <span className="bg-zinc-900 text-zinc-450 px-1 py-0.5 rounded border border-zinc-800">
+  3152:                                     {actionTier}
+  3153:                                   </span>
+  3154:                                   {isTakeProfitWarning && (
+  3155:                                     <span className="bg-amber-950 text-[#FFB74D] px-1 py-0.5 rounded border border-amber-600/40 font-bold animate-pulse">
+  3156:                                       ⚠️ 獲利20%減碼
+  3157:                                     </span>
+  3158:                                   )}
+  3159:                                 </div>
+  3160:                               </div>
+  3161: 
+  3162:                               <div className="text-right">
+  3163:                                 <div className="text-[8px] font-mono text-zinc-550">V8050.0 全域檢核</div>
+  3164:                                 <span className={`px-2 py-0.5 rounded font-mono font-black text-[9px] ${
+  3165:                                   isSClass
+  3166:                                     ? "bg-yellow-950 text-[#FFB74D] border border-yellow-500/60 shadow-[0_0_8px_rgba(229,168,35,0.3)] animate-pulse"
+  3167:                                     : isAClass
+  3168:                                     ? "bg-sky-950 text-sky-300 border border-sky-600/50"
+  3169:                                     : "bg-zinc-800/80 text-zinc-400 border border-zinc-700"
+  3170:                                 }`}>
+  3171:                                   {isSClass ? "🏆" : isAClass ? "🥇" : "❌"} {stock.score} / 50
+  3172:                                 </span>
+  3173:                               </div>
+  3174:                             </div>
+  3175: 
+  3176:                             {/* Technical Grid (Bloomberg style 2x2 chips) */}
+  3177:                             <div className="grid grid-cols-4 gap-1 text-center font-mono text-[8px] bg-zinc-950 p-1.5 rounded-lg border border-zinc-900">
+  3178:                               <div className="flex flex-col p-1 rounded bg-zinc-900/60">
+  3179:                                 <span className="text-zinc-550 text-[7px]">RSI</span>
+  3180:                                 <span className="text-white font-bold">{rsiVal}</span>
+  3181:                               </div>
+  3182:                               <div className="flex flex-col p-1 rounded bg-zinc-900/60">
+  3183:                                 <span className="text-zinc-550 text-[7px]">狀態</span>
+  3184:                                 <span className={`font-bold ${isSClass ? "text-[#f43f5e]" : "text-[#10b881]"}`}>{statusText}</span>
+  3185:                               </div>
+  3186:                               <div className="flex flex-col p-1 rounded bg-zinc-900/60">
+  3187:                                 <span className="text-zinc-550 text-[7px]">動能</span>
+  3188:                                 <span className={`font-bold ${isSClass ? "text-[#f43f5e]" : "text-[#10b881]"}`}>{momentumText}</span>
+  3189:                               </div>
+  3190:                               <div className="flex flex-col p-1 rounded bg-zinc-900/60">
+  3191:                                 <span className="text-zinc-550 text-[7px]">量比</span>
+  3192:                                 <span className="text-white font-bold">{volumeRatio}</span>
+  3193:                               </div>
+  3194:                             </div>
+  3195: 
+  3196:                             {/* Live Headline/Notes */}
+  3197:                             {stock.master_notes && (
+  3198:                               <div className="border-l-2 border-amber-400 pl-2 py-0.5 text-[9px] font-sans text-amber-300 italic truncate" title={stock.master_notes.split(" | ")[0]}>
+  3199:                                 📰 {stock.master_notes.split(" | ")[0]}
+  3200:                               </div>
+  3201:                             )}
+  3202: 
+  3203:                             {/* Pricing Zones */}
+  3204:                             <div className="grid grid-cols-3 gap-1 text-center font-mono text-[8px] pt-1">
+  3205:                               <div className="bg-zinc-900/60 p-1 rounded border border-zinc-850">
+  3206:                                 <span className="text-zinc-550 text-[7px] block mb-0.5">現價建倉</span>
+  3207:                                 <span className="text-[#FFB74D] font-extrabold">{stock.close_price.toFixed(1)}</span>
+  3208:                               </div>
+  3209:                               <div className="bg-zinc-900/60 p-1 rounded border border-zinc-850">
+  3210:                                 <span className="text-zinc-555 text-[7px] block mb-0.5">波段支撐</span>
+  3211:                                 <span className="text-[#10b881] font-extrabold">{stock.stop_loss_price ? stock.stop_loss_price.toFixed(1) : "-"}</span>
+  3212:                               </div>
+  3213:                               <div className="bg-zinc-900/60 p-1 rounded border border-zinc-850">
+  3214:                                 <span className="text-zinc-555 text-[7px] block mb-0.5">波段壓力</span>
+  3215:                                 <span className="text-[#f43f5e] font-extrabold">{stock.take_profit_half_price ? stock.take_profit_half_price.toFixed(1) : "-"}</span>
+  3216:                               </div>
+  3217:                             </div>
+  3218: 
+  3219:                             {/* Execution Orders (Half-Kelly Pyramid or ROD limits) */}
+  3220:                             {isSClass ? (
+  3221:                               <div className="bg-zinc-950 p-2 rounded-lg border border-amber-500/20 text-[8px] font-mono space-y-1">
+  3222:                                 <div className="flex justify-between items-center text-zinc-450">
+  3223:                                   <span className="text-[#FFB74D] font-bold">🏆 S級 半凱利金字塔建倉 (5-3-2)</span>
+  3224:                                   <span className="text-white font-bold">約 NT$ {orderAmount.toLocaleString()}</span>
+  3225:                                 </div>
+  3226:                                 <div className="grid grid-cols-3 gap-1 text-center text-[7px] pt-1 border-t border-zinc-900">
+  3227:                                   <div className="bg-zinc-900/40 p-0.5 rounded">
+  3228:                                     <span className="text-zinc-500 block">首批(50%)</span>
+  3229:                                     <span className="text-[#f43f5e] font-bold">{p1} 股</span>
+  3230:                                   </div>
+  3231:                                   <div className="bg-zinc-900/40 p-0.5 rounded">
+  3232:                                     <span className="text-zinc-500 block">二批(30%)</span>
+  3233:                                     <span className="text-[#f43f5e] font-bold">{p2} 股</span>
+  3234:                                   </div>
+  3235:                                   <div className="bg-zinc-900/40 p-0.5 rounded">
+  3236:                                     <span className="text-zinc-550 block">三批(20%)</span>
+  3237:                                     <span className="text-[#f43f5e] font-bold">{p3} 股</span>
+  3238:                                   </div>
+  3239:                                 </div>
+  3240:                               </div>
+  3241:                             ) : (
+  3242:                               <div className="bg-zinc-950 p-2 rounded-lg border border-zinc-900 text-[8px] font-mono space-y-1">
+  3243:                                 <div className="flex justify-between items-center text-zinc-450">
+  3244:                                   <span className="text-[#FFB74D]">🎯 A級 ROD限價伏擊單 (20MA)</span>
+  3245:                                   <span className="text-white font-bold">約 NT$ {orderAmount.toLocaleString()}</span>
+  3246:                                 </div>
+  3247:                                 <div className="flex justify-between items-center">
+  3248:                                   <span className="text-zinc-550">伏擊價格區間:</span>
+  3249:                                   <span className="text-[#10b881] font-extrabold">{(stock.close_price * 0.985).toFixed(1)} ~ {(stock.close_price * 0.995).toFixed(1)}</span>
+  3250:                                 </div>
+  3251:                                 <div className="flex justify-between items-center text-[7px] pt-1 border-t border-zinc-900 text-zinc-500">
+  3252:                                   <span>建議買入: <span className="text-[#FFB74D] font-bold">{orderShares} 股</span></span>
+  3253:                                   <span>防呆停損: <span className="text-[#10b881] font-bold">{stock.stop_loss_price ? stock.stop_loss_price.toFixed(1) : "-"}</span></span>
+  3254:                                 </div>
+  3255:                               </div>
+  3256:                             )}
+  3257: 
+  3258:                             {/* Action Buttons */}
+  3259:                             <div className="flex items-center gap-1.5 justify-end pt-1" onClick={e => e.stopPropagation()}>
+  3260:                               <button
+  3261:                                 onClick={() => openBuyModalForStock(stock)}
+  3262:                                 disabled={data?.macroEStopActive}
+  3263:                                 className={`flex-1 py-1.5 text-[9px] font-bold rounded shadow transition active:scale-[0.96] text-center ${
+  3264:                                   data?.macroEStopActive
+  3265:                                     ? "bg-zinc-800 text-zinc-550 border border-zinc-850 cursor-not-allowed"
+  3266:                                     : "bg-rose-950/90 text-rose-350 border border-rose-700/40 hover:bg-rose-900"
+  3267:                                 }`}
+  3268:                               >
+  3269:                                 現價建倉
+  3270:                               </button>
+  3271:                               <button
+  3272:                                 onClick={() => {
+  3273:                                   setSelectedStock(stock);
+  3274:                                   setNotesText(stock.master_notes || "");
+  3275:                                 }}
+  3276:                                 className="px-2.5 py-1.5 text-[9px] font-bold rounded bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 transition"
+  3277:                               >
+  3278:                                 實戰解盤
+  3279:                               </button>
+  3280:                             </div>
+  3281: 
+  3282:                             {/* Bottom metadata shadow */}
+  3283:                             <div className={`absolute bottom-0 left-0 right-0 h-1 opacity-70 bg-gradient-to-r ${isSClass ? "from-amber-500 to-[#FFB74D]" : "from-[#f43f5e] via-[#FFB74D] to-[#10b881]"}`}></div>
+  3284:                           </div>
+  3285:                         );
+  3286:                       })
+  3287:                     )}
+  3288:                   </div>
+  3289:                 )}
+  3290: 
+  3291:                 <div className="p-3.5 bg-[#0e1117] border-t border-zinc-850 text-[10px] font-mono text-zinc-500 flex flex-col sm:flex-row justify-between items-center gap-2">
+  3292:                   <span>精英戰線已過濾符合 {processedSignals.length} 檔標的</span>
+  3293:                   <span>最後盤中洗價時間: {data ? data.scanTime : "讀取中..."}</span>
+  3294:                 </div>
+  3295: 
+  3296:               </div>
+  3297: 
+  3298:             </div>
+  3299: 
+  3300:             {/* Right Side Tactical Intelligence Panel */}
+  3301:             <div className="hidden lg:flex lg:col-span-4 flex-col gap-6">
+  3302: 
+  3303:               <div className="premium-card rounded-xl shadow-xl overflow-hidden sticky top-[135px] max-h-[calc(100vh-160px)] overflow-y-auto">
+  3304: 
+  3305:                 {/* Header */}
+  3306:                 <div className="p-4 bg-gradient-to-r from-zinc-900 to-[#0e1117] border-b border-zinc-850 flex items-center justify-between">
+  3307:                   <div className="flex items-center gap-2">
+  3308:                     <Award className="w-5 h-5 text-[#FFB74D]" />
+  3309:                     <h3 className="font-bold text-white text-sm">獅王戰神實戰解盤與註記</h3>
+  3310:                   </div>
+  3311:                   <span className="text-[10px] font-mono tracking-widest text-[#FFB74D] uppercase font-bold">
+  3312:                     V2026.Max
+  3313:                   </span>
+  3314:                 </div>
+  3315: 
+  3316:                 {selectedStock ? (
+  3317:                   renderStockDetailsContent()
+  3318:                 ) : (
+  3319:                   <div className="p-8 text-center text-zinc-550 font-mono">
+  3320:                     <AlertTriangle className="w-10 h-10 text-amber-500/20 mx-auto mb-3" />
+  3321:                     請點選左側表格中的股票代號
+  3322:                     <p className="text-[11px] text-zinc-650 mt-1">開啟該個股對沖與風控戰情面板</p>
+  3323:                   </div>
+  3324:                 )}
+  3325: 
+  3326:                 {/* 老司機操盤四字訣 Panel */}
+  3327:                 <div className="border-t border-zinc-850 p-4 bg-[#0a0b0f]">
+  3328:                   <div className="border-t border-zinc-850 p-4 bg-[#0a0b0f]">
+  3329:                   <div className="flex items-center gap-2 mb-3">
+  3330:                     <Flame className="w-4 h-4 text-[#E5A823] animate-pulse shrink-0" />
+  3331:                     <h4 className="text-white text-xs md:text-sm font-bold font-mono tracking-wider">老司機操盤四字訣 (輪・空・殺・早)</h4>
+  3332:                   </div>
+  3333: 
+  3334:                   {(() => {
+  3335:                     const allSignalsList = data?.signals || marketData?.signals || [];
+  3336:                     const wildReleaseStocks = allSignalsList.filter(s => s.scoreBreakdown?.c30_bbShortSqueezeBreakout);
+  3337: 
+  3338:                     const selectStockById = (id: string) => {
+  3339:                       const found = allSignalsList.find(s => s.stock_id === id);
+  3340:                       if (found) {
+  3341:                         setSelectedStock(found);
+  3342:                         setNotesText(found.master_notes || "");
+  3343:                       }
+  3344:                     };
+  3345: 
+  3346:                     return (
+  3347:                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[10px] md:text-xs">
+  3348:                         {/* 輪 */}
+  3349:                         <div className="bg-gradient-to-br from-rose-950/30 via-rose-950/10 to-zinc-950/60 border border-rose-500/20 hover:border-rose-500/40 rounded-xl p-3 hover:scale-[1.01] hover:shadow-lg transition-all duration-300 flex flex-col justify-between">
+  3350:                           <div>
+  3351:                             <div className="flex items-center gap-2 mb-2">
+Match found at line 2962: viewMode === "cards"
+  2957:                       📋 表格視圖
+  2958:                     </button>
+  2959:                     <button
+  2960:                       onClick={() => setViewMode("cards")}
+  2961:                       className={`px-2.5 py-1 text-[10px] font-bold rounded transition-all select-none ${
+  2962:                         viewMode === "cards"
+  2963:                           ? "bg-[#E5A823] text-black shadow font-black"
+  2964:                           : "text-zinc-400 hover:text-white"
+  2965:                       }`}
+  2966:                     >
+  2967:                       🎴 籌碼卡片
+  2968:                     </button>
+  2969:                   </div>
+  2970: 
+  2971:                 </div>
+  2972: 
+  2973:                 {/* Table list */}
+  2974:                 {viewMode === "table" ? (
+  2975:                   <div className="overflow-x-auto max-h-[550px] overflow-y-auto">
+  2976:                     <table className="w-full text-left border-collapse table-auto text-xs">
+  2977:                     <thead>
+  2978:                       <tr className="border-b border-zinc-850 bg-[#0e1117]/95 text-[10px] uppercase font-mono font-bold text-zinc-500 sticky top-0 z-10 select-none">
+  2979:                         <th className="py-2.5 px-3">代號 / 股名</th>
+  2980:                         <th className="py-2.5 px-2 text-right">現價</th>
+  2981:                         <th className="py-2.5 px-2 text-right">漲跌%</th>
+  2982:                         <th className="py-2.5 px-2 text-center text-[#FFB74D]">評分</th>
+  2983:                         <th className="py-2.5 px-3 text-left">建議進場價格區間 (5檔定價)</th>
+  2984:                         <th className="py-2.5 px-2 text-right text-rose-400 font-bold">減碼價(20%)</th>
+  2985:                         <th className="py-2.5 px-2 text-right text-rose-400">移動停利</th>
+  2986:                         <th className="py-2.5 px-2 text-right text-emerald-400 font-bold">防呆停損</th>
+  2987:                         <th className="py-2.5 px-2 text-center">策略訊號</th>
+  2988:                         <th className="py-2.5 px-3 text-center">實戰操作</th>
+  2989:                       </tr>
+  2990:                     </thead>
+  2991:                     <tbody className="divide-y divide-zinc-850/60 text-zinc-300">
+  2992:                       {processedSignals.length === 0 ? (
+  2993:                         <tr>
+  2994:                           <td colSpan={10} className="py-16 text-center text-zinc-500 font-mono">
+  2995:                             <AlertTriangle className="w-9 h-9 text-amber-500/35 mx-auto mb-2" />
+  2996:                             沒有符合篩選條件的黃金標的
+  2997:                             {eliteOnly && (
+  2998:                               <p className="text-[11px] text-zinc-650 mt-1">💡 當前開啟了 Score &gt;= 38 限制，試著關閉以檢視更多</p>
+  2999:                             )}
+  3000:                           </td>
+  3001:                         </tr>
+  3002:                       ) : (
+  3003:                         processedSignals.map(stock => {
+  3004:                           const isSelected = selectedStock?.stock_id === stock.stock_id;
+  3005:                           return (
+  3006:                             <tr
+  3007:                               key={stock.stock_id}
+  3008:                               onClick={() => {
+  3009:                                 setSelectedStock(stock);
+  3010:                                 setNotesText(stock.master_notes || "");
+  3011:                               }}
+  3012:                               className={`hover:bg-zinc-900/50 cursor-pointer transition ${
+  3013:                                 isSelected ? "bg-zinc-900/70 border-l-2 border-[#E5A823] text-white" : ""
+  3014:                               }`}
+  3015:                             >
+  3016:                               <td className="py-2 px-3">
+  3017:                                 <div className="font-mono font-bold flex items-center gap-1">
+  3018:                                   {stock.stock_id}
+  3019:                                   {stock.liquidity_warning && <span className="text-amber-500" title="流動性警告">⚠️</span>}
+  3020:                                 </div>
+  3021:                                 <div className="text-[10px] text-zinc-500 mt-0.5">{stock.stock_name}</div>
+  3022:                               </td>
+  3023:                               <td className="py-2 px-2 text-right font-mono font-semibold">
+  3024:                                 {stock.close_price.toFixed(1)}
+  3025:                               </td>
+  3026:                               <td className={`py-2 px-2 text-right font-mono font-black ${stock.change_pct >= 0 ? "text-rose-400" : "text-emerald-400"}`}>
+  3027:                                 {stock.change_pct >= 0 ? `+${stock.change_pct.toFixed(2)}` : stock.change_pct.toFixed(2)}%
+  3028:                               </td>
+  3029:                               <td className="py-2 px-2 text-center">
+  3030:                                 <span className={`px-2 py-0.5 rounded font-mono font-bold text-xs ${
+  3031:                                   stock.score >= 38
+  3032:                                     ? "bg-yellow-950 text-[#FFB74D] border border-yellow-500/40"
+  3033:                                     : "bg-zinc-800/80 text-zinc-450"
+  3034:                                 }`}>
+  3035:                                   {stock.score}
+  3036:                                 </span>
+  3037:                               </td>
+  3038:                               <td className="py-2 px-3 text-left font-mono text-[10px] text-zinc-350 max-w-[210px] truncate" title={stock.suggested_entry_price}>
+  3039:                                 {stock.suggested_entry_price}
+  3040:                               </td>
+  3041:                               <td className="py-2 px-2 text-right font-mono text-rose-400 font-bold">
+  3042:                                 {stock.take_profit_half_price?.toFixed(1) || "-"}
+  3043:                               </td>
+  3044:                               <td className="py-2 px-2 text-right font-mono text-rose-400">
+  3045:                                 {stock.trailing_stop_price?.toFixed(1) || "-"}
+  3046:                               </td>
+  3047:                               <td className="py-2 px-2 text-right font-mono text-emerald-400 font-bold">
+  3048:                                 {stock.stop_loss_price?.toFixed(1) || "-"}
+  3049:                               </td>
+  3050:                               <td className="py-2 px-2 text-center">
+  3051:                                 {renderSignalBadge(stock.signal)}
+  3052:                               </td>
+  3053:                               <td className="py-2 px-3 text-center" onClick={e => e.stopPropagation()}>
+  3054:                                 <div className="flex items-center gap-1.5 justify-center">
+  3055:                                   <button
+  3056:                                     onClick={() => openBuyModalForStock(stock)}
+  3057:                                     disabled={data?.macroEStopActive}
+  3058:                                     className={`px-2.5 py-1 text-[10px] font-bold rounded shadow transition active:scale-[0.96] ${
+  3059:                                       data?.macroEStopActive
+  3060:                                         ? "bg-zinc-800 text-zinc-550 border border-zinc-850 cursor-not-allowed"
+  3061:                                         : "bg-rose-900/90 text-rose-300 border border-rose-600/40 hover:bg-rose-800"
+  3062:                                     }`}
+  3063:                                   >
+  3064:                                     買入
+  3065:                                   </button>
+  3066:                                   <button
+  3067:                                     onClick={() => {
+  3068:                                       setSelectedStock(stock);
+  3069:                                       setNotesText(stock.master_notes || "");
+  3070:                                     }}
+  3071:                                     className="px-2.5 py-1 text-[10px] font-bold rounded bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 transition"
+  3072:                                   >
+  3073:                                     解盤
+  3074:                                   </button>
+  3075:                                 </div>
+  3076:                               </td>
+  3077:                             </tr>
+  3078:                           );
+  3079:                         })
+  3080:                       )}
+  3081:                     </tbody>
+  3082:                   </table>
+  3083:                 </div>
+  3084:                 ) : (
+  3085:                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 max-h-[550px] overflow-y-auto p-2">
+  3086:                     {processedSignals.length === 0 ? (
+  3087:                       <div className="col-span-full py-16 text-center text-zinc-500 font-mono">
+  3088:                         <AlertTriangle className="w-9 h-9 text-amber-500/35 mx-auto mb-2" />
+  3089:                         沒有符合篩選條件的黃金標的
+  3090:                       </div>
+  3091:                     ) : (
+  3092:                       processedSignals.map(stock => {
+  3093:                         const isSelected = selectedStock?.stock_id === stock.stock_id;
+  3094:                         const rsiVal = stock.scoreBreakdown?.rsiAbove50 ? 65 : 42;
+  3095:                         const statusText = stock.score >= 45 ? "🔥 過熱" : "✅ 正常";
+  3096:                         const momentumText = stock.score >= 45 ? "🚀 極強" : "📈 偏多";
+  3097:                         const volumeRatio = stock.volume_multiplier ? stock.volume_multiplier.toFixed(1) + "x" : "1.2x";
+  3098: 
+  3099:                         // S-Class or A-Class determination
+  3100:                         const isSClass = stock.score >= 45;
+  3101:                         const isAClass = stock.score >= 35 && stock.score < 45;
+  3102:                         const actionTier = isSClass ? "🏆 S級重倉狙擊" : "🥇 A級右側/左側伏擊";
+  3103: 
+  3104:                         // 20% Profit take warning flash
+  3105:                         const isTakeProfitWarning = stock.close_price >= (stock.take_profit_half_price || stock.close_price * 1.20);
+  3106: 
+  3107:                         // Half-Kelly calculation (base 1M capital)
+  3108:                         const winRate = stock.score >= 45 ? 85 : 68;
+  3109:                         const win_prob = winRate / 100;
+  3110:                         const odds = 2.0;
+  3111:                         const half_kelly = 0.5 * (win_prob - (1.0 - win_prob) / odds);
+  3112:                         const allocated_capital = 1000000 * half_kelly;
+  3113:                         const orderShares = isSClass ? Math.floor(allocated_capital / stock.close_price) : Math.floor(20000 / stock.close_price);
+  3114:                         const orderAmount = orderShares * stock.close_price;
+  3115: 
+  3116:                         // Pyramid tranches
+  3117:                         const p1 = Math.floor(orderShares * 0.5);
+  3118:                         const p2 = Math.floor(orderShares * 0.3);
+  3119:                         const p3 = Math.floor(orderShares * 0.2);
+  3120: 
+  3121:                         // Card Neon/Breathing border styling
+  3122:                         let borderStyle = "border-zinc-850 bg-zinc-950/80 hover:border-zinc-700 hover:bg-zinc-900/30";
+  3123:                         if (isSelected) {
+  3124:                           borderStyle = "border-2 border-[#E5A823] bg-zinc-900/90 shadow-[0_0_25px_rgba(229,168,35,0.22)] scale-[1.01]";
+  3125:                         } else if (isTakeProfitWarning) {
+  3126:                           borderStyle = "border border-[#FFB74D] bg-yellow-950/20 shadow-[0_0_18px_rgba(245,158,11,0.18)] animate-pulse-yellow";
+  3127:                         } else if (isSClass) {
+  3128:                           borderStyle = "border border-amber-500/60 bg-zinc-950/80 hover:border-amber-400 shadow-[0_0_15px_rgba(229,168,35,0.08)] hover:shadow-[0_0_22px_rgba(229,168,35,0.18)]";
+  3129:                         }
+  3130: 
+  3131:                         return (
+  3132:                           <div
+  3133:                             key={stock.stock_id}
+  3134:                             onClick={() => {
+  3135:                               setSelectedStock(stock);
+  3136:                               setNotesText(stock.master_notes || "");
+  3137:                             }}
+  3138:                             className={`premium-card rounded-xl p-4 shadow-xl transition-all duration-300 relative overflow-hidden group cursor-pointer flex flex-col justify-between gap-3 ${borderStyle}`}
+  3139:                           >
+  3140:                             {/* Card Top Row */}
+  3141:                             <div className="flex items-start justify-between">
+  3142:                               <div>
+  3143:                                 <div className="flex items-center gap-1.5">
+  3144:                                   <span className="text-base font-mono font-black text-white">{stock.stock_id}</span>
+  3145:                                   <span className="text-xs font-bold text-zinc-400">{stock.stock_name}</span>
+  3146:                                 </div>
+  3147:                                 <div className="flex flex-wrap gap-1 mt-1 text-[8px] font-mono">
+  3148:                                   <span className="bg-zinc-900 text-zinc-450 px-1 py-0.5 rounded border border-zinc-800">
+  3149:                                     {stock.category || "AI與權值"}
+  3150:                                   </span>
+  3151:                                   <span className="bg-zinc-900 text-zinc-450 px-1 py-0.5 rounded border border-zinc-800">
+  3152:                                     {actionTier}
+  3153:                                   </span>
+  3154:                                   {isTakeProfitWarning && (
+  3155:                                     <span className="bg-amber-950 text-[#FFB74D] px-1 py-0.5 rounded border border-amber-600/40 font-bold animate-pulse">
+  3156:                                       ⚠️ 獲利20%減碼
+  3157:                                     </span>
+  3158:                                   )}
+  3159:                                 </div>
+  3160:                               </div>
+  3161: 
+  3162:                               <div className="text-right">
+  3163:                                 <div className="text-[8px] font-mono text-zinc-550">V8050.0 全域檢核</div>
+  3164:                                 <span className={`px-2 py-0.5 rounded font-mono font-black text-[9px] ${
+  3165:                                   isSClass
+  3166:                                     ? "bg-yellow-950 text-[#FFB74D] border border-yellow-500/60 shadow-[0_0_8px_rgba(229,168,35,0.3)] animate-pulse"
+  3167:                                     : isAClass
+  3168:                                     ? "bg-sky-950 text-sky-300 border border-sky-600/50"
+  3169:                                     : "bg-zinc-800/80 text-zinc-400 border border-zinc-700"
+  3170:                                 }`}>
+  3171:                                   {isSClass ? "🏆" : isAClass ? "🥇" : "❌"} {stock.score} / 50
+  3172:                                 </span>
+  3173:                               </div>
+  3174:                             </div>
+  3175: 
+  3176:                             {/* Technical Grid (Bloomberg style 2x2 chips) */}
+  3177:                             <div className="grid grid-cols-4 gap-1 text-center font-mono text-[8px] bg-zinc-950 p-1.5 rounded-lg border border-zinc-900">
+  3178:                               <div className="flex flex-col p-1 rounded bg-zinc-900/60">
+  3179:                                 <span className="text-zinc-550 text-[7px]">RSI</span>
+  3180:                                 <span className="text-white font-bold">{rsiVal}</span>
+  3181:                               </div>
+  3182:                               <div className="flex flex-col p-1 rounded bg-zinc-900/60">
+  3183:                                 <span className="text-zinc-550 text-[7px]">狀態</span>
+  3184:                                 <span className={`font-bold ${isSClass ? "text-[#f43f5e]" : "text-[#10b881]"}`}>{statusText}</span>
+  3185:                               </div>
+  3186:                               <div className="flex flex-col p-1 rounded bg-zinc-900/60">
+  3187:                                 <span className="text-zinc-550 text-[7px]">動能</span>
+  3188:                                 <span className={`font-bold ${isSClass ? "text-[#f43f5e]" : "text-[#10b881]"}`}>{momentumText}</span>
+  3189:                               </div>
+  3190:                               <div className="flex flex-col p-1 rounded bg-zinc-900/60">
+  3191:                                 <span className="text-zinc-550 text-[7px]">量比</span>
+  3192:                                 <span className="text-white font-bold">{volumeRatio}</span>
+  3193:                               </div>
+  3194:                             </div>
+  3195: 
+  3196:                             {/* Live Headline/Notes */}
+  3197:                             {stock.master_notes && (
+  3198:                               <div className="border-l-2 border-amber-400 pl-2 py-0.5 text-[9px] font-sans text-amber-300 italic truncate" title={stock.master_notes.split(" | ")[0]}>
+  3199:                                 📰 {stock.master_notes.split(" | ")[0]}
+  3200:                               </div>
+  3201:                             )}
+  3202: 
+  3203:                             {/* Pricing Zones */}
+  3204:                             <div className="grid grid-cols-3 gap-1 text-center font-mono text-[8px] pt-1">
+  3205:                               <div className="bg-zinc-900/60 p-1 rounded border border-zinc-850">
+  3206:                                 <span className="text-zinc-550 text-[7px] block mb-0.5">現價建倉</span>
+  3207:                                 <span className="text-[#FFB74D] font-extrabold">{stock.close_price.toFixed(1)}</span>
+  3208:                               </div>
+  3209:                               <div className="bg-zinc-900/60 p-1 rounded border border-zinc-850">
+  3210:                                 <span className="text-zinc-555 text-[7px] block mb-0.5">波段支撐</span>
+  3211:                                 <span className="text-[#10b881] font-extrabold">{stock.stop_loss_price ? stock.stop_loss_price.toFixed(1) : "-"}</span>
+  3212:                               </div>
+  3213:                               <div className="bg-zinc-900/60 p-1 rounded border border-zinc-850">
+  3214:                                 <span className="text-zinc-555 text-[7px] block mb-0.5">波段壓力</span>
+  3215:                                 <span className="text-[#f43f5e] font-extrabold">{stock.take_profit_half_price ? stock.take_profit_half_price.toFixed(1) : "-"}</span>
+  3216:                               </div>
+  3217:                             </div>
+  3218: 
+  3219:                             {/* Execution Orders (Half-Kelly Pyramid or ROD limits) */}
+  3220:                             {isSClass ? (
+  3221:                               <div className="bg-zinc-950 p-2 rounded-lg border border-amber-500/20 text-[8px] font-mono space-y-1">
+  3222:                                 <div className="flex justify-between items-center text-zinc-450">
+  3223:                                   <span className="text-[#FFB74D] font-bold">🏆 S級 半凱利金字塔建倉 (5-3-2)</span>
+  3224:                                   <span className="text-white font-bold">約 NT$ {orderAmount.toLocaleString()}</span>
+  3225:                                 </div>
+  3226:                                 <div className="grid grid-cols-3 gap-1 text-center text-[7px] pt-1 border-t border-zinc-900">
+  3227:                                   <div className="bg-zinc-900/40 p-0.5 rounded">
+  3228:                                     <span className="text-zinc-500 block">首批(50%)</span>
+  3229:                                     <span className="text-[#f43f5e] font-bold">{p1} 股</span>
+  3230:                                   </div>
+  3231:                                   <div className="bg-zinc-900/40 p-0.5 rounded">
+  3232:                                     <span className="text-zinc-500 block">二批(30%)</span>
+  3233:                                     <span className="text-[#f43f5e] font-bold">{p2} 股</span>
+  3234:                                   </div>
+  3235:                                   <div className="bg-zinc-900/40 p-0.5 rounded">
+  3236:                                     <span className="text-zinc-550 block">三批(20%)</span>
+  3237:                                     <span className="text-[#f43f5e] font-bold">{p3} 股</span>
+  3238:                                   </div>
+  3239:                                 </div>
+  3240:                               </div>
+  3241:                             ) : (
+  3242:                               <div className="bg-zinc-950 p-2 rounded-lg border border-zinc-900 text-[8px] font-mono space-y-1">
+  3243:                                 <div className="flex justify-between items-center text-zinc-450">
+  3244:                                   <span className="text-[#FFB74D]">🎯 A級 ROD限價伏擊單 (20MA)</span>
+  3245:                                   <span className="text-white font-bold">約 NT$ {orderAmount.toLocaleString()}</span>
+  3246:                                 </div>
+  3247:                                 <div className="flex justify-between items-center">
+  3248:                                   <span className="text-zinc-550">伏擊價格區間:</span>
+  3249:                                   <span className="text-[#10b881] font-extrabold">{(stock.close_price * 0.985).toFixed(1)} ~ {(stock.close_price * 0.995).toFixed(1)}</span>
+  3250:                                 </div>
+  3251:                                 <div className="flex justify-between items-center text-[7px] pt-1 border-t border-zinc-900 text-zinc-500">
+  3252:                                   <span>建議買入: <span className="text-[#FFB74D] font-bold">{orderShares} 股</span></span>
+  3253:                                   <span>防呆停損: <span className="text-[#10b881] font-bold">{stock.stop_loss_price ? stock.stop_loss_price.toFixed(1) : "-"}</span></span>
+  3254:                                 </div>
+  3255:                               </div>
+  3256:                             )}
+  3257: 
+  3258:                             {/* Action Buttons */}
+  3259:                             <div className="flex items-center gap-1.5 justify-end pt-1" onClick={e => e.stopPropagation()}>
+  3260:                               <button
+  3261:                                 onClick={() => openBuyModalForStock(stock)}
+  3262:                                 disabled={data?.macroEStopActive}
+  3263:                                 className={`flex-1 py-1.5 text-[9px] font-bold rounded shadow transition active:scale-[0.96] text-center ${
+  3264:                                   data?.macroEStopActive
+  3265:                                     ? "bg-zinc-800 text-zinc-550 border border-zinc-850 cursor-not-allowed"
+  3266:                                     : "bg-rose-950/90 text-rose-350 border border-rose-700/40 hover:bg-rose-900"
+  3267:                                 }`}
+  3268:                               >
+  3269:                                 現價建倉
+  3270:                               </button>
+  3271:                               <button
+  3272:                                 onClick={() => {
+  3273:                                   setSelectedStock(stock);
+  3274:                                   setNotesText(stock.master_notes || "");
+  3275:                                 }}
+  3276:                                 className="px-2.5 py-1.5 text-[9px] font-bold rounded bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 transition"
+  3277:                               >
+  3278:                                 實戰解盤
+  3279:                               </button>
+  3280:                             </div>
+  3281: 
+  3282:                             {/* Bottom metadata shadow */}
+  3283:                             <div className={`absolute bottom-0 left-0 right-0 h-1 opacity-70 bg-gradient-to-r ${isSClass ? "from-amber-500 to-[#FFB74D]" : "from-[#f43f5e] via-[#FFB74D] to-[#10b881]"}`}></div>
+  3284:                           </div>
+  3285:                         );
+  3286:                       })
+  3287:                     )}
+  3288:                   </div>
+  3289:                 )}
+  3290: 
+  3291:                 <div className="p-3.5 bg-[#0e1117] border-t border-zinc-850 text-[10px] font-mono text-zinc-500 flex flex-col sm:flex-row justify-between items-center gap-2">
+  3292:                   <span>精英戰線已過濾符合 {processedSignals.length} 檔標的</span>
+  3293:                   <span>最後盤中洗價時間: {data ? data.scanTime : "讀取中..."}</span>
+  3294:                 </div>
+  3295: 
+  3296:               </div>
+  3297: 
+  3298:             </div>
+  3299: 
+  3300:             {/* Right Side Tactical Intelligence Panel */}
+  3301:             <div className="hidden lg:flex lg:col-span-4 flex-col gap-6">
+  3302: 
+  3303:               <div className="premium-card rounded-xl shadow-xl overflow-hidden sticky top-[135px] max-h-[calc(100vh-160px)] overflow-y-auto">
+  3304: 
+  3305:                 {/* Header */}
+  3306:                 <div className="p-4 bg-gradient-to-r from-zinc-900 to-[#0e1117] border-b border-zinc-850 flex items-center justify-between">
+  3307:                   <div className="flex items-center gap-2">
+  3308:                     <Award className="w-5 h-5 text-[#FFB74D]" />
+  3309:                     <h3 className="font-bold text-white text-sm">獅王戰神實戰解盤與註記</h3>
+  3310:                   </div>
+  3311:                   <span className="text-[10px] font-mono tracking-widest text-[#FFB74D] uppercase font-bold">
+  3312:                     V2026.Max
+  3313:                   </span>
+  3314:                 </div>
+  3315: 
+  3316:                 {selectedStock ? (
+  3317:                   renderStockDetailsContent()
+  3318:                 ) : (
+  3319:                   <div className="p-8 text-center text-zinc-550 font-mono">
+  3320:                     <AlertTriangle className="w-10 h-10 text-amber-500/20 mx-auto mb-3" />
+  3321:                     請點選左側表格中的股票代號
+  3322:                     <p className="text-[11px] text-zinc-650 mt-1">開啟該個股對沖與風控戰情面板</p>
+  3323:                   </div>
+  3324:                 )}
+  3325: 
+  3326:                 {/* 老司機操盤四字訣 Panel */}
+  3327:                 <div className="border-t border-zinc-850 p-4 bg-[#0a0b0f]">
+  3328:                   <div className="border-t border-zinc-850 p-4 bg-[#0a0b0f]">
+  3329:                   <div className="flex items-center gap-2 mb-3">
+  3330:                     <Flame className="w-4 h-4 text-[#E5A823] animate-pulse shrink-0" />
+  3331:                     <h4 className="text-white text-xs md:text-sm font-bold font-mono tracking-wider">老司機操盤四字訣 (輪・空・殺・早)</h4>
+  3332:                   </div>
+  3333: 
+  3334:                   {(() => {
+  3335:                     const allSignalsList = data?.signals || marketData?.signals || [];
+  3336:                     const wildReleaseStocks = allSignalsList.filter(s => s.scoreBreakdown?.c30_bbShortSqueezeBreakout);
+  3337: 
+  3338:                     const selectStockById = (id: string) => {
+  3339:                       const found = allSignalsList.find(s => s.stock_id === id);
+  3340:                       if (found) {
+  3341:                         setSelectedStock(found);
+  3342:                         setNotesText(found.master_notes || "");
+  3343:                       }
+  3344:                     };
+  3345: 
+  3346:                     return (
+  3347:                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[10px] md:text-xs">
+  3348:                         {/* 輪 */}
+  3349:                         <div className="bg-gradient-to-br from-rose-950/30 via-rose-950/10 to-zinc-950/60 border border-rose-500/20 hover:border-rose-500/40 rounded-xl p-3 hover:scale-[1.01] hover:shadow-lg transition-all duration-300 flex flex-col justify-between">
+  3350:                           <div>
+  3351:                             <div className="flex items-center gap-2 mb-2">
+  3352:                               <span className="w-5.5 h-5.5 rounded-full bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-rose-400 text-xs font-black shrink-0">輪</span>
+  3353:                               <span className="text-rose-300 font-bold text-xs md:text-sm">板塊輪動訊號</span>
+  3354:                             </div>
+  3355:                             <p className="text-zinc-400 leading-relaxed text-[10px] md:text-xs font-sans">
+  3356:                               PCB主升 (欣興/南電) 帶動 DRAM 與被動元件。
+  3357:                               <span className="text-amber-400 font-bold ml-1">⚠️ 妖股噴出則散場</span>
+  3358:                             </p>
+  3359:                           </div>
+  3360:                           <div className="mt-2.5 flex flex-wrap gap-1">
+  3361:                             {[
+Match found at line 2974: {viewMode === "table" ? (
+  2969:                   </div>
+  2970: 
+  2971:                 </div>
+  2972: 
+  2973:                 {/* Table list */}
+  2974:                 {viewMode === "table" ? (
+  2975:                   <div className="overflow-x-auto max-h-[550px] overflow-y-auto">
+  2976:                     <table className="w-full text-left border-collapse table-auto text-xs">
+  2977:                     <thead>
+  2978:                       <tr className="border-b border-zinc-850 bg-[#0e1117]/95 text-[10px] uppercase font-mono font-bold text-zinc-500 sticky top-0 z-10 select-none">
+  2979:                         <th className="py-2.5 px-3">代號 / 股名</th>
+  2980:                         <th className="py-2.5 px-2 text-right">現價</th>
+  2981:                         <th className="py-2.5 px-2 text-right">漲跌%</th>
+  2982:                         <th className="py-2.5 px-2 text-center text-[#FFB74D]">評分</th>
+  2983:                         <th className="py-2.5 px-3 text-left">建議進場價格區間 (5檔定價)</th>
+  2984:                         <th className="py-2.5 px-2 text-right text-rose-400 font-bold">減碼價(20%)</th>
+  2985:                         <th className="py-2.5 px-2 text-right text-rose-400">移動停利</th>
+  2986:                         <th className="py-2.5 px-2 text-right text-emerald-400 font-bold">防呆停損</th>
+  2987:                         <th className="py-2.5 px-2 text-center">策略訊號</th>
+  2988:                         <th className="py-2.5 px-3 text-center">實戰操作</th>
+  2989:                       </tr>
+  2990:                     </thead>
+  2991:                     <tbody className="divide-y divide-zinc-850/60 text-zinc-300">
+  2992:                       {processedSignals.length === 0 ? (
+  2993:                         <tr>
+  2994:                           <td colSpan={10} className="py-16 text-center text-zinc-500 font-mono">
+  2995:                             <AlertTriangle className="w-9 h-9 text-amber-500/35 mx-auto mb-2" />
+  2996:                             沒有符合篩選條件的黃金標的
+  2997:                             {eliteOnly && (
+  2998:                               <p className="text-[11px] text-zinc-650 mt-1">💡 當前開啟了 Score &gt;= 38 限制，試著關閉以檢視更多</p>
+  2999:                             )}
+  3000:                           </td>
+  3001:                         </tr>
+  3002:                       ) : (
+  3003:                         processedSignals.map(stock => {
+  3004:                           const isSelected = selectedStock?.stock_id === stock.stock_id;
+  3005:                           return (
+  3006:                             <tr
+  3007:                               key={stock.stock_id}
+  3008:                               onClick={() => {
+  3009:                                 setSelectedStock(stock);
+  3010:                                 setNotesText(stock.master_notes || "");
+  3011:                               }}
+  3012:                               className={`hover:bg-zinc-900/50 cursor-pointer transition ${
+  3013:                                 isSelected ? "bg-zinc-900/70 border-l-2 border-[#E5A823] text-white" : ""
+  3014:                               }`}
+  3015:                             >
+  3016:                               <td className="py-2 px-3">
+  3017:                                 <div className="font-mono font-bold flex items-center gap-1">
+  3018:                                   {stock.stock_id}
+  3019:                                   {stock.liquidity_warning && <span className="text-amber-500" title="流動性警告">⚠️</span>}
+  3020:                                 </div>
+  3021:                                 <div className="text-[10px] text-zinc-500 mt-0.5">{stock.stock_name}</div>
+  3022:                               </td>
+  3023:                               <td className="py-2 px-2 text-right font-mono font-semibold">
+  3024:                                 {stock.close_price.toFixed(1)}
+  3025:                               </td>
+  3026:                               <td className={`py-2 px-2 text-right font-mono font-black ${stock.change_pct >= 0 ? "text-rose-400" : "text-emerald-400"}`}>
+  3027:                                 {stock.change_pct >= 0 ? `+${stock.change_pct.toFixed(2)}` : stock.change_pct.toFixed(2)}%
+  3028:                               </td>
+  3029:                               <td className="py-2 px-2 text-center">
+  3030:                                 <span className={`px-2 py-0.5 rounded font-mono font-bold text-xs ${
+  3031:                                   stock.score >= 38
+  3032:                                     ? "bg-yellow-950 text-[#FFB74D] border border-yellow-500/40"
+  3033:                                     : "bg-zinc-800/80 text-zinc-450"
+  3034:                                 }`}>
+  3035:                                   {stock.score}
+  3036:                                 </span>
+  3037:                               </td>
+  3038:                               <td className="py-2 px-3 text-left font-mono text-[10px] text-zinc-350 max-w-[210px] truncate" title={stock.suggested_entry_price}>
+  3039:                                 {stock.suggested_entry_price}
+  3040:                               </td>
+  3041:                               <td className="py-2 px-2 text-right font-mono text-rose-400 font-bold">
+  3042:                                 {stock.take_profit_half_price?.toFixed(1) || "-"}
+  3043:                               </td>
+  3044:                               <td className="py-2 px-2 text-right font-mono text-rose-400">
+  3045:                                 {stock.trailing_stop_price?.toFixed(1) || "-"}
+  3046:                               </td>
+  3047:                               <td className="py-2 px-2 text-right font-mono text-emerald-400 font-bold">
+  3048:                                 {stock.stop_loss_price?.toFixed(1) || "-"}
+  3049:                               </td>
+  3050:                               <td className="py-2 px-2 text-center">
+  3051:                                 {renderSignalBadge(stock.signal)}
+  3052:                               </td>
+  3053:                               <td className="py-2 px-3 text-center" onClick={e => e.stopPropagation()}>
+  3054:                                 <div className="flex items-center gap-1.5 justify-center">
+  3055:                                   <button
+  3056:                                     onClick={() => openBuyModalForStock(stock)}
+  3057:                                     disabled={data?.macroEStopActive}
+  3058:                                     className={`px-2.5 py-1 text-[10px] font-bold rounded shadow transition active:scale-[0.96] ${
+  3059:                                       data?.macroEStopActive
+  3060:                                         ? "bg-zinc-800 text-zinc-550 border border-zinc-850 cursor-not-allowed"
+  3061:                                         : "bg-rose-900/90 text-rose-300 border border-rose-600/40 hover:bg-rose-800"
+  3062:                                     }`}
+  3063:                                   >
+  3064:                                     買入
+  3065:                                   </button>
+  3066:                                   <button
+  3067:                                     onClick={() => {
+  3068:                                       setSelectedStock(stock);
+  3069:                                       setNotesText(stock.master_notes || "");
+  3070:                                     }}
+  3071:                                     className="px-2.5 py-1 text-[10px] font-bold rounded bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 transition"
+  3072:                                   >
+  3073:                                     解盤
+  3074:                                   </button>
+  3075:                                 </div>
+  3076:                               </td>
+  3077:                             </tr>
+  3078:                           );
+  3079:                         })
+  3080:                       )}
+  3081:                     </tbody>
+  3082:                   </table>
+  3083:                 </div>
+  3084:                 ) : (
+  3085:                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 max-h-[550px] overflow-y-auto p-2">
+  3086:                     {processedSignals.length === 0 ? (
+  3087:                       <div className="col-span-full py-16 text-center text-zinc-500 font-mono">
+  3088:                         <AlertTriangle className="w-9 h-9 text-amber-500/35 mx-auto mb-2" />
+  3089:                         沒有符合篩選條件的黃金標的
+  3090:                       </div>
+  3091:                     ) : (
+  3092:                       processedSignals.map(stock => {
+  3093:                         const isSelected = selectedStock?.stock_id === stock.stock_id;
+  3094:                         const rsiVal = stock.scoreBreakdown?.rsiAbove50 ? 65 : 42;
+  3095:                         const statusText = stock.score >= 45 ? "🔥 過熱" : "✅ 正常";
+  3096:                         const momentumText = stock.score >= 45 ? "🚀 極強" : "📈 偏多";
+  3097:                         const volumeRatio = stock.volume_multiplier ? stock.volume_multiplier.toFixed(1) + "x" : "1.2x";
+  3098: 
+  3099:                         // S-Class or A-Class determination
+  3100:                         const isSClass = stock.score >= 45;
+  3101:                         const isAClass = stock.score >= 35 && stock.score < 45;
+  3102:                         const actionTier = isSClass ? "🏆 S級重倉狙擊" : "🥇 A級右側/左側伏擊";
+  3103: 
+  3104:                         // 20% Profit take warning flash
+  3105:                         const isTakeProfitWarning = stock.close_price >= (stock.take_profit_half_price || stock.close_price * 1.20);
+  3106: 
+  3107:                         // Half-Kelly calculation (base 1M capital)
+  3108:                         const winRate = stock.score >= 45 ? 85 : 68;
+  3109:                         const win_prob = winRate / 100;
+  3110:                         const odds = 2.0;
+  3111:                         const half_kelly = 0.5 * (win_prob - (1.0 - win_prob) / odds);
+  3112:                         const allocated_capital = 1000000 * half_kelly;
+  3113:                         const orderShares = isSClass ? Math.floor(allocated_capital / stock.close_price) : Math.floor(20000 / stock.close_price);
+  3114:                         const orderAmount = orderShares * stock.close_price;
+  3115: 
+  3116:                         // Pyramid tranches
+  3117:                         const p1 = Math.floor(orderShares * 0.5);
+  3118:                         const p2 = Math.floor(orderShares * 0.3);
+  3119:                         const p3 = Math.floor(orderShares * 0.2);
+  3120: 
+  3121:                         // Card Neon/Breathing border styling
+  3122:                         let borderStyle = "border-zinc-850 bg-zinc-950/80 hover:border-zinc-700 hover:bg-zinc-900/30";
+  3123:                         if (isSelected) {
+  3124:                           borderStyle = "border-2 border-[#E5A823] bg-zinc-900/90 shadow-[0_0_25px_rgba(229,168,35,0.22)] scale-[1.01]";
+  3125:                         } else if (isTakeProfitWarning) {
+  3126:                           borderStyle = "border border-[#FFB74D] bg-yellow-950/20 shadow-[0_0_18px_rgba(245,158,11,0.18)] animate-pulse-yellow";
+  3127:                         } else if (isSClass) {
+  3128:                           borderStyle = "border border-amber-500/60 bg-zinc-950/80 hover:border-amber-400 shadow-[0_0_15px_rgba(229,168,35,0.08)] hover:shadow-[0_0_22px_rgba(229,168,35,0.18)]";
+  3129:                         }
+  3130: 
+  3131:                         return (
+  3132:                           <div
+  3133:                             key={stock.stock_id}
+  3134:                             onClick={() => {
+  3135:                               setSelectedStock(stock);
+  3136:                               setNotesText(stock.master_notes || "");
+  3137:                             }}
+  3138:                             className={`premium-card rounded-xl p-4 shadow-xl transition-all duration-300 relative overflow-hidden group cursor-pointer flex flex-col justify-between gap-3 ${borderStyle}`}
+  3139:                           >
+  3140:                             {/* Card Top Row */}
+  3141:                             <div className="flex items-start justify-between">
+  3142:                               <div>
+  3143:                                 <div className="flex items-center gap-1.5">
+  3144:                                   <span className="text-base font-mono font-black text-white">{stock.stock_id}</span>
+  3145:                                   <span className="text-xs font-bold text-zinc-400">{stock.stock_name}</span>
+  3146:                                 </div>
+  3147:                                 <div className="flex flex-wrap gap-1 mt-1 text-[8px] font-mono">
+  3148:                                   <span className="bg-zinc-900 text-zinc-450 px-1 py-0.5 rounded border border-zinc-800">
+  3149:                                     {stock.category || "AI與權值"}
+  3150:                                   </span>
+  3151:                                   <span className="bg-zinc-900 text-zinc-450 px-1 py-0.5 rounded border border-zinc-800">
+  3152:                                     {actionTier}
+  3153:                                   </span>
+  3154:                                   {isTakeProfitWarning && (
+  3155:                                     <span className="bg-amber-950 text-[#FFB74D] px-1 py-0.5 rounded border border-amber-600/40 font-bold animate-pulse">
+  3156:                                       ⚠️ 獲利20%減碼
+  3157:                                     </span>
+  3158:                                   )}
+  3159:                                 </div>
+  3160:                               </div>
+  3161: 
+  3162:                               <div className="text-right">
+  3163:                                 <div className="text-[8px] font-mono text-zinc-550">V8050.0 全域檢核</div>
+  3164:                                 <span className={`px-2 py-0.5 rounded font-mono font-black text-[9px] ${
+  3165:                                   isSClass
+  3166:                                     ? "bg-yellow-950 text-[#FFB74D] border border-yellow-500/60 shadow-[0_0_8px_rgba(229,168,35,0.3)] animate-pulse"
+  3167:                                     : isAClass
+  3168:                                     ? "bg-sky-950 text-sky-300 border border-sky-600/50"
+  3169:                                     : "bg-zinc-800/80 text-zinc-400 border border-zinc-700"
+  3170:                                 }`}>
+  3171:                                   {isSClass ? "🏆" : isAClass ? "🥇" : "❌"} {stock.score} / 50
+  3172:                                 </span>
+  3173:                               </div>
+  3174:                             </div>
+  3175: 
+  3176:                             {/* Technical Grid (Bloomberg style 2x2 chips) */}
+  3177:                             <div className="grid grid-cols-4 gap-1 text-center font-mono text-[8px] bg-zinc-950 p-1.5 rounded-lg border border-zinc-900">
+  3178:                               <div className="flex flex-col p-1 rounded bg-zinc-900/60">
+  3179:                                 <span className="text-zinc-550 text-[7px]">RSI</span>
+  3180:                                 <span className="text-white font-bold">{rsiVal}</span>
+  3181:                               </div>
+  3182:                               <div className="flex flex-col p-1 rounded bg-zinc-900/60">
+  3183:                                 <span className="text-zinc-550 text-[7px]">狀態</span>
+  3184:                                 <span className={`font-bold ${isSClass ? "text-[#f43f5e]" : "text-[#10b881]"}`}>{statusText}</span>
+  3185:                               </div>
+  3186:                               <div className="flex flex-col p-1 rounded bg-zinc-900/60">
+  3187:                                 <span className="text-zinc-550 text-[7px]">動能</span>
+  3188:                                 <span className={`font-bold ${isSClass ? "text-[#f43f5e]" : "text-[#10b881]"}`}>{momentumText}</span>
+  3189:                               </div>
+  3190:                               <div className="flex flex-col p-1 rounded bg-zinc-900/60">
+  3191:                                 <span className="text-zinc-550 text-[7px]">量比</span>
+  3192:                                 <span className="text-white font-bold">{volumeRatio}</span>
+  3193:                               </div>
+  3194:                             </div>
+  3195: 
+  3196:                             {/* Live Headline/Notes */}
+  3197:                             {stock.master_notes && (
+  3198:                               <div className="border-l-2 border-amber-400 pl-2 py-0.5 text-[9px] font-sans text-amber-300 italic truncate" title={stock.master_notes.split(" | ")[0]}>
+  3199:                                 📰 {stock.master_notes.split(" | ")[0]}
+  3200:                               </div>
+  3201:                             )}
+  3202: 
+  3203:                             {/* Pricing Zones */}
+  3204:                             <div className="grid grid-cols-3 gap-1 text-center font-mono text-[8px] pt-1">
+  3205:                               <div className="bg-zinc-900/60 p-1 rounded border border-zinc-850">
+  3206:                                 <span className="text-zinc-550 text-[7px] block mb-0.5">現價建倉</span>
+  3207:                                 <span className="text-[#FFB74D] font-extrabold">{stock.close_price.toFixed(1)}</span>
+  3208:                               </div>
+  3209:                               <div className="bg-zinc-900/60 p-1 rounded border border-zinc-850">
+  3210:                                 <span className="text-zinc-555 text-[7px] block mb-0.5">波段支撐</span>
+  3211:                                 <span className="text-[#10b881] font-extrabold">{stock.stop_loss_price ? stock.stop_loss_price.toFixed(1) : "-"}</span>
+  3212:                               </div>
+  3213:                               <div className="bg-zinc-900/60 p-1 rounded border border-zinc-850">
+  3214:                                 <span className="text-zinc-555 text-[7px] block mb-0.5">波段壓力</span>
+  3215:                                 <span className="text-[#f43f5e] font-extrabold">{stock.take_profit_half_price ? stock.take_profit_half_price.toFixed(1) : "-"}</span>
+  3216:                               </div>
+  3217:                             </div>
+  3218: 
+  3219:                             {/* Execution Orders (Half-Kelly Pyramid or ROD limits) */}
+  3220:                             {isSClass ? (
+  3221:                               <div className="bg-zinc-950 p-2 rounded-lg border border-amber-500/20 text-[8px] font-mono space-y-1">
+  3222:                                 <div className="flex justify-between items-center text-zinc-450">
+  3223:                                   <span className="text-[#FFB74D] font-bold">🏆 S級 半凱利金字塔建倉 (5-3-2)</span>
+  3224:                                   <span className="text-white font-bold">約 NT$ {orderAmount.toLocaleString()}</span>
+  3225:                                 </div>
+  3226:                                 <div className="grid grid-cols-3 gap-1 text-center text-[7px] pt-1 border-t border-zinc-900">
+  3227:                                   <div className="bg-zinc-900/40 p-0.5 rounded">
+  3228:                                     <span className="text-zinc-500 block">首批(50%)</span>
+  3229:                                     <span className="text-[#f43f5e] font-bold">{p1} 股</span>
+  3230:                                   </div>
+  3231:                                   <div className="bg-zinc-900/40 p-0.5 rounded">
+  3232:                                     <span className="text-zinc-500 block">二批(30%)</span>
+  3233:                                     <span className="text-[#f43f5e] font-bold">{p2} 股</span>
+  3234:                                   </div>
+  3235:                                   <div className="bg-zinc-900/40 p-0.5 rounded">
+  3236:                                     <span className="text-zinc-550 block">三批(20%)</span>
+  3237:                                     <span className="text-[#f43f5e] font-bold">{p3} 股</span>
+  3238:                                   </div>
+  3239:                                 </div>
+  3240:                               </div>
+  3241:                             ) : (
+  3242:                               <div className="bg-zinc-950 p-2 rounded-lg border border-zinc-900 text-[8px] font-mono space-y-1">
+  3243:                                 <div className="flex justify-between items-center text-zinc-450">
+  3244:                                   <span className="text-[#FFB74D]">🎯 A級 ROD限價伏擊單 (20MA)</span>
+  3245:                                   <span className="text-white font-bold">約 NT$ {orderAmount.toLocaleString()}</span>
+  3246:                                 </div>
+  3247:                                 <div className="flex justify-between items-center">
+  3248:                                   <span className="text-zinc-550">伏擊價格區間:</span>
+  3249:                                   <span className="text-[#10b881] font-extrabold">{(stock.close_price * 0.985).toFixed(1)} ~ {(stock.close_price * 0.995).toFixed(1)}</span>
+  3250:                                 </div>
+  3251:                                 <div className="flex justify-between items-center text-[7px] pt-1 border-t border-zinc-900 text-zinc-500">
+  3252:                                   <span>建議買入: <span className="text-[#FFB74D] font-bold">{orderShares} 股</span></span>
+  3253:                                   <span>防呆停損: <span className="text-[#10b881] font-bold">{stock.stop_loss_price ? stock.stop_loss_price.toFixed(1) : "-"}</span></span>
+  3254:                                 </div>
+  3255:                               </div>
+  3256:                             )}
+  3257: 
+  3258:                             {/* Action Buttons */}
+  3259:                             <div className="flex items-center gap-1.5 justify-end pt-1" onClick={e => e.stopPropagation()}>
+  3260:                               <button
+  3261:                                 onClick={() => openBuyModalForStock(stock)}
+  3262:                                 disabled={data?.macroEStopActive}
+  3263:                                 className={`flex-1 py-1.5 text-[9px] font-bold rounded shadow transition active:scale-[0.96] text-center ${
+  3264:                                   data?.macroEStopActive
+  3265:                                     ? "bg-zinc-800 text-zinc-550 border border-zinc-850 cursor-not-allowed"
+  3266:                                     : "bg-rose-950/90 text-rose-350 border border-rose-700/40 hover:bg-rose-900"
+  3267:                                 }`}
+  3268:                               >
+  3269:                                 現價建倉
+  3270:                               </button>
+  3271:                               <button
+  3272:                                 onClick={() => {
+  3273:                                   setSelectedStock(stock);
+  3274:                                   setNotesText(stock.master_notes || "");
+  3275:                                 }}
+  3276:                                 className="px-2.5 py-1.5 text-[9px] font-bold rounded bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 transition"
+  3277:                               >
+  3278:                                 實戰解盤
+  3279:                               </button>
+  3280:                             </div>
+  3281: 
+  3282:                             {/* Bottom metadata shadow */}
+  3283:                             <div className={`absolute bottom-0 left-0 right-0 h-1 opacity-70 bg-gradient-to-r ${isSClass ? "from-amber-500 to-[#FFB74D]" : "from-[#f43f5e] via-[#FFB74D] to-[#10b881]"}`}></div>
+  3284:                           </div>
+  3285:                         );
+  3286:                       })
+  3287:                     )}
+  3288:                   </div>
+  3289:                 )}
+  3290: 
+  3291:                 <div className="p-3.5 bg-[#0e1117] border-t border-zinc-850 text-[10px] font-mono text-zinc-500 flex flex-col sm:flex-row justify-between items-center gap-2">
+  3292:                   <span>精英戰線已過濾符合 {processedSignals.length} 檔標的</span>
+  3293:                   <span>最後盤中洗價時間: {data ? data.scanTime : "讀取中..."}</span>
+  3294:                 </div>
+  3295: 
+  3296:               </div>
+  3297: 
+  3298:             </div>
+  3299: 
+  3300:             {/* Right Side Tactical Intelligence Panel */}
+  3301:             <div className="hidden lg:flex lg:col-span-4 flex-col gap-6">
+  3302: 
+  3303:               <div className="premium-card rounded-xl shadow-xl overflow-hidden sticky top-[135px] max-h-[calc(100vh-160px)] overflow-y-auto">
+  3304: 
+  3305:                 {/* Header */}
+  3306:                 <div className="p-4 bg-gradient-to-r from-zinc-900 to-[#0e1117] border-b border-zinc-850 flex items-center justify-between">
+  3307:                   <div className="flex items-center gap-2">
+  3308:                     <Award className="w-5 h-5 text-[#FFB74D]" />
+  3309:                     <h3 className="font-bold text-white text-sm">獅王戰神實戰解盤與註記</h3>
+  3310:                   </div>
+  3311:                   <span className="text-[10px] font-mono tracking-widest text-[#FFB74D] uppercase font-bold">
+  3312:                     V2026.Max
+  3313:                   </span>
+  3314:                 </div>
+  3315: 
+  3316:                 {selectedStock ? (
+  3317:                   renderStockDetailsContent()
+  3318:                 ) : (
+  3319:                   <div className="p-8 text-center text-zinc-550 font-mono">
+  3320:                     <AlertTriangle className="w-10 h-10 text-amber-500/20 mx-auto mb-3" />
+  3321:                     請點選左側表格中的股票代號
+  3322:                     <p className="text-[11px] text-zinc-650 mt-1">開啟該個股對沖與風控戰情面板</p>
+  3323:                   </div>
+  3324:                 )}
+  3325: 
+  3326:                 {/* 老司機操盤四字訣 Panel */}
+  3327:                 <div className="border-t border-zinc-850 p-4 bg-[#0a0b0f]">
+  3328:                   <div className="border-t border-zinc-850 p-4 bg-[#0a0b0f]">
+  3329:                   <div className="flex items-center gap-2 mb-3">
+  3330:                     <Flame className="w-4 h-4 text-[#E5A823] animate-pulse shrink-0" />
+  3331:                     <h4 className="text-white text-xs md:text-sm font-bold font-mono tracking-wider">老司機操盤四字訣 (輪・空・殺・早)</h4>
+  3332:                   </div>
+  3333: 
+  3334:                   {(() => {
+  3335:                     const allSignalsList = data?.signals || marketData?.signals || [];
+  3336:                     const wildReleaseStocks = allSignalsList.filter(s => s.scoreBreakdown?.c30_bbShortSqueezeBreakout);
+  3337: 
+  3338:                     const selectStockById = (id: string) => {
+  3339:                       const found = allSignalsList.find(s => s.stock_id === id);
+  3340:                       if (found) {
+  3341:                         setSelectedStock(found);
+  3342:                         setNotesText(found.master_notes || "");
+  3343:                       }
+  3344:                     };
+  3345: 
+  3346:                     return (
+  3347:                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[10px] md:text-xs">
+  3348:                         {/* 輪 */}
+  3349:                         <div className="bg-gradient-to-br from-rose-950/30 via-rose-950/10 to-zinc-950/60 border border-rose-500/20 hover:border-rose-500/40 rounded-xl p-3 hover:scale-[1.01] hover:shadow-lg transition-all duration-300 flex flex-col justify-between">
+  3350:                           <div>
+  3351:                             <div className="flex items-center gap-2 mb-2">
+  3352:                               <span className="w-5.5 h-5.5 rounded-full bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-rose-400 text-xs font-black shrink-0">輪</span>
+  3353:                               <span className="text-rose-300 font-bold text-xs md:text-sm">板塊輪動訊號</span>
+  3354:                             </div>
+  3355:                             <p className="text-zinc-400 leading-relaxed text-[10px] md:text-xs font-sans">
+  3356:                               PCB主升 (欣興/南電) 帶動 DRAM 與被動元件。
+  3357:                               <span className="text-amber-400 font-bold ml-1">⚠️ 妖股噴出則散場</span>
+  3358:                             </p>
+  3359:                           </div>
+  3360:                           <div className="mt-2.5 flex flex-wrap gap-1">
+  3361:                             {[
+  3362:                               { id: "3037", name: "欣興" },
+  3363:                               { id: "8046", name: "南電" },
+  3364:                               { id: "2383", name: "台光電" },
+  3365:                               { id: "2399", name: "映泰" }
+  3366:                             ].map(s => (
+  3367:                               <button
+  3368:                                 key={s.id}
+  3369:                                 type="button"
+  3370:                                 onClick={() => selectStockById(s.id)}
+  3371:                                 className="text-[9px] md:text-xs bg-rose-950/60 border border-rose-500/30 hover:bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded font-mono transition cursor-pointer shadow-sm shrink-0"
+  3372:                               >
+  3373:                                 {s.name} {s.id}

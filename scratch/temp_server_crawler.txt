@@ -1,0 +1,6 @@
+2176: console.log("⚡ [Smart Start] 向 GitHub Actions 請求啟動全域即時量化洗價");
+2205: // ⚡ V8050.2 每1分鐘高頻全網即時報價端點（含 86 檔高速批次與內存雙向同步）
+2230: console.log(`⚡ [Realtime] 啟動 V8050.2 即時全頻掃描計 ${tickersList.length} 檔成分股...`);
+2290: // 將爬取到的實時報價寫入資料庫，確打破倉與信號庫同步最新
+2321: console.log(`⚡ [Realtime] 1分鐘高頻報價爬蟲與內存同步完成，耗時 ${elapsed}ms，取得 ${Object.keys(prices).length} 檔最新報價`);
+2419: console.log("⚡ [Master Server Init] 啟動背景初始化即時全矩陣掃描...");

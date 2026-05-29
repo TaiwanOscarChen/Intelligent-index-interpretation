@@ -1,0 +1,14 @@
+=== File: src/App.tsx ===
+Match 1: // V8050.0 即時爬蟲狀態
+Match 2: // V8050.0 高頻即時報價爬蟲（每 60 秒）
+Match 3: // 先觸發輕量高頻爬蟲
+Match 4: V8050.0: 每 60 秒高頻更新（輕量即時爬蟲）
+Match 5: zinc-600 mt-1">請重新點選或重啟後台爬蟲</p>
+Match 6: {/* V8050.0 即時爬蟲倒計時 */}
+Match 7: ⚡ 即時爬蟲 | 次更 {realtimeCountdown}
+
+=== File: server.ts ===
+Match 1: log(`⚡ [Realtime] 1分鐘高頻報價爬蟲與內存同步完成，耗時 ${elapsed}ms，取
+
+=== File: app.py ===
+Match 1: print("🌍 啟動總經數據自動爬蟲...")

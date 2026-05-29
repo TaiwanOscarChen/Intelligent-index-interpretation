@@ -1,0 +1,24 @@
+272: content: "歡迎來到獅王戰備解盤室。我是您的「對沖基金 AI 避險大師」。請選擇您想要深度探討的個股，我將立刻調用盤中最新的量化與籌碼指標，為您剖析實戰對沖與避雷防線！"
+1320: <span>籌碼內線</span>
+1671: {/* 三大法人近 5 日籌碼動向 */}
+1675: 📊 三大法人近 5 日籌碼動態 (張)
+1714: <span>籌碼總量直方圖 (合計買賣超)</span>
+1801: <span className="text-[#FFB74D] font-bold block mt-0.5">🟡 籌碼持穩，大戶支撐定錨水位。</span>
+1853: 高檔買盤滯漲，若跌破現價，可能回測 20MA 支撐區 {supportPrice.toFixed(1)} 元進行高密籌碼洗盤。
+2101: 🇹🇼 台北本體籌碼動態 (Local Chips)
+2967: 🎴 籌碼卡片
+3955: {/* 三大法人全月累計對沖籌碼資金觀察牆 */}
+3961: <h4 className="text-white text-xs font-bold font-sans">三大法人全月累計對沖籌碼資金觀察牆</h4>
+4020: <span>外資及投信雙星匯聚買超鎖碼，自營商進行權利金對沖，籌碼結構健康度高，有利多頭波段拉升。</span>
+4545: {/* 三大法人籌碼大盤統計 */}
+4549: <h4 className="text-white text-xs font-bold font-mono uppercase">三大法人籌碼雷達監控</h4>
+4554: return <p className="text-xs text-zinc-550 italic font-mono">請調整篩選器以檢索法人籌碼</p>;
+4593: 反應目前所選的 {total} 檔股票中，外資與投信呈現連續買超（籌碼鎖定天數 &gt; 0）的比重。
+5539: placeholder="請輸入該筆交易的操盤心得、改進空間或主力籌碼檢討..."
+5679: 主力籌碼與暗池追蹤 (跟隨強勢資金)
+5684: <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">33. 主力集中度：</span>近 5 日主力籌碼集中度 &gt; 5% 且成交佔比 &gt; 10%。</div>
+5685: <div className="bg-zinc-950 p-2 rounded border border-zinc-900"><span className="text-zinc-550">34. 籌碼強手鎖定：</span>千張大戶持股比例連三週升，散戶融資退。</div>
+5788: <p className="text-[10px] text-zinc-500 mt-1">極速開啟官方 OpenAPI 及大盤、籌碼、即時財經快訊</p>
+5833: 🔥 TW_Chips：台股籌碼與期貨數據
+5849: CMoney 籌碼快遞
+5855: HiStock 籌碼面
