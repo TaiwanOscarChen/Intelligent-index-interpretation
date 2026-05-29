@@ -149,7 +149,10 @@ export default function App() {
   const hasSetInitialStock = useRef(false);
   
   // Tab control
-  const [activeTab, setActiveTab] = useState<"radar" | "holdings" | "exits" | "sop" | "strategy" | "screener">("radar");
+  const [activeTab, setActiveTab] = useState<"radar" | "holdings" | "exits" | "sop" | "strategy" | "screener" | "help">(() => {
+    const saved = localStorage.getItem("lion_active_tab");
+    return (saved as any) || "radar";
+  });
 
   // Strategy Tab States
   const [strategySummary, setStrategySummary] = useState<any>(null);
@@ -158,16 +161,34 @@ export default function App() {
   
   // Screener Tab States
   const [screenerCategories, setScreenerCategories] = useState<string[]>([]);
-  const [selectedScreenerCategories, setSelectedScreenerCategories] = useState<string[]>([]);
-  const [screenerMinScore, setScreenerMinScore] = useState<number>(38); // 預設 Score >= 38 精英模式
-  const [screenerMaxPer, setScreenerMaxPer] = useState<number>(100); // PER limit
-  const [screenerMinForeignDays, setScreenerMinForeignDays] = useState<number>(0);
-  const [screenerMinInstDays, setScreenerMinInstDays] = useState<number>(0);
+  const [selectedScreenerCategories, setSelectedScreenerCategories] = useState<string[]>(() => {
+    const saved = localStorage.getItem("lion_screener_categories");
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [screenerMinScore, setScreenerMinScore] = useState<number>(() => {
+    const saved = localStorage.getItem("lion_screener_min_score");
+    return saved ? Number(saved) : 38; // 預設 Score >= 38 精英模式
+  });
+  const [screenerMaxPer, setScreenerMaxPer] = useState<number>(() => {
+    const saved = localStorage.getItem("lion_screener_max_pe");
+    return saved ? Number(saved) : 100; // PER limit
+  });
+  const [screenerMinForeignDays, setScreenerMinForeignDays] = useState<number>(() => {
+    const saved = localStorage.getItem("lion_screener_min_foreign");
+    return saved ? Number(saved) : 0;
+  });
+  const [screenerMinInstDays, setScreenerMinInstDays] = useState<number>(() => {
+    const saved = localStorage.getItem("lion_screener_min_inst");
+    return saved ? Number(saved) : 0;
+  });
   const [screenerSortBy, setScreenerSortBy] = useState<string>("score_desc");
   const [screenerChangeRange, setScreenerChangeRange] = useState<string>("all"); // all, up, down, up_3, down_3
 
   // Screener Auto-Entry Robot States
-  const [screenerAutoEntry, setScreenerAutoEntry] = useState<boolean>(false);
+  const [screenerAutoEntry, setScreenerAutoEntry] = useState<boolean>(() => {
+    const saved = localStorage.getItem("lion_screener_auto_entry");
+    return saved === "true";
+  });
   const [isSyncingScreenerConfig, setIsSyncingScreenerConfig] = useState<boolean>(false);
 
   // Holdings & Exits
@@ -353,6 +374,27 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
 
+  // Tab and Screener states local storage persistence hooks
+  useEffect(() => {
+    localStorage.setItem("lion_active_tab", activeTab);
+  }, [activeTab]);
+
+  useEffect(() => {
+    localStorage.setItem("lion_screener_categories", JSON.stringify(selectedScreenerCategories));
+    localStorage.setItem("lion_screener_min_score", String(screenerMinScore));
+    localStorage.setItem("lion_screener_max_pe", String(screenerMaxPer));
+    localStorage.setItem("lion_screener_min_foreign", String(screenerMinForeignDays));
+    localStorage.setItem("lion_screener_min_inst", String(screenerMinInstDays));
+    localStorage.setItem("lion_screener_auto_entry", String(screenerAutoEntry));
+  }, [
+    selectedScreenerCategories,
+    screenerMinScore,
+    screenerMaxPer,
+    screenerMinForeignDays,
+    screenerMinInstDays,
+    screenerAutoEntry
+  ]);
+
   // Fetch signals
   const fetchSignals = async () => {
     setIsLoading(true);
@@ -462,6 +504,14 @@ export default function App() {
         setScreenerMinForeignDays(resData.data.minForeignDays);
         setScreenerMinInstDays(resData.data.minInstDays);
         setSelectedScreenerCategories(resData.data.categories);
+
+        // Synchronize MongoDB settings to local cache to keep them perfectly in sync
+        localStorage.setItem("lion_screener_auto_entry", String(resData.data.autoEntryEnabled));
+        localStorage.setItem("lion_screener_min_score", String(resData.data.minScore));
+        localStorage.setItem("lion_screener_max_pe", String(resData.data.maxPe));
+        localStorage.setItem("lion_screener_min_foreign", String(resData.data.minForeignDays));
+        localStorage.setItem("lion_screener_min_inst", String(resData.data.minInstDays));
+        localStorage.setItem("lion_screener_categories", JSON.stringify(resData.data.categories));
       }
     } catch (err) {
       console.warn("Failed to fetch screener config:", err);
