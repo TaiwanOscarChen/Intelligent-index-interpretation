@@ -2168,15 +2168,27 @@ export default function App() {
                                             </div>
                                           </div>
 
-                                          <div className="text-[0.6rem] text-zinc-400 leading-relaxed text-center font-sans mt-5 bg-zinc-950/60 p-2 rounded-lg w-full border border-zinc-900/50 relative z-10">
-                                            當前價位與大戶成本 <span className="text-white font-mono">{selectedStock.dynamicTiers.vwap5d}</span> 元之偏離率。
-                                            {biasVwap > 5 ? (
-                                              <span className="text-rose-400 font-bold block mt-1 animate-pulse">⚠️ 乖離偏高，嚴防追高，等待拉回！</span>
-                                            ) : biasVwap < -3 ? (
-                                              <span className="text-emerald-400 font-bold block mt-1">🟢 乖離偏低，多頭結構伏擊安全區。</span>
-                                            ) : (
-                                              <span className="text-amber-400 font-bold block mt-1">🟡 籌碼持穩，大戶支撐定錨水位。</span>
-                                            )}
+                                          <div className="w-full flex flex-col gap-2 mt-4 relative z-10">
+                                            <div className="grid grid-cols-2 gap-2">
+                                              <div className="bg-zinc-950/40 p-2 rounded-lg border border-zinc-900/40 flex flex-col items-center justify-center">
+                                                <span className="text-[0.55rem] text-zinc-500 font-mono mb-0.5">當前現價 (Current)</span>
+                                                <span className="text-sm font-bold text-white font-mono">{lpVal}</span>
+                                              </div>
+                                              <div className="bg-zinc-950/40 p-2 rounded-lg border border-zinc-900/40 flex flex-col items-center justify-center">
+                                                <span className="text-[0.55rem] text-zinc-500 font-mono mb-0.5">大戶成本 (VWAP)</span>
+                                                <span className="text-sm font-bold text-[#E5A823] font-mono">{selectedStock.dynamicTiers.vwap5d}</span>
+                                              </div>
+                                            </div>
+                                            
+                                            <div className={`text-[0.6rem] text-center font-bold font-sans p-2 rounded-lg w-full border ${
+                                              biasVwap > 5 ? "text-rose-400 bg-rose-950/20 border-rose-900/30 animate-pulse" : 
+                                              biasVwap < -3 ? "text-emerald-400 bg-emerald-950/20 border-emerald-900/30" : 
+                                              "text-amber-400 bg-amber-950/20 border-amber-900/30"
+                                            }`}>
+                                              {biasVwap > 5 ? "⚠️ 乖離過熱，嚴防追高，等待拉回！" : 
+                                               biasVwap < -3 ? "🟢 乖離偏低，多頭結構伏擊安全區。" : 
+                                               "🟡 籌碼持穩，大戶支撐定錨水位。"}
+                                            </div>
                                           </div>
                                         </div>
                                       );
