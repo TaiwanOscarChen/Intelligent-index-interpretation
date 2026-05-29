@@ -993,8 +993,13 @@ def execute_ai_auto_trade(current_vix):
             holdings = list(holdings_collection.find({}))
             
             # Check for exit signals (REMIND_SELL)
+            today_str = now_taipei.strftime('%Y-%m-%d')
             for h in holdings:
                 stock_id = h.get('stock_id')
+                buy_date = h.get('buy_date', '')
+                if buy_date == today_str:
+                    print(f"🔒 [T+1 Safety Lock] {h.get('stock_name')} ({stock_id}) 為今日買入部位，跳過盤後平倉預告。")
+                    continue
                 sig = next((s for s in signals if s.get('stock_id') == stock_id), None)
                 if not sig:
                     continue
@@ -1076,8 +1081,13 @@ def execute_ai_auto_trade(current_vix):
         holdings = list(holdings_collection.find({}))
         
         # 1. 處理自動出場 (無限制數量)
+        today_str = now_taipei.strftime('%Y-%m-%d')
         for h in holdings:
             stock_id = h.get('stock_id')
+            buy_date = h.get('buy_date', '')
+            if buy_date == today_str:
+                print(f"🔒 [T+1 Safety Lock] {h.get('stock_name')} ({stock_id}) 為今日新買入部位，禁止當日沖銷，強制跳過出場判斷。")
+                continue
             sig = next((s for s in signals if s.get('stock_id') == stock_id), None)
             current_price = sig.get('close_price') if sig else h.get('current_price', h.get('buy_price'))
             buy_price = h.get('buy_price')

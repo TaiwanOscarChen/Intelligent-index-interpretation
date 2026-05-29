@@ -1619,6 +1619,15 @@ app.post("/api/holdings/exit", async (req, res) => {
       return res.status(404).json({ success: false, message: "No active simulated position found." });
     }
 
+    // 🦁 T+1 剛性風控防線：當日買入零股禁止當日賣出 (No Same-Day Day-Trading)
+    const taipeiToday = getTaipeiDateParts().date; // YYYY-MM-DD
+    if (holding.buy_date === taipeiToday) {
+      return res.status(400).json({
+        success: false,
+        message: `🛡️ [T+1 剛性風控鎖] ${holding.stock_name} (${stock_id}) 為今日才買進之部位！依據量化風控鐵律，零股建倉部位限制只能在隔日 (T+1) 之後出場，禁止當日沖銷！`
+      });
+    }
+
     const priceExit = Number(exit_price);
     const pnl_value = Math.round((priceExit - holding.buy_price) * holding.shares * 10) / 10;
     const pnl_pct = Math.round(((priceExit - holding.buy_price) / holding.buy_price) * 100 * 100) / 100;
