@@ -2093,7 +2093,13 @@ if (AUTO_TRADE_DISABLED) { console.log('🔒 [AI Auto Trade] AUTO_TRADE_DISABLED
     const holdings = await holdingsCollection.find({}).toArray();
 
     // 1. Process Exits
+    const taipeiToday = getTaipeiDateParts().date; // YYYY-MM-DD
     for (const h of holdings) {
+      // 🦁 T+1 剛性風控防線：當日買入零股/股票禁止當日賣出 (No Same-Day Day-Trading)
+      if (h.buy_date === taipeiToday) {
+        console.log(`🔒 [T+1 Safety Lock] ${h.stock_name} (${h.stock_id}) 為今日買進之部位，禁止當日沖銷，強制跳過自動出場。`);
+        continue;
+      }
       const sig = signals.find((s: any) => (s.id || s.stock_id) === h.stock_id);
       const current_price = sig ? sig.close_price : h.current_price;
       const current_pnl_pct = ((current_price - h.buy_price) / h.buy_price) * 100;
