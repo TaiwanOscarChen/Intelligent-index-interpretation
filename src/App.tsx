@@ -2105,53 +2105,66 @@ export default function App() {
                                           </div>
                                           
                                           {/* Semicircular SVG Gauge */}
-                                          <div className="w-48 h-28 mt-2 flex flex-col items-center justify-end relative z-10">
-                                            <svg className="w-full h-[90px] drop-shadow-md overflow-visible" viewBox="0 0 100 50">
+                                          <div className="w-full max-w-[220px] mt-2 flex flex-col items-center justify-end relative z-10">
+                                            {/* Centered Value */}
+                                            <div className="absolute inset-x-0 bottom-0 flex flex-col items-center justify-center pb-2 pointer-events-none z-20">
+                                              <span className={`text-4xl font-black font-mono tracking-tighter drop-shadow-lg ${
+                                                biasVwap >= 2 ? "text-[#f43f5e]" : biasVwap <= -2 ? "text-[#10b881]" : "text-[#FFB74D]"
+                                              }`}>
+                                                {biasVwap > 0 ? "+" : ""}{biasVwap}%
+                                              </span>
+                                            </div>
+
+                                            <svg className="w-full overflow-visible" viewBox="0 0 100 55" preserveAspectRatio="xMidYMax meet">
                                               <defs>
                                                 <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
                                                   <stop offset="0%" stopColor="#10b881" />
+                                                  <stop offset="30%" stopColor="#34d399" />
                                                   <stop offset="50%" stopColor="#FFB74D" />
+                                                  <stop offset="70%" stopColor="#fbbf24" />
                                                   <stop offset="100%" stopColor="#f43f5e" />
                                                 </linearGradient>
-                                                <filter id="glow">
-                                                  <feGaussianBlur stdDeviation="1.5" result="coloredBlur"/>
+                                                <filter id="glowIndicator" x="-50%" y="-50%" width="200%" height="200%">
+                                                  <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
                                                   <feMerge>
                                                     <feMergeNode in="coloredBlur"/>
                                                     <feMergeNode in="SourceGraphic"/>
                                                   </feMerge>
                                                 </filter>
                                               </defs>
+                                              
                                               {/* Background Arc Track */}
                                               <path 
                                                 d="M 10 50 A 40 40 0 0 1 90 50" 
                                                 fill="none" 
-                                                stroke="rgba(255,255,255,0.05)" 
-                                                strokeWidth="12" 
+                                                stroke="rgba(255,255,255,0.06)" 
+                                                strokeWidth="4" 
                                                 strokeLinecap="round"
                                               />
-                                              {/* Colorful Arc Track */}
+                                              
+                                              {/* Colorful Segments Arc Track */}
                                               <path 
                                                 d="M 10 50 A 40 40 0 0 1 90 50" 
                                                 fill="none" 
                                                 stroke="url(#gaugeGrad)" 
-                                                strokeWidth="12" 
+                                                strokeWidth="4" 
                                                 strokeLinecap="round"
                                                 opacity="0.9"
+                                                strokeDasharray="0.5 4"
                                               />
                                               
-                                              {/* Premium Polygon Needle Group */}
+                                              {/* Sleek Edge Indicator (Rotated) */}
                                               <g style={{ transformOrigin: "50px 50px", transition: "transform 1s cubic-bezier(0.34, 1.56, 0.64, 1)" }} transform={`rotate(${clampedBias * 9}, 50, 50)`}>
-                                                <polygon points="48,50 52,50 50,12" fill="#ffffff" filter="url(#glow)" opacity="0.9" />
-                                                <circle cx="50" cy="50" r="5" fill="#181a20" stroke="#a1a1aa" strokeWidth="1.5" />
-                                                <circle cx="50" cy="50" r="1.5" fill="#ffffff" />
+                                                <circle cx="50" cy="10" r="3.5" fill="#ffffff" filter="url(#glowIndicator)" opacity="0.9" />
+                                                <circle cx="50" cy="10" r="1.5" fill="#09090b" />
                                               </g>
                                             </svg>
                                             
-                                            {/* Axis Labels - placed securely below the SVG */}
-                                            <div className="flex justify-between w-full px-1 text-[0.6rem] font-mono mt-2 z-10 select-none">
-                                              <span className="text-emerald-500/80">超跌(-10%)</span>
-                                              <span className="font-bold text-zinc-450 tracking-widest translate-y-1">大戶平價</span>
-                                              <span className="text-rose-500/80">過熱(+10%)</span>
+                                            {/* Axis Labels */}
+                                            <div className="flex justify-between w-full px-1 text-[0.55rem] font-mono mt-3 z-10 select-none">
+                                              <span className="text-emerald-500/60">超跌(-10%)</span>
+                                              <span className="font-bold text-zinc-500 tracking-widest">平價</span>
+                                              <span className="text-rose-500/60">過熱(+10%)</span>
                                             </div>
                                           </div>
 
