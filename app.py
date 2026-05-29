@@ -1319,9 +1319,7 @@ def execute_ai_auto_trade(current_vix):
         # Spacer
         print("🤖 [AI Auto Trade] 進場與換股檢查完畢。")
         
-        # Spacer
-        
-        except Exception as e:
+    except Exception as e:
         print(f"❌ [AI Auto Trade Error] 自動交易執行異常: {e}")
 
 
