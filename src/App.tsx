@@ -167,19 +167,19 @@ export default function App() {
   });
   const [screenerMinScore, setScreenerMinScore] = useState<number>(() => {
     const saved = localStorage.getItem("lion_screener_min_score");
-    return saved ? Number(saved) : 38; // 預設 Score >= 38 精英模式
+    return saved ? Number(saved) : 32; // 預設戰力評分下限 Score >= 32 精英模式
   });
   const [screenerMaxPer, setScreenerMaxPer] = useState<number>(() => {
     const saved = localStorage.getItem("lion_screener_max_pe");
-    return saved ? Number(saved) : 100; // PER limit
+    return saved ? Number(saved) : 35; // 預設本益比上限 PER <= 35 倍
   });
   const [screenerMinForeignDays, setScreenerMinForeignDays] = useState<number>(() => {
     const saved = localStorage.getItem("lion_screener_min_foreign");
-    return saved ? Number(saved) : 0;
+    return saved ? Number(saved) : 2; // 預設外資連買天數 >= 2 天
   });
   const [screenerMinInstDays, setScreenerMinInstDays] = useState<number>(() => {
     const saved = localStorage.getItem("lion_screener_min_inst");
-    return saved ? Number(saved) : 0;
+    return saved ? Number(saved) : 2; // 預設投信連買天數 >= 2 天
   });
   const [screenerSortBy, setScreenerSortBy] = useState<string>("score_desc");
   const [screenerChangeRange, setScreenerChangeRange] = useState<string>("all"); // all, up, down, up_3, down_3
@@ -187,7 +187,7 @@ export default function App() {
   // Screener Auto-Entry Robot States
   const [screenerAutoEntry, setScreenerAutoEntry] = useState<boolean>(() => {
     const saved = localStorage.getItem("lion_screener_auto_entry");
-    return saved === "true";
+    return saved ? saved === "true" : true; // 預設開啟 AI 量化智能自動進場
   });
   const [isSyncingScreenerConfig, setIsSyncingScreenerConfig] = useState<boolean>(false);
 
@@ -6036,8 +6036,8 @@ export default function App() {
                 </div>
               ) : (() => {
                 const getHedgeFundMasterReview = (item: any) => {
-                  if (item.review_summary && item.review_summary.length > 30) return item.review_summary;
-                  if (item.review_notes && item.review_notes.length > 30) return item.review_notes;
+                  const notes = item.review_summary || item.review_notes || "";
+                  if (notes && notes.length > 30 && !notes.includes("SOP")) return notes;
 
                   // Otherwise, let's generate a highly realistic and professional hedge fund retrospect review dynamically!
                   const pnl = item.pnl_pct;
