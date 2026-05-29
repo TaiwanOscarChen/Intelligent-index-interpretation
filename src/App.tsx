@@ -2088,60 +2088,81 @@ export default function App() {
                       const biasVwap = Math.round(((lpVal - selectedStock.dynamicTiers.vwap5d) / selectedStock.dynamicTiers.vwap5d) * 100 * 10) / 10;
                                       const clampedBias = Math.min(10, Math.max(-10, biasVwap));
                                       return (
-                                        <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-850 space-y-2 flex flex-col items-center">
-                                          <div className="flex justify-between items-center w-full text-[0.65rem] text-zinc-500 font-mono">
-                                            <span>大戶成本乖離率儀表板 (VWAP)</span>
-                                            <span className={`font-bold ${biasVwap >= 2 ? "text-[#f43f5e]" : biasVwap <= -2 ? "text-[#10b881]" : "text-[#FFB74D]"}`}>
+                                        <div className="bg-[#08090c]/80 p-3.5 rounded-xl border border-zinc-850/60 shadow-inner flex flex-col items-center group relative overflow-hidden mt-2">
+                                          <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 blur-2xl rounded-full pointer-events-none"></div>
+                                          
+                                          <div className="flex justify-between items-center w-full text-xs font-mono font-bold uppercase mb-2 relative z-10">
+                                            <span className="text-zinc-450 flex items-center gap-1.5"><Activity className="w-3.5 h-3.5 text-[#E5A823]" /> VWAP 成本乖離儀表板</span>
+                                            <span className={`px-2 py-0.5 rounded-md text-[0.65rem] border ${
+                                              biasVwap >= 2 
+                                                ? "bg-rose-950/40 text-rose-400 border-rose-900/30" 
+                                                : biasVwap <= -2 
+                                                ? "bg-emerald-950/40 text-emerald-400 border-emerald-900/30" 
+                                                : "bg-amber-950/40 text-amber-400 border-amber-900/30"
+                                            }`}>
                                               {biasVwap > 0 ? "+" : ""}{biasVwap}%
                                             </span>
                                           </div>
                                           
                                           {/* Semicircular SVG Gauge */}
-                                          <div className="relative w-32 h-16 mt-1 flex items-center justify-center">
-                                            <svg className="w-full h-full" viewBox="0 0 100 50">
+                                          <div className="w-48 h-28 mt-2 flex flex-col items-center justify-end relative z-10">
+                                            <svg className="w-full h-[90px] drop-shadow-md overflow-visible" viewBox="0 0 100 50">
                                               <defs>
                                                 <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
                                                   <stop offset="0%" stopColor="#10b881" />
                                                   <stop offset="50%" stopColor="#FFB74D" />
                                                   <stop offset="100%" stopColor="#f43f5e" />
                                                 </linearGradient>
+                                                <filter id="glow">
+                                                  <feGaussianBlur stdDeviation="1.5" result="coloredBlur"/>
+                                                  <feMerge>
+                                                    <feMergeNode in="coloredBlur"/>
+                                                    <feMergeNode in="SourceGraphic"/>
+                                                  </feMerge>
+                                                </filter>
                                               </defs>
-                                              {/* Arc Track */}
+                                              {/* Background Arc Track */}
+                                              <path 
+                                                d="M 10 50 A 40 40 0 0 1 90 50" 
+                                                fill="none" 
+                                                stroke="rgba(255,255,255,0.05)" 
+                                                strokeWidth="12" 
+                                                strokeLinecap="round"
+                                              />
+                                              {/* Colorful Arc Track */}
                                               <path 
                                                 d="M 10 50 A 40 40 0 0 1 90 50" 
                                                 fill="none" 
                                                 stroke="url(#gaugeGrad)" 
-                                                strokeWidth="8" 
+                                                strokeWidth="12" 
                                                 strokeLinecap="round"
-                                                opacity="0.85"
+                                                opacity="0.9"
                                               />
-                                              {/* Needle Center Pin */}
-                                              <circle cx="50" cy="50" r="4" fill="#ffffff" />
-                                              {/* Dial Needle */}
-                                              <line 
-                                                x1="50" y1="50" 
-                                                x2="50" y2="18" 
-                                                stroke="#ffffff" 
-                                                strokeWidth="2.5" 
-                                                strokeLinecap="round"
-                                                transform={`rotate(${clampedBias * 9}, 50, 50)`}
-                                                style={{ transformOrigin: "50px 50px", transition: "transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)" }}
-                                              />
+                                              
+                                              {/* Premium Polygon Needle Group */}
+                                              <g style={{ transformOrigin: "50px 50px", transition: "transform 1s cubic-bezier(0.34, 1.56, 0.64, 1)" }} transform={`rotate(${clampedBias * 9}, 50, 50)`}>
+                                                <polygon points="48,50 52,50 50,12" fill="#ffffff" filter="url(#glow)" opacity="0.9" />
+                                                <circle cx="50" cy="50" r="5" fill="#181a20" stroke="#a1a1aa" strokeWidth="1.5" />
+                                                <circle cx="50" cy="50" r="1.5" fill="#ffffff" />
+                                              </g>
                                             </svg>
-                                            <div className="absolute bottom-0 text-[0.55rem] text-zinc-500 font-mono flex justify-between w-full px-2">
-                                              <span>超跌(-10%)</span>
-                                              <span className="font-bold text-zinc-400">大戶平價</span>
-                                              <span>過熱(+10%)</span>
+                                            
+                                            {/* Axis Labels - placed securely below the SVG */}
+                                            <div className="flex justify-between w-full px-1 text-[0.6rem] font-mono mt-2 z-10 select-none">
+                                              <span className="text-emerald-500/80">超跌(-10%)</span>
+                                              <span className="font-bold text-zinc-450 tracking-widest translate-y-1">大戶平價</span>
+                                              <span className="text-rose-500/80">過熱(+10%)</span>
                                             </div>
                                           </div>
-                                          <div className="text-[0.55rem] text-zinc-550 leading-tight text-center font-sans mt-1">
-                                            當前價位與大戶成本 {selectedStock.dynamicTiers.vwap5d} 元之偏離率。
+
+                                          <div className="text-[0.6rem] text-zinc-400 leading-relaxed text-center font-sans mt-5 bg-zinc-950/60 p-2 rounded-lg w-full border border-zinc-900/50 relative z-10">
+                                            當前價位與大戶成本 <span className="text-white font-mono">{selectedStock.dynamicTiers.vwap5d}</span> 元之偏離率。
                                             {biasVwap > 5 ? (
-                                              <span className="text-[#f43f5e] font-bold block mt-0.5">⚠️ 乖離偏高，嚴防追高，等待拉回！</span>
+                                              <span className="text-rose-400 font-bold block mt-1 animate-pulse">⚠️ 乖離偏高，嚴防追高，等待拉回！</span>
                                             ) : biasVwap < -3 ? (
-                                              <span className="text-[#10b881] font-bold block mt-0.5">🟢 乖離偏低，多頭結構伏擊安全區。</span>
+                                              <span className="text-emerald-400 font-bold block mt-1">🟢 乖離偏低，多頭結構伏擊安全區。</span>
                                             ) : (
-                                              <span className="text-[#FFB74D] font-bold block mt-0.5">🟡 籌碼持穩，大戶支撐定錨水位。</span>
+                                              <span className="text-amber-400 font-bold block mt-1">🟡 籌碼持穩，大戶支撐定錨水位。</span>
                                             )}
                                           </div>
                                         </div>
