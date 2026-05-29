@@ -1715,7 +1715,7 @@ app.post("/api/exits/edit", async (req, res) => {
         query = { stock_id: id }; // fallback if id is not ObjectId
       }
       await exitsCollection.updateOne(query, {
-        $set: { exit_reason, review_summary }
+        $set: { exit_reason, review_summary, review_notes: review_summary }
       });
     } else {
       const idx = localExits.findIndex(e => e.stock_id === id || (e as any)._id === id);
