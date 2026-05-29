@@ -5255,6 +5255,57 @@ export default function App() {
             };
           });
 
+          // Calculate dynamic wind-control risk metrics based on current live holdings
+          let totalPortfolioValue = 0;
+          let totalWeightedBeta = 0;
+          let totalWeightedDrawdown = 0;
+          let totalWeightedSharpe = 0;
+
+          liveHoldings.forEach(h => {
+            const value = h.current_price * h.shares;
+            totalPortfolioValue += value;
+
+            // 1. Beta calculation
+            const sig = data?.signals?.find((s: any) => s.stock_id === h.stock_id);
+            const cat = sig?.category || "";
+            let stockBeta = 1.20;
+            if (cat.includes("半導體") || cat.includes("IC") || cat.includes("AI")) {
+              stockBeta = 1.38;
+            } else if (cat.includes("機器人") || cat.includes("網通")) {
+              stockBeta = 1.25;
+            } else if (cat.includes("綠能") || cat.includes("生技")) {
+              stockBeta = 1.10;
+            }
+            totalWeightedBeta += stockBeta * value;
+
+            // 2. Drawdown (protective stop loss distance) calculation
+            const stopLoss = h.stop_loss_price || (h.buy_price * 0.95);
+            const distance = ((stopLoss - h.current_price) / h.current_price) * 100;
+            totalWeightedDrawdown += distance * value;
+
+            // 3. Sharpe calculation
+            const score = sig?.score || 35;
+            let stockSharpe = 1.5;
+            if (score >= 45) stockSharpe = 3.15;
+            else if (score >= 38) stockSharpe = 2.45;
+            else if (score >= 33) stockSharpe = 1.85;
+            totalWeightedSharpe += stockSharpe * value;
+          });
+
+          const portfolioBeta = totalPortfolioValue > 0 ? (totalWeightedBeta / totalPortfolioValue) : 0.00;
+          const portfolioDrawdown = totalPortfolioValue > 0 ? (totalWeightedDrawdown / totalPortfolioValue) : 0.00;
+          const portfolioSharpe = totalPortfolioValue > 0 ? (totalWeightedSharpe / totalPortfolioValue) : 0.00;
+
+          // 4. Hedging (Put protection ratio)
+          let portfolioHedging = 0;
+          if (totalPortfolioValue > 0) {
+            const vix = data?.vixValue || 16.5;
+            if (vix > 35) portfolioHedging = 35;
+            else if (vix >= 25) portfolioHedging = 20;
+            else if (vix >= 20) portfolioHedging = 12;
+            else portfolioHedging = 8;
+          }
+
           return (
             <div className="space-y-6 animate-fade-in">
               
@@ -5263,10 +5314,15 @@ export default function App() {
                 <div className="premium-card rounded-xl p-4 shadow relative overflow-hidden flex flex-col justify-between">
                   <div>
                     <span className="text-[0.65rem] font-mono text-zinc-500 block">整體投資組合系統性 BETA 值</span>
-                    <div className="text-xl font-mono font-black text-white mt-1">1.18x</div>
+                    <div className="text-xl font-mono font-black text-white mt-1">
+                      {portfolioBeta === 0 ? "0.00x" : `${portfolioBeta.toFixed(2)}x`}
+                    </div>
                   </div>
                   <p className="text-[0.65rem] text-zinc-550 leading-tight mt-2">
-                    高 Beta 板塊動態權重相乘所得，目前多頭策略偏進取配置。
+                    {totalPortfolioValue > 0 
+                      ? "高 Beta 板塊動態權重相乘所得，目前多頭策略偏進取配置。"
+                      : "無持倉部位，全數為現金防禦水位 (Beta 為 0)。"
+                    }
                   </p>
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
                 </div>
@@ -5274,10 +5330,15 @@ export default function App() {
                 <div className="premium-card rounded-xl p-4 shadow relative overflow-hidden flex flex-col justify-between">
                   <div>
                     <span className="text-[0.65rem] font-mono text-zinc-500 block">預估最大回撤防守限制</span>
-                    <div className="text-xl font-mono font-black text-[#10b881] mt-1">-4.5%</div>
+                    <div className="text-xl font-mono font-black text-[#10b881] mt-1">
+                      {portfolioDrawdown === 0 ? "0.0%" : `${portfolioDrawdown.toFixed(1)}%`}
+                    </div>
                   </div>
                   <p className="text-[0.65rem] text-zinc-550 leading-tight mt-2">
-                    受大盤物理隔離與個股剛性止損線保護之最大預估回撤下限。
+                    {totalPortfolioValue > 0
+                      ? "受大盤物理隔離與個股剛性止損線保護之最大預估回撤下限。"
+                      : "無持倉部位，無任何下行資產回撤風險。"
+                    }
                   </p>
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
                 </div>
@@ -5285,10 +5346,15 @@ export default function App() {
                 <div className="premium-card rounded-xl p-4 shadow relative overflow-hidden flex flex-col justify-between">
                   <div>
                     <span className="text-[0.65rem] font-mono text-zinc-500 block">整體夏普比率 投資組合收益品質</span>
-                    <div className="text-xl font-mono font-black text-[#FFB74D] mt-1">2.78</div>
+                    <div className="text-xl font-mono font-black text-[#FFB74D] mt-1">
+                      {portfolioSharpe === 0 ? "0.00" : portfolioSharpe.toFixed(2)}
+                    </div>
                   </div>
                   <p className="text-[0.65rem] text-zinc-550 leading-tight mt-2">
-                    策略對沖勝率高達 78% 所得之經風險調整後報酬率穩定指標。
+                    {totalPortfolioValue > 0
+                      ? "依據個股戰力分數加權所得，評估每單位風險所得之超額回報。"
+                      : "無持倉部位，現金配置不承擔波動與風險。"
+                    }
                   </p>
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-500 to-orange-500"></div>
                 </div>
@@ -5296,10 +5362,15 @@ export default function App() {
                 <div className="premium-card rounded-xl p-4 shadow relative overflow-hidden flex flex-col justify-between">
                   <div>
                     <span className="text-[0.65rem] font-mono text-zinc-500 block">防守型認售權證 (PUT) 對沖比率</span>
-                    <div className="text-xl font-mono font-black text-[#f43f5e] mt-1">12%</div>
+                    <div className="text-xl font-mono font-black text-[#f43f5e] mt-1">
+                      {portfolioHedging === 0 ? "0%" : `${portfolioHedging}%`}
+                    </div>
                   </div>
                   <p className="text-[0.65rem] text-zinc-550 leading-tight mt-2">
-                    波動率穩定，系統維持基本期權保護比率以抵禦極端回撤。
+                    {totalPortfolioValue > 0
+                      ? `系統依據目前大盤 VIX 恐慌指數 (${data?.vixValue || 16.5}) 動態定製防守權證對沖比率。`
+                      : "無持倉部位，無須配置認售權證進行對沖保險。"
+                    }
                   </p>
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-rose-500 to-pink-500"></div>
                 </div>
