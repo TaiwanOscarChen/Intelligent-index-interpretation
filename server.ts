@@ -1807,6 +1807,79 @@ app.post("/api/holdings/delete-batch", async (req, res) => {
 });
 
 
+// ==============================================================================
+// 🎛️ SCREENER AUTOMATED QUANT ENTRY CONFIGURATION API
+// ==============================================================================
+app.get("/api/screener/config", async (req, res) => {
+  try {
+    let config = {
+      autoEntryEnabled: false,
+      minScore: 38,
+      maxPe: 30.0,
+      minForeignDays: 0,
+      minInstDays: 0,
+      minBias20ma: -100.0,
+      maxBias20ma: 100.0,
+      categories: []
+    };
+
+    if (dbConnected && holdingsCollection) {
+      const db = (holdingsCollection as any).s.db;
+      const configCol = db.collection("screener_config");
+      const dbConfig = await configCol.findOne({ _id: "current_screener_config" });
+      if (dbConfig) {
+        config = {
+          autoEntryEnabled: dbConfig.autoEntryEnabled ?? false,
+          minScore: dbConfig.minScore ?? 38,
+          maxPe: dbConfig.maxPe ?? 30.0,
+          minForeignDays: dbConfig.minForeignDays ?? 0,
+          minInstDays: dbConfig.minInstDays ?? 0,
+          minBias20ma: dbConfig.minBias20ma ?? -100.0,
+          maxBias20ma: dbConfig.maxBias20ma ?? 100.0,
+          categories: dbConfig.categories ?? []
+        };
+      }
+    }
+    res.json({ success: true, data: config });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post("/api/screener/config", async (req, res) => {
+  try {
+    const { autoEntryEnabled, minScore, maxPe, minForeignDays, minInstDays, minBias20ma, maxBias20ma, categories } = req.body;
+    
+    const configData = {
+      autoEntryEnabled: !!autoEntryEnabled,
+      minScore: Number(minScore) || 38,
+      maxPe: Number(maxPe) || 30.0,
+      minForeignDays: Number(minForeignDays) || 0,
+      minInstDays: Number(minInstDays) || 0,
+      minBias20ma: Number(minBias20ma) || -100.0,
+      maxBias20ma: Number(maxBias20ma) || 100.0,
+      categories: Array.isArray(categories) ? categories : [],
+      lastUpdated: new Date().toISOString()
+    };
+
+    if (dbConnected && holdingsCollection) {
+      const db = (holdingsCollection as any).s.db;
+      const configCol = db.collection("screener_config");
+      await configCol.updateOne(
+        { _id: "current_screener_config" },
+        { $set: configData },
+        { upsert: true }
+      );
+    }
+    
+    console.log("💾 [Screener Config] Saved custom auto-entry config:", configData);
+    res.json({ success: true, message: "量化篩選自動進場規則同步成功！", data: configData });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+
 
 // ==============================================================================
 // 💬 INTERACTIVE AI ADVISOR CHAT API

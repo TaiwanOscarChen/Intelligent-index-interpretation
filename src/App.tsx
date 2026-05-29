@@ -166,6 +166,10 @@ export default function App() {
   const [screenerSortBy, setScreenerSortBy] = useState<string>("score_desc");
   const [screenerChangeRange, setScreenerChangeRange] = useState<string>("all"); // all, up, down, up_3, down_3
 
+  // Screener Auto-Entry Robot States
+  const [screenerAutoEntry, setScreenerAutoEntry] = useState<boolean>(false);
+  const [isSyncingScreenerConfig, setIsSyncingScreenerConfig] = useState<boolean>(false);
+
   // Holdings & Exits
   const [holdings, setHoldings] = useState<HoldingItem[]>([
     {
@@ -447,6 +451,63 @@ export default function App() {
     }
   };
 
+  const fetchScreenerConfig = async () => {
+    try {
+      const response = await fetch("/api/screener/config");
+      const resData = await response.json();
+      if (resData.success && resData.data) {
+        setScreenerAutoEntry(resData.data.autoEntryEnabled);
+        setScreenerMinScore(resData.data.minScore);
+        setScreenerMaxPer(resData.data.maxPe);
+        setScreenerMinForeignDays(resData.data.minForeignDays);
+        setScreenerMinInstDays(resData.data.minInstDays);
+        setSelectedScreenerCategories(resData.data.categories);
+      }
+    } catch (err) {
+      console.warn("Failed to fetch screener config:", err);
+    }
+  };
+
+  const syncScreenerConfig = async (overrideEnabled?: boolean) => {
+    setIsSyncingScreenerConfig(true);
+    const enabled = overrideEnabled !== undefined ? overrideEnabled : screenerAutoEntry;
+    try {
+      const response = await fetch("/api/screener/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          autoEntryEnabled: enabled,
+          minScore: screenerMinScore,
+          maxPe: screenerMaxPer,
+          minForeignDays: screenerMinForeignDays,
+          minInstDays: screenerMinInstDays,
+          categories: selectedScreenerCategories
+        })
+      });
+      const resData = await response.json();
+      if (resData.success && resData.data) {
+        setScreenerAutoEntry(enabled);
+        setCurrentToast({
+          type: "INFO",
+          stock_id: "SYS",
+          stock_name: "AI 量化交易控制台",
+          price: 0,
+          reason: enabled 
+            ? `量化篩選自動進場規則同步成功！評分>=${screenerMinScore}, PE<=${screenerMaxPer} 的標的將會被自動掃描買入。`
+            : "自動進場已停用，AI 機器人將回到純盤後提醒模式。",
+          timestamp: new Date().toISOString()
+        });
+        setTimeout(() => {
+          setCurrentToast(null);
+        }, 6000);
+      }
+    } catch (err) {
+      console.error("Failed to sync screener config:", err);
+    } finally {
+      setIsSyncingScreenerConfig(false);
+    }
+  };
+
   const refreshAllData = async () => {
     // 先觸發輕量高頻爬蟲
     fetchRealtimePrices();
@@ -459,6 +520,7 @@ export default function App() {
     fetchHoldings();
     fetchMarketData();
     fetchNotifications();
+    fetchScreenerConfig();
   };
 
   useEffect(() => {
@@ -2530,8 +2592,17 @@ export default function App() {
             <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded-md px-3 py-1.5 shadow">
               <Cpu className="w-3.5 h-3.5 text-indigo-400" />
               <span className="text-zinc-500">CO-PILOT:</span>
-              <span className="text-indigo-300 font-bold">Gemini 3.5-Flash</span>
+              <span className="text-indigo-300 font-bold">Gemini 2.5-Pro</span>
             </div>
+
+            {screenerAutoEntry && (
+              <div className="flex items-center gap-2 bg-[#1b1509] border border-amber-500/30 rounded-md px-3 py-1.5 shadow-[0_0_12px_rgba(229,168,35,0.2)] animate-pulse transition-all">
+                <span className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-ping"></span>
+                <span className="text-amber-400 font-bold uppercase tracking-wider text-[0.65rem] flex items-center gap-1 font-sans">
+                  🤖 AI 自動進場已啟動
+                </span>
+              </div>
+            )}
           </div>
 
         </div>
@@ -4686,6 +4757,74 @@ export default function App() {
                 >
                   🔄 恢復預設條件 (Score &ge; 38)
                 </button>
+              </div>
+
+              {/* AI 智慧篩選自動進場控制台 */}
+              <div className="screener-card-gradient-border backdrop-blur-md bg-zinc-950/40 rounded-xl p-5 shadow-lg space-y-4 border border-zinc-850 relative overflow-hidden">
+                <div className="flex items-center justify-between border-b border-zinc-850 pb-3">
+                  <div className="flex items-center gap-2">
+                    <Cpu className="w-5 h-5 text-amber-500 animate-spin-slow" />
+                    <h3 className="font-bold text-white text-sm font-sans">AI 自動進場控制台</h3>
+                  </div>
+                  {screenerAutoEntry && (
+                    <span className="flex h-2 w-2 relative">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between bg-zinc-950/60 p-3 rounded-lg border border-zinc-900">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-xs font-bold text-white font-sans">機器人進場狀態</span>
+                    <span className={`text-[0.65rem] font-mono font-black uppercase flex items-center gap-1.5 ${screenerAutoEntry ? 'text-amber-400' : 'text-zinc-500'}`}>
+                      {screenerAutoEntry ? (
+                        <>
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                          AI 自動進場中
+                        </>
+                      ) : (
+                        <>
+                          <span className="w-1.5 h-1.5 rounded-full bg-zinc-650"></span>
+                          自動進場暫停
+                        </>
+                      )}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const nextVal = !screenerAutoEntry;
+                      syncScreenerConfig(nextVal);
+                    }}
+                    disabled={isSyncingScreenerConfig}
+                    className={`w-12 h-6 flex items-center rounded-full p-1 cursor-pointer transition-all duration-300 ${
+                      screenerAutoEntry ? 'bg-gradient-to-r from-amber-500 to-[#FFB74D]' : 'bg-zinc-800'
+                    }`}
+                  >
+                    <div
+                      className={`bg-zinc-950 w-4 h-4 rounded-full shadow-md transform transition-all duration-300 ${
+                        screenerAutoEntry ? 'translate-x-6' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                <div className="text-[0.725rem] text-zinc-400 leading-relaxed space-y-3 font-mono">
+                  <p className="bg-zinc-900/40 p-2.5 rounded border border-zinc-900 leading-relaxed">
+                    💡 <b>自動進場說明：</b>
+                    <br />
+                    啟動後，盤中掃描引擎每 <b>15 秒</b> 會比對最新的盤中洗價數據。凡是符合您當前篩選器的條件（評分 &ge; {screenerMinScore}、PE &le; {screenerMaxPer}、外資 &ge; {screenerMinForeignDays} 天、投信 &ge; {screenerMinInstDays} 天）之標的，機器人將立即執行自動建倉買入，持倉上限為 <b>5 檔</b>，單檔最大配置額度為 <b>NT$ 20,000</b>。
+                  </p>
+                  
+                  <button
+                    onClick={() => syncScreenerConfig(screenerAutoEntry)}
+                    disabled={isSyncingScreenerConfig}
+                    className="w-full py-2 flex items-center justify-center gap-1.5 rounded font-black text-xs transition active:scale-[0.98] border border-amber-600/40 bg-amber-950/20 text-[#FFB74D] hover:bg-amber-900/20 animate-pulse"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    {isSyncingScreenerConfig ? "同步網絡設定中..." : "💾 同步當前篩選條件至機器人"}
+                  </button>
+                </div>
               </div>
 
               {/* 三大法人籌碼大盤統計 */}

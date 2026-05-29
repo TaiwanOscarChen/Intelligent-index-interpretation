@@ -897,6 +897,77 @@ def update_macro_data():
         print(f"❌ MongoDB 寫入總經數據失敗: {e}")
 
 
+def get_screener_candidates(db, signals, current_holdings):
+    """
+    Dynamically loads custom screener config from MongoDB 'screener_config' collection.
+    If 'autoEntryEnabled' is True, filters candidates based on custom sliders.
+    Otherwise, falls back to the default quant core entry rules (Score >= 38, PE <= 30).
+    """
+    try:
+        config_col = db['screener_config']
+        config = config_col.find_one({"_id": "current_screener_config"}) or {}
+    except Exception as e:
+        print(f"⚠️ [Screener Config] Failed to load config: {e}")
+        config = {}
+
+    auto_entry_enabled = config.get("autoEntryEnabled", False)
+    min_score = config.get("minScore", 38)
+    max_pe = config.get("maxPe", 30.0)
+    min_foreign = config.get("minForeignDays", 0)
+    min_inst = config.get("minInstDays", 0)
+    categories = config.get("categories", [])
+
+    if auto_entry_enabled:
+        print(f"🤖 [Screener Config] 偵測到「AI 智慧篩選自動進場」已啟用！")
+        print(f"   過濾準則：評分 >= {min_score}, PE <= {max_pe}, 外資鎖碼 >= {min_foreign}天, 投信鎖碼 >= {min_inst}天")
+    else:
+        # Default fallback quant filter
+        min_score = 38
+        max_pe = 30.0
+        min_foreign = 0
+        min_inst = 0
+        categories = []
+
+    candidates = []
+    for s in signals:
+        stock_id = s.get('stock_id')
+        
+        # Check if already in holdings
+        if any(h.get('stock_id') == stock_id for h in current_holdings):
+            continue
+            
+        # 1. Check rating score
+        score = s.get('score', 0)
+        if score < min_score:
+            continue
+            
+        # 2. Check PE ratio
+        per = s.get('per', 99.0)
+        if per > max_pe:
+            continue
+            
+        # 3. Check Foreign days
+        fd = s.get('foreignDays', 0)
+        if fd < min_foreign:
+            continue
+            
+        # 4. Check Institutional days
+        id_days = s.get('instDays', 0)
+        if id_days < min_inst:
+            continue
+            
+        # 5. Check categories if set
+        cat = s.get('category')
+        if categories and cat not in categories:
+            continue
+            
+        candidates.append(s)
+        
+    # Sort candidates by score descending
+    candidates.sort(key=lambda x: x.get('score', 0), reverse=True)
+    return candidates
+
+
 def execute_ai_auto_trade(current_vix):
     try:
         import datetime
@@ -967,8 +1038,7 @@ def execute_ai_auto_trade(current_vix):
                         
             # Check for entry signals (REMIND_BUY)
             if len(holdings) < 5:
-                candidates = [s for s in signals if s.get('score', 0) >= 38 and not any(h.get('stock_id') == s.get('stock_id') for h in holdings)]
-                candidates.sort(key=lambda x: x.get('score', 0), reverse=True)
+                candidates = get_screener_candidates(db, signals, holdings)
                 for sig in candidates[:(5 - len(holdings))]:
                     stock_id = sig.get('stock_id')
                     stock_name = sig.get('stock_name')
@@ -1101,9 +1171,8 @@ def execute_ai_auto_trade(current_vix):
         # 2. 進場與換股交易 (上限 5 檔，總額 10 萬，各 2 萬)
         current_holdings = list(holdings_collection.find({}))
         
-        # Filter candidate signals not in current holdings
-        candidates = [s for s in signals if s.get('score', 0) >= 38 and not any(h.get('stock_id') == s.get('stock_id') for h in current_holdings)]
-        candidates.sort(key=lambda x: x.get('score', 0), reverse=True)
+        # Filter candidate signals not in current holdings using dynamic screener config
+        candidates = get_screener_candidates(db, signals, current_holdings)
 
         for sig in candidates:
             current_holdings_count = len(current_holdings)
